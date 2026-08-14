@@ -1,60 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadastro — BeautyMove</title>
-  <link rel="stylesheet" href="assets/css/styles.css">
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cadastro — BeautyMove</title><link rel="stylesheet" href="assets/css/styles.css"></head>
 <body>
-  <div class="page">
-    <header class="header">
-      <a href="index.html"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
-      <a class="header-link" href="index.html">Voltar</a>
-    </header>
-
-    <main>
-      <div class="container form-wrap">
-        <div class="card form-card">
-          <div class="form-head">
-            <h1 id="registrationTitle">Cadastro BeautyMove</h1>
-            <p id="registrationDescription">Preencha os dados básicos para continuar.</p>
-          </div>
-
-          <div class="notice">Esta primeira etapa cria apenas o perfil local do MVP. A persistência em conta real será conectada ao backend na próxima camada.</div>
-
-          <form id="registrationForm">
-            <input type="hidden" id="role" name="role">
-            <div class="form-grid">
-              <div class="field">
-                <label for="nome">Nome</label>
-                <input id="nome" name="nome" type="text" required placeholder="Seu nome">
-              </div>
-              <div class="field">
-                <label for="telefone">Telefone / WhatsApp</label>
-                <input id="telefone" name="telefone" type="tel" required placeholder="(00) 00000-0000">
-              </div>
-              <div class="field full">
-                <label for="email">E-mail</label>
-                <input id="email" name="email" type="email" required placeholder="seuemail@exemplo.com">
-              </div>
-              <div class="field full">
-                <label for="nomeSalao">Nome do salão (quando aplicável)</label>
-                <input id="nomeSalao" name="nomeSalao" type="text" placeholder="Nome do estabelecimento">
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <a class="secondary" href="index.html">Cancelar</a>
-              <button class="primary" type="submit">Continuar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
-
-    <footer class="footer">BeautyMove © 2026</footer>
-  </div>
-  <script src="assets/js/app.js"></script>
-</body>
-</html>
+<div class="page"><header class="header"><a href="index.html"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a><a class="header-link" href="index.html">Voltar</a></header>
+<main><div class="container form-wrap"><div class="card form-card"><div class="form-head"><h1 id="registrationTitle">Cadastro BeautyMove</h1><p id="registrationDescription">Preencha os dados básicos para continuar.</p></div>
+<form id="registrationForm"><input type="hidden" id="role" name="role"><div class="form-grid">
+<div class="field"><label for="nome">Nome</label><input id="nome" name="nome" type="text" required placeholder="Seu nome"></div>
+<div class="field"><label for="telefone">Telefone / WhatsApp</label><input id="telefone" name="telefone" type="tel" required placeholder="(00) 00000-0000"></div>
+<div class="field full"><label for="email">E-mail</label><input id="email" name="email" type="email" required placeholder="seuemail@exemplo.com"></div>
+<div class="field full" id="salaoField"><label for="nomeSalao">Nome do salão</label><input id="nomeSalao" name="nomeSalao" type="text" placeholder="Nome do estabelecimento"></div>
+<div class="field full" id="specialtyField"><label for="especialidade">Especialidade</label><select id="especialidade" name="especialidade"><option value="">Selecione</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option><option>Auxiliar de cabeleireiro</option></select></div>
+</div><div class="form-actions"><a class="secondary" href="index.html">Cancelar</a><button class="primary" type="submit">Continuar</button></div></form>
+</div></div></main><footer class="footer">BeautyMove © 2026</footer></div><script src="assets/js/firebase-config.js"></script><script src="assets/js/data.js"></script><script src="assets/js/app.js"></script></body></html>

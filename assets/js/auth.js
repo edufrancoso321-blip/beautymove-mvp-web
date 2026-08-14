@@ -1,6 +1,7 @@
 /* BeautyMove authentication adapter. Firebase is the primary backend; local session is only the browser session cache. */
 (function () {
   const SESSION_KEY = 'beautymove.mvp.session';
+  const PROFILE_KEY = 'beautymove.mvp.profile';
 
   function getSession() {
     try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
@@ -8,27 +9,65 @@
   function setSession(session) { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); }
   function clearSession() { localStorage.removeItem(SESSION_KEY); }
   function profileName(profile) { return profile.nome || profile.nomeSalao || ''; }
+  function roleFromQuery() {
+    const value = new URLSearchParams(window.location.search).get('perfil') || '';
+    if (value.toLowerCase().includes('sala')) return 'salao';
+    if (value.toLowerCase().includes('prof')) return 'profissional';
+    if (value.toLowerCase().includes('clien')) return 'cliente';
+    return '';
+  }
+  function formDataToObject(form) {
+    const data = {};
+    for (const [key, value] of new FormData(form).entries()) {
+      if (key === 'especialidades') {
+        if (!Array.isArray(data.especialidades)) data.especialidades = [];
+        data.especialidades.push(value);
+      } else {
+        data[key] = value;
+      }
+    }
+    return data;
+  }
 
   async function register(profile, password) {
     const backend = window.BeautyMoveFirebase;
     if (!backend?.enabled) throw new Error('Firebase não está disponível.');
 
-    const credential = await backend.auth.createUserWithEmailAndPassword(profile.email, password);
+    const normalizedRole = profile.role || roleFromQuery();
+    const normalizedProfile = { ...profile, role: normalizedRole };
+    if (normalizedRole === 'salao') {
+      const specialties = Array.isArray(normalizedProfile.especialidades) ? normalizedProfile.especialidades : [];
+      if (!specialties.length) throw new Error('Selecione pelo menos uma especialidade do salão.');
+      normalizedProfile.especialidades = specialties;
+      normalizedProfile.especialidade = specialties[0];
+    }
+
+    const credential = await backend.auth.createUserWithEmailAndPassword(normalizedProfile.email, password);
     const uid = credential.user.uid;
-    const session = { uid, role: profile.role, name: profileName(profile), email: credential.user.email || profile.email };
+    const session = { uid, role: normalizedRole, name: profileName(normalizedProfile), email: credential.user.email || normalizedProfile.email };
     setSession(session);
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ ...normalizedProfile, uid })); } catch (storageError) { console.warn('[BeautyMove] local profile cache failed:', storageError); }
 
-    const baseProfile = { ...profile, uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-    await backend.db.collection('users').doc(uid).set(baseProfile, { merge: true });
+    try {
+      const baseProfile = { ...normalizedProfile, uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+      await backend.db.collection('users').doc(uid).set(baseProfile, { merge: true });
 
-    const roleCollection = { salao: 'salons', profissional: 'professionals', cliente: 'clients' }[profile.role];
-    if (roleCollection) {
-      await backend.db.collection(roleCollection).doc(uid).set({
-        ...profile,
-        uid,
-        ownerId: uid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+      const roleCollection = { salao: 'salons', profissional: 'professionals', cliente: 'clients' }[normalizedRole];
+      if (roleCollection) {
+        await backend.db.collection(roleCollection).doc(uid).set({
+          ...normalizedProfile,
+          uid,
+          ownerId: uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+    } catch (error) {
+      console.error('[BeautyMove] profile persistence failed:', error);
+      const permissionError = error?.code === 'permission-denied' || /insufficient permissions/i.test(error?.message || '');
+      if (permissionError) {
+        throw new Error('O cadastro de acesso foi criado, mas o Firebase bloqueou a gravação do perfil. Precisamos publicar as regras do Firestore antes de tentar novamente.');
+      }
+      throw error;
     }
 
     return session;
@@ -51,6 +90,7 @@
 
     const session = { uid: credential.user.uid, role, name: data.nome || data.nomeSalao || '', email: credential.user.email || email };
     setSession(session);
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(data)); } catch (storageError) { console.warn('[BeautyMove] local profile cache failed:', storageError); }
     return session;
   }
 
@@ -73,19 +113,33 @@
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       event.stopImmediatePropagation();
-      const data = Object.fromEntries(new FormData(form).entries());
+      const data = formDataToObject(form);
+      data.role = data.role || roleFromQuery();
       const password = data.password || '';
+      const passwordConfirm = data.passwordConfirm || '';
       delete data.password;
+      delete data.passwordConfirm;
+      const errorBox = document.querySelector('#registrationError');
+      const showError = (message) => { if (errorBox) { errorBox.hidden = false; errorBox.textContent = message; } else alert(message); };
+      if (password !== passwordConfirm) {
+        showError('As senhas não coincidem.');
+        return;
+      }
+      if (data.role === 'salao' && (!Array.isArray(data.especialidades) || data.especialidades.length === 0)) {
+        showError('Selecione pelo menos uma especialidade do salão.');
+        return;
+      }
       const button = form.querySelector('button[type="submit"]');
       if (button) { button.disabled = true; button.textContent = 'Criando cadastro...'; }
+      if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
       try {
-        await register(data, password);
-        redirectForRole(data.role);
+        const session = await register(data, password);
+        redirectForRole(session.role);
       } catch (error) {
         console.error('[BeautyMove] registration failed:', error);
         const code = error?.code || '';
         const message = code === 'auth/email-already-in-use' ? 'Este e-mail já está cadastrado.' : code === 'auth/weak-password' ? 'A senha precisa ter pelo menos 6 caracteres.' : code === 'auth/invalid-email' ? 'Informe um e-mail válido.' : error?.message || 'Não foi possível concluir o cadastro.';
-        alert(message);
+        showError(message);
         if (button) { button.disabled = false; button.textContent = 'Continuar'; }
       }
     }, true);

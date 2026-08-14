@@ -15,19 +15,54 @@
     <main>
       <div class="container dashboard">
         <div class="dashboard-head">
-          <div><h1 id="dashboardTitle">Área do cliente</h1><p id="dashboardSubtitle">Encontre serviços e acompanhe seus agendamentos.</p></div>
-          <div class="actions"><a class="primary" href="#busca">Buscar serviços</a></div>
+          <div><div class="eyebrow">ÁREA DO CLIENTE</div><h1 id="dashboardTitle">Encontrar serviços</h1><p id="dashboardSubtitle">Encontre profissionais e acompanhe seus agendamentos.</p></div>
+          <div class="actions"><a class="secondary" href="#agenda-cliente">Meus agendamentos</a></div>
         </div>
+
         <div class="dashboard-grid">
-          <div class="card metric"><span>Próximos</span><strong>0</strong><span>agendamentos</span></div>
-          <div class="card metric"><span>Histórico</span><strong>0</strong><span>atendimentos</span></div>
-          <div class="card metric"><span>Favoritos</span><strong>0</strong><span>salvos</span></div>
+          <div class="card metric"><span>Próximos</span><strong id="clientUpcomingCount">0</strong><span>agendamentos</span></div>
+          <div class="card metric"><span>Histórico</span><strong id="clientHistoryCount">0</strong><span>atendimentos</span></div>
+          <div class="card metric"><span>Favoritos</span><strong id="clientFavoriteCount">0</strong><span>salvos</span></div>
         </div>
+
         <section class="section" id="busca">
-          <div class="card"><h2>Buscar serviços</h2><p>Esta área será conectada ao catálogo e à busca de profissionais na próxima camada do MVP.</p></div>
+          <div class="section-head"><div><div class="eyebrow">BUSCA</div><h2>Serviços próximos</h2></div></div>
+          <div class="card search-bar-card">
+            <form id="clientSearchForm" class="search-form">
+              <div class="field"><label for="clientSpecialty">Especialidade</label><select id="clientSpecialty" name="specialty"><option value="">Todas</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div>
+              <div class="field"><label for="clientService">Serviço</label><input id="clientService" name="service" placeholder="Ex.: Corte"></div>
+              <button class="primary compact search-submit" type="submit">Buscar</button>
+            </form>
+          </div>
+          <div id="clientResults" class="dashboard-grid client-results"></div>
+        </section>
+
+        <section class="section" id="agenda-cliente">
+          <div class="section-head"><div><div class="eyebrow">AGENDA</div><h2>Meus agendamentos</h2></div></div>
+          <div class="table-wrap"><table class="agenda-table"><thead><tr><th>Data</th><th>Horário</th><th>Profissional</th><th>Serviço</th><th>Valor</th><th>Situação</th></tr></thead><tbody id="clientAppointments"><tr><td colspan="6">Nenhum agendamento.</td></tr></tbody></table></div>
         </section>
       </div>
     </main>
+
+    <div class="modal" id="clientBookingModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-client-modal></div>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="clientBookingTitle">
+        <button class="modal-close" type="button" aria-label="Fechar" data-close-client-modal>×</button>
+        <div class="eyebrow">AGENDAMENTO</div>
+        <h2 id="clientBookingTitle">Agendar serviço</h2>
+        <p class="modal-intro" id="clientBookingProfessional"></p>
+        <form id="clientBookingForm" class="form-grid compact-form">
+          <input type="hidden" id="bookingProfessional" name="professional">
+          <input type="hidden" id="bookingService" name="service">
+          <input type="hidden" id="bookingValue" name="value">
+          <div class="field"><label for="bookingDate">Data</label><input id="bookingDate" name="date" type="date" required></div>
+          <div class="field"><label for="bookingTime">Horário</label><select id="bookingTime" name="time"><option>09:00</option><option>10:00</option><option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option><option>17:00</option></select></div>
+          <div class="field full"><label for="bookingNotes">Observação</label><input id="bookingNotes" name="notes" placeholder="Alguma informação para o atendimento?"></div>
+          <div class="form-actions full"><button class="secondary" type="button" data-close-client-modal>Cancelar</button><button class="primary" type="submit">Confirmar agendamento</button></div>
+        </form>
+      </section>
+    </div>
+
     <footer class="footer">BeautyMove © 2026</footer>
   </div>
   <script src="assets/js/app.js"></script>

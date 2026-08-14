@@ -786,15 +786,9 @@
   }
 
 
-  function selectRole(role) {
-
-    alert(
-      "Perfil selecionado: " +
-      role +
-      "\n\nA próxima etapa será o cadastro específico deste perfil."
-    );
-
-  }
+function selectRole(role) {
+  window.location.href = "cadastro.html?perfil=" + role;
+}
 
 </script>
 

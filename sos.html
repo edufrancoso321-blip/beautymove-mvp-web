@@ -12,7 +12,6 @@
       <a href="salao.html" aria-label="Voltar para a agenda"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
       <a class="header-link" href="salao.html">Voltar à agenda</a>
     </header>
-
     <main>
       <div class="container form-wrap">
         <div class="form-head">
@@ -20,79 +19,22 @@
           <h1>Encontrar profissional</h1>
           <p>Informe a necessidade do salão. O BeautyMove apresenta profissionais compatíveis para decisão do salão.</p>
         </div>
-
         <section class="card form-card">
           <form id="sosForm" class="form-grid">
-            <div class="field">
-              <label for="specialty">Especialidade</label>
-              <select id="specialty" required>
-                <option value="">Selecione</option>
-                <option>Cabelos</option>
-                <option>Mãos e Pés</option>
-                <option>Estética</option>
-                <option>Depilação</option>
-                <option>Sobrancelhas</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="service">Serviço</label>
-              <input id="service" required placeholder="Ex.: Corte">
-            </div>
-            <div class="field">
-              <label for="date">Data</label>
-              <input id="date" type="date" required>
-            </div>
-            <div class="field">
-              <label for="time">Horário</label>
-              <input id="time" type="time" required>
-            </div>
-            <div class="field">
-              <label for="duration">Duração estimada</label>
-              <select id="duration">
-                <option>30 minutos</option>
-                <option>45 minutos</option>
-                <option selected>60 minutos</option>
-                <option>90 minutos</option>
-                <option>120 minutos</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="radius">Raio de busca</label>
-              <select id="radius">
-                <option>5 km</option>
-                <option selected>10 km</option>
-                <option>20 km</option>
-                <option>30 km</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="value">Valor fixo do serviço (R$)</label>
-              <input id="value" inputmode="decimal" placeholder="80,00" required>
-            </div>
-            <div class="field">
-              <label for="materials">Equipamento/material</label>
-              <select id="materials">
-                <option>Profissional leva o necessário</option>
-                <option>Salão fornece</option>
-                <option>A combinar</option>
-              </select>
-            </div>
-            <div class="field full">
-              <label for="notes">Observações</label>
-              <input id="notes" placeholder="Informações importantes para o atendimento">
-            </div>
-            <div class="form-actions full">
-              <a class="secondary" href="salao.html">Cancelar</a>
-              <button class="primary" type="submit">Buscar profissionais</button>
-            </div>
+            <div class="field"><label for="specialty">Especialidade</label><select id="specialty" name="specialty" required><option value="">Selecione</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div>
+            <div class="field"><label for="service">Serviço</label><input id="service" name="service" required placeholder="Ex.: Corte"></div>
+            <div class="field"><label for="date">Data</label><input id="date" name="date" type="date" required></div>
+            <div class="field"><label for="time">Horário</label><input id="time" name="time" type="time" required></div>
+            <div class="field"><label for="duration">Duração estimada</label><select id="duration" name="duration"><option>30 minutos</option><option>45 minutos</option><option selected>60 minutos</option><option>90 minutos</option><option>120 minutos</option></select></div>
+            <div class="field"><label for="radius">Raio de busca</label><select id="radius" name="radius"><option>5 km</option><option selected>10 km</option><option>20 km</option><option>30 km</option></select></div>
+            <div class="field"><label for="value">Valor fixo do serviço (R$)</label><input id="value" name="value" inputmode="decimal" placeholder="80,00" required></div>
+            <div class="field"><label for="materials">Equipamento/material</label><select id="materials" name="materials"><option>Profissional leva o necessário</option><option>Salão fornece</option><option>A combinar</option></select></div>
+            <div class="field full"><label for="notes">Observações</label><input id="notes" name="notes" placeholder="Informações importantes para o atendimento"></div>
+            <div class="form-actions full"><a class="secondary" href="salao.html">Cancelar</a><button class="primary" type="submit">Buscar profissionais</button></div>
           </form>
         </section>
-
         <section class="section" id="results" hidden>
-          <div class="section-head">
-            <div><div class="eyebrow">RESULTADOS</div><h2>Profissionais disponíveis</h2></div>
-            <button class="secondary compact" type="button" id="mapButton">Ver no mapa</button>
-          </div>
+          <div class="section-head"><div><div class="eyebrow">RESULTADOS</div><h2>Profissionais disponíveis</h2></div><button class="secondary compact" type="button" id="mapButton">Ver no mapa</button></div>
           <div class="dashboard-grid">
             <article class="card"><h2>Mariana</h2><p>Cabelos · Disponível · 3,2 km</p><p><strong>4,89</strong> ★★★★★</p><button class="primary compact select-professional" type="button">Enviar oportunidade</button></article>
             <article class="card"><h2>Fernanda</h2><p>Cabelos · Disponível · 5,7 km</p><p><strong>4,78</strong> ★★★★★</p><button class="primary compact select-professional" type="button">Enviar oportunidade</button></article>
@@ -102,33 +44,8 @@
         </section>
       </div>
     </main>
-
     <footer class="footer">BeautyMove © 2026</footer>
   </div>
   <script src="assets/js/app.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const form = document.querySelector('#sosForm');
-      const results = document.querySelector('#results');
-      const notice = document.querySelector('#sosNotice');
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        results.hidden = false;
-        results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-      document.querySelectorAll('.select-professional').forEach((button) => {
-        button.addEventListener('click', () => {
-          notice.hidden = false;
-          notice.textContent = 'Oportunidade enviada. O primeiro profissional elegível que aceitar confirmará o atendimento.';
-          button.disabled = true;
-          button.textContent = 'Oportunidade enviada';
-        });
-      });
-      document.querySelector('#mapButton')?.addEventListener('click', () => {
-        notice.hidden = false;
-        notice.textContent = 'Visualização no mapa será conectada à geolocalização real na próxima camada técnica do MVP.';
-      });
-    });
-  </script>
 </body>
 </html>

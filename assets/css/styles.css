@@ -67,6 +67,15 @@ main { flex: 1; }
 .finance-summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
 .finance-summary span { color: var(--muted); }
 .finance-summary strong { font-size: 24px; }
+.search-bar-card { padding: 20px; }
+.search-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 14px; }
+.search-submit { min-width: 140px; }
+.client-results { margin-top: 16px; }
+.client-result { padding: 22px; }
+.result-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+.result-top h2 { margin: 5px 0 0; }
+.rating { white-space: nowrap; font-size: 14px; color: #4B287A; }
+.client-result .primary { margin-top: 8px; }
 .agenda-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; }
 .date-control { display: flex; align-items: center; gap: 10px; }
 .icon-button { width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); cursor: pointer; font-size: 22px; line-height: 1; }
@@ -108,5 +117,5 @@ main { flex: 1; }
 .status { display: inline-flex; padding: 5px 9px; border-radius: 999px; background: var(--purple-soft); color: #4B287A; font-size: 12px; font-weight: 700; }
 .table-wrap { overflow-x: auto; }
 .footer { padding: 22px; text-align: center; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); background: var(--surface); }
-@media (max-width: 850px) { .role-grid, .dashboard-grid, .operations-grid { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .field.full { grid-column: auto; } .dashboard-head { align-items: flex-start; flex-direction: column; } .actions, .agenda-toolbar, .section-head { width: 100%; flex-wrap: wrap; } .actions > *, .agenda-tools > * { flex: 1; } .opportunity-card { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 850px) { .role-grid, .dashboard-grid, .operations-grid { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .field.full { grid-column: auto; } .dashboard-head { align-items: flex-start; flex-direction: column; } .actions, .agenda-toolbar, .section-head { width: 100%; flex-wrap: wrap; } .actions > *, .agenda-tools > * { flex: 1; } .opportunity-card { align-items: flex-start; flex-direction: column; } .search-form { grid-template-columns: 1fr; } .search-submit { width: 100%; } }
 @media (max-width: 560px) { .header { padding: 0 20px; } .logo { width: 132px; } .container { width: min(100% - 28px, 1180px); } .hero { padding-top: 48px; } .form-actions { flex-direction: column; } .actions { flex-direction: column; } .agenda-tools { width: 100%; } }

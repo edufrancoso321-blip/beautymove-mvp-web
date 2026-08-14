@@ -15,23 +15,36 @@
     <main>
       <div class="container dashboard">
         <div class="dashboard-head">
-          <div><h1 id="dashboardTitle">Minha agenda</h1><p id="dashboardSubtitle">Acompanhe seus agendamentos e oportunidades.</p></div>
+          <div><div class="eyebrow">ÁREA DO PROFISSIONAL</div><h1 id="dashboardTitle">Minha agenda</h1><p id="dashboardSubtitle">Acompanhe seus agendamentos e oportunidades.</p></div>
           <div class="actions"><a class="secondary" href="#agenda">Minha agenda</a><a class="primary" href="#financeiro">Financeiro</a></div>
         </div>
         <div class="dashboard-grid">
-          <div class="card metric"><span>Hoje</span><strong>0</strong><span>agendamentos</span></div>
-          <div class="card metric"><span>Oportunidades</span><strong>0</strong><span>disponíveis</span></div>
-          <div class="card metric"><span>Financeiro</span><strong>R$ 0</strong><span>no período</span></div>
+          <div class="card metric"><span>Hoje</span><strong id="professionalTodayCount">0</strong><span>agendamentos</span></div>
+          <div class="card metric"><span>Oportunidades</span><strong id="professionalOpportunityCount">0</strong><span>disponíveis</span></div>
+          <div class="card metric"><span>Financeiro</span><strong id="professionalFinanceTotal">R$ 0,00</strong><span>previsto</span></div>
         </div>
-        <section class="section" id="agenda">
-          <h2>Minha agenda</h2>
-          <table class="agenda-table">
-            <thead><tr><th>Horário</th><th>Salão</th><th>Cliente</th><th>Serviço</th><th>Situação</th></tr></thead>
-            <tbody><tr><td>09:00</td><td>—</td><td>—</td><td>—</td><td><span class="status">Livre</span></td></tr></tbody>
-          </table>
+
+        <section class="section" id="oportunidades">
+          <div class="section-head"><div><div class="eyebrow">OPORTUNIDADES</div><h2>Disponíveis para você</h2></div></div>
+          <div id="professionalOpportunities" class="stack-list"></div>
         </section>
+
+        <section class="section" id="agenda">
+          <div class="section-head"><div><div class="eyebrow">AGENDA</div><h2>Meus agendamentos</h2></div></div>
+          <div class="table-wrap">
+            <table class="agenda-table">
+              <thead><tr><th>Horário</th><th>Salão</th><th>Cliente</th><th>Serviço</th><th>Situação</th></tr></thead>
+              <tbody id="professionalAppointments"><tr><td colspan="5">Nenhum agendamento confirmado.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
         <section class="section" id="financeiro">
-          <div class="card"><h2>Financeiro simples</h2><p>Área reservada para acompanhar os valores dos atendimentos realizados, sem intermediação de pagamento pelo BeautyMove.</p></div>
+          <div class="section-head"><div><div class="eyebrow">FINANCEIRO</div><h2>Controle simples</h2></div></div>
+          <div class="card">
+            <p>O BeautyMove registra os valores previstos dos atendimentos. O pagamento continua fora da plataforma neste MVP.</p>
+            <div class="finance-summary"><span>Total previsto</span><strong id="professionalFinanceTotalDetail">R$ 0,00</strong></div>
+          </div>
         </section>
       </div>
     </main>

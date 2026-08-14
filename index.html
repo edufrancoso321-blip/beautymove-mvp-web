@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>BeautyMove</title>
 
   <style>
@@ -43,19 +42,13 @@
       flex-direction: column;
     }
 
-    /* =========================
-       HEADER
-    ========================= */
-
     header {
       height: 76px;
       background: var(--white);
       border-bottom: 1px solid var(--line);
-
       display: flex;
       align-items: center;
       justify-content: space-between;
-
       padding: 0 6%;
     }
 
@@ -67,22 +60,15 @@
       color: var(--dark);
     }
 
-    /*
-      ESPAÇO RESERVADO PARA O LOGOTIPO OFICIAL
-      Substituiremos este bloco pelo arquivo oficial.
-    */
-
     .brand-symbol {
       width: 38px;
       height: 38px;
       border-radius: 11px;
       background: var(--purple);
-
       display: flex;
       align-items: center;
       justify-content: center;
-
-      color: white;
+      color: var(--white);
       font-size: 20px;
       font-weight: 800;
     }
@@ -98,394 +84,118 @@
     }
 
     .header-login {
-      color: var(--gray);
-      font-size: 14px;
-    }
-
-    .header-login button {
       border: 0;
-      background: none;
+      background: transparent;
       color: var(--purple);
       font-weight: 700;
-      margin-left: 5px;
+      padding: 8px;
     }
-
-    /* =========================
-       MAIN
-    ========================= */
 
     main {
       flex: 1;
-
       display: flex;
-      justify-content: center;
       align-items: center;
-
+      justify-content: center;
       padding: 60px 20px;
     }
 
     .container {
       width: 100%;
-      max-width: 1120px;
-
-      display: grid;
-      grid-template-columns: 1fr 430px;
-      gap: 80px;
-
-      align-items: center;
+      max-width: 1080px;
+      text-align: center;
     }
-
-    /* =========================
-       INTRO
-    ========================= */
 
     .intro {
-      max-width: 570px;
+      margin-bottom: 38px;
     }
 
-    .eyebrow {
-      display: inline-block;
-
-      padding: 7px 12px;
-
-      background: var(--purple-light);
-      color: var(--purple);
-
-      border-radius: 20px;
-
-      font-size: 12px;
-      font-weight: 750;
-      letter-spacing: .3px;
-
-      margin-bottom: 22px;
+    .intro h1 {
+      margin: 0 0 12px;
+      font-size: 40px;
+      line-height: 1.15;
+      letter-spacing: -1px;
     }
 
-    h1 {
-      font-size: clamp(42px, 5vw, 64px);
-      line-height: 1.02;
-
-      letter-spacing: -2.5px;
-
-      margin: 0 0 22px;
-    }
-
-    h1 span {
-      color: var(--purple);
-    }
-
-    .intro-text {
-      font-size: 19px;
+    .intro p {
+      margin: 0 auto;
+      max-width: 650px;
+      color: var(--gray);
+      font-size: 17px;
       line-height: 1.6;
-
-      color: var(--gray);
-
-      max-width: 510px;
-
-      margin: 0;
     }
 
-    .principles {
-      display: flex;
-      gap: 12px;
-
-      margin-top: 35px;
-
-      flex-wrap: wrap;
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      max-width: 820px;
+      margin: 0 auto;
     }
-
-    .principle {
-      padding: 10px 14px;
-
-      border: 1px solid var(--line);
-      border-radius: 9px;
-
-      background: white;
-
-      font-size: 13px;
-      color: var(--gray);
-    }
-
-    /* =========================
-       ACCESS CARD
-    ========================= */
 
     .card {
       background: var(--white);
-
       border: 1px solid var(--line);
-      border-radius: 22px;
+      border-radius: 18px;
+      padding: 32px;
+      text-align: left;
+      transition: 0.2s ease;
+    }
 
-      padding: 34px;
-
-      box-shadow:
-        0 20px 50px rgba(20, 10, 40, .07);
+    .card:hover {
+      border-color: var(--purple);
+      transform: translateY(-2px);
     }
 
     .card h2 {
-      margin: 0 0 8px;
-
-      font-size: 27px;
-      letter-spacing: -.8px;
+      margin: 0 0 10px;
+      font-size: 22px;
     }
 
-    .card-subtitle {
+    .card p {
+      margin: 0 0 24px;
       color: var(--gray);
-      font-size: 14px;
-
-      margin: 0 0 28px;
       line-height: 1.5;
+      font-size: 15px;
     }
 
-    .field {
-      margin-bottom: 17px;
-    }
-
-    .field label {
-      display: block;
-
-      font-size: 13px;
-      font-weight: 700;
-
-      margin-bottom: 7px;
-    }
-
-    .field input {
+    .card button {
       width: 100%;
-
-      height: 48px;
-
-      border: 1px solid #DCD9E3;
-      border-radius: 10px;
-
-      padding: 0 14px;
-
-      outline: none;
-
-      transition: .2s;
-    }
-
-    .field input:focus {
-      border-color: var(--purple);
-
-      box-shadow:
-        0 0 0 3px rgba(106, 0, 255, .09);
-    }
-
-    .primary-button {
-      width: 100%;
-
-      height: 50px;
-
       border: 0;
       border-radius: 10px;
-
       background: var(--purple);
-      color: white;
-
-      font-weight: 750;
-
-      margin-top: 5px;
-
-      transition: .2s;
+      color: var(--white);
+      padding: 13px 18px;
+      font-weight: 700;
     }
 
-    .primary-button:hover {
-      transform: translateY(-1px);
-
-      box-shadow:
-        0 8px 20px rgba(106, 0, 255, .22);
+    .card button:hover {
+      opacity: 0.92;
     }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      margin: 25px 0;
-
-      color: #9997A3;
-
-      font-size: 12px;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: "";
-
-      height: 1px;
-
-      background: var(--line);
-
-      flex: 1;
-    }
-
-    .create-button {
-      width: 100%;
-
-      height: 48px;
-
-      background: white;
-
-      color: var(--purple);
-
-      border: 1px solid #CFC5E8;
-
-      border-radius: 10px;
-
-      font-weight: 750;
-    }
-
-    .create-button:hover {
-      background: var(--purple-light);
-    }
-
-    .terms {
-      margin: 20px 0 0;
-
-      text-align: center;
-
-      font-size: 11px;
-      line-height: 1.5;
-
-      color: #92909A;
-    }
-
-    /* =========================
-       ROLE SELECTION
-    ========================= */
-
-    .role-selection {
-      display: none;
-    }
-
-    .role-selection.active {
-      display: block;
-    }
-
-    .role-title {
-      margin-bottom: 20px;
-    }
-
-    .role {
-      width: 100%;
-
-      display: flex;
-      align-items: center;
-      gap: 14px;
-
-      padding: 16px;
-
-      margin-bottom: 10px;
-
-      background: white;
-
-      border: 1px solid var(--line);
-      border-radius: 12px;
-
-      text-align: left;
-
-      transition: .2s;
-    }
-
-    .role:hover {
-      border-color: var(--purple);
-
-      background: #FCFAFF;
-    }
-
-    .role-icon {
-      width: 40px;
-      height: 40px;
-
-      border-radius: 10px;
-
-      background: var(--purple-light);
-      color: var(--purple);
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      font-weight: 800;
-    }
-
-    .role strong {
-      display: block;
-      margin-bottom: 3px;
-    }
-
-    .role small {
-      color: var(--gray);
-    }
-
-    .back {
-      border: 0;
-      background: none;
-
-      color: var(--gray);
-
-      font-size: 13px;
-
-      padding: 0;
-
-      margin-bottom: 18px;
-    }
-
-    .back:hover {
-      color: var(--purple);
-    }
-
-    /* =========================
-       FOOTER
-    ========================= */
 
     footer {
       padding: 22px 6%;
-
       text-align: center;
-
-      color: #9997A3;
-
-      font-size: 11px;
+      border-top: 1px solid var(--line);
+      background: var(--white);
+      color: var(--gray);
+      font-size: 13px;
     }
 
-    /* =========================
-       RESPONSIVE
-    ========================= */
-
-    @media (max-width: 850px) {
-
+    @media (max-width: 700px) {
       header {
-        padding: 0 25px;
+        padding: 0 20px;
       }
 
-      .header-login {
-        display: none;
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .intro h1 {
+        font-size: 32px;
       }
 
       main {
         padding: 40px 20px;
-      }
-
-      .container {
-        grid-template-columns: 1fr;
-
-        gap: 40px;
-
-        max-width: 520px;
-      }
-
-      .intro {
-        text-align: center;
-        margin: auto;
-      }
-
-      .intro-text {
-        margin: auto;
-      }
-
-      .principles {
-        justify-content: center;
       }
     }
   </style>
@@ -493,304 +203,73 @@
 
 <body>
 
-<div class="page">
+  <div class="page">
 
-  <!-- =========================
-       HEADER
-  ========================= -->
+    <header>
+      <a class="brand" href="index.html">
+        <div class="brand-symbol">B</div>
+        <div class="brand-name">Beauty<span>Move</span></div>
+      </a>
 
-  <header>
+      <button class="header-login" onclick="abrirCadastro('login')">
+        Entrar
+      </button>
+    </header>
 
-    <a class="brand" href="#">
-      <div class="brand-symbol">B</div>
+    <main>
+      <div class="container">
 
-      <div class="brand-name">
-        Beauty<span>Move</span>
+        <section class="intro">
+          <h1>Conectando talentos às oportunidades.</h1>
+          <p>
+            Encontre profissionais, salões e novas oportunidades
+            dentro do ecossistema BeautyMove.
+          </p>
+        </section>
+
+        <section class="cards">
+
+          <article class="card">
+            <h2>Sou Salão</h2>
+            <p>
+              Cadastre seu salão e encontre profissionais
+              disponíveis para atender suas necessidades.
+            </p>
+
+            <button onclick="abrirCadastro('salao')">
+              Cadastrar salão
+            </button>
+          </article>
+
+          <article class="card">
+            <h2>Sou Profissional</h2>
+            <p>
+              Crie seu perfil profissional e encontre
+              oportunidades compatíveis com sua disponibilidade.
+            </p>
+
+            <button onclick="abrirCadastro('profissional')">
+              Cadastrar profissional
+            </button>
+          </article>
+
+        </section>
+
       </div>
-    </a>
+    </main>
 
-    <div class="header-login">
-      Já possui uma conta?
-      <button onclick="showLogin()">Entrar</button>
-    </div>
+    <footer>
+      BeautyMove © 2026 — Conectando talentos às oportunidades.
+    </footer>
 
-  </header>
+  </div>
 
-
-  <!-- =========================
-       MAIN
-  ========================= -->
-
-  <main>
-
-    <div class="container">
-
-      <!-- INTRODUÇÃO -->
-
-      <section class="intro">
-
-        <div class="eyebrow">
-          ECOSSISTEMA DA BELEZA
-        </div>
-
-        <h1>
-          Conectando talentos
-          <span>às oportunidades.</span>
-        </h1>
-
-        <p class="intro-text">
-          O BeautyMove conecta salões, profissionais e clientes
-          em um único ecossistema, tornando mais simples encontrar,
-          oferecer e organizar oportunidades na beleza.
-        </p>
-
-        <div class="principles">
-
-          <div class="principle">
-            Simples
-          </div>
-
-          <div class="principle">
-            Conectado
-          </div>
-
-          <div class="principle">
-            Inteligente
-          </div>
-
-          <div class="principle">
-            Em tempo real
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ACESSO -->
-
-      <section class="card">
-
-        <!-- LOGIN -->
-
-        <div id="login">
-
-          <h2>
-            Entrar no BeautyMove
-          </h2>
-
-          <p class="card-subtitle">
-            Acesse sua conta para continuar.
-          </p>
-
-          <div class="field">
-
-            <label for="email">
-              E-mail
-            </label>
-
-            <input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-            >
-
-          </div>
-
-          <div class="field">
-
-            <label for="password">
-              Senha
-            </label>
-
-            <input
-              id="password"
-              type="password"
-              placeholder="Sua senha"
-            >
-
-          </div>
-
-          <button
-            class="primary-button"
-            onclick="login()"
-          >
-            Entrar
-          </button>
-
-          <div class="divider">
-            ou
-          </div>
-
-          <button
-            class="create-button"
-            onclick="showRoles()"
-          >
-            Criar minha conta
-          </button>
-
-          <p class="terms">
-            Ao continuar, você concorda com os termos
-            e condições do BeautyMove.
-          </p>
-
-        </div>
-
-
-        <!-- ESCOLHA DO PERFIL -->
-
-        <div
-          id="roles"
-          class="role-selection"
-        >
-
-          <button
-            class="back"
-            onclick="showLogin()"
-          >
-            ← Voltar
-          </button>
-
-          <h2 class="role-title">
-            Como você quer entrar?
-          </h2>
-
-          <p class="card-subtitle">
-            Escolha o perfil que melhor representa você.
-          </p>
-
-
-          <button
-            class="role"
-            onclick="selectRole('salão')"
-          >
-
-            <div class="role-icon">
-              S
-            </div>
-
-            <div>
-              <strong>
-                Sou um Salão
-              </strong>
-
-              <small>
-                Encontrar profissionais e organizar oportunidades.
-              </small>
-            </div>
-
-          </button>
-
-
-          <button
-            class="role"
-            onclick="selectRole('profissional')"
-          >
-
-            <div class="role-icon">
-              P
-            </div>
-
-            <div>
-              <strong>
-                Sou um Profissional
-              </strong>
-
-              <small>
-                Encontrar oportunidades e disponibilizar meus serviços.
-              </small>
-            </div>
-
-          </button>
-
-
-          <button
-            class="role"
-            onclick="selectRole('cliente')"
-          >
-
-            <div class="role-icon">
-              C
-            </div>
-
-            <div>
-              <strong>
-                Sou um Cliente
-              </strong>
-
-              <small>
-                Encontrar serviços e profissionais.
-              </small>
-            </div>
-
-          </button>
-
-        </div>
-
-      </section>
-
-    </div>
-
-  </main>
-
-
-  <footer>
-    BeautyMove © 2026 — Conectando talentos às oportunidades.
-  </footer>
-
-</div>
-
-
-<script>
-
-  function showRoles() {
-
-    document.getElementById("login").style.display = "none";
-
-    document.getElementById("roles").classList.add("active");
-
-  }
-
-
-  function showLogin() {
-
-    document.getElementById("roles").classList.remove("active");
-
-    document.getElementById("login").style.display = "block";
-
-  }
-
-
-  function login() {
-
-    const email =
-      document.getElementById("email").value.trim();
-
-    const password =
-      document.getElementById("password").value.trim();
-
-
-    if (!email || !password) {
-
-      alert("Informe seu e-mail e sua senha.");
-
-      return;
-
+  <script>
+    function abrirCadastro(perfil) {
+      window.location.href =
+        "cadastro.html?perfil=" + encodeURIComponent(perfil);
     }
-
-
-    alert(
-      "A autenticação será conectada ao Supabase na próxima etapa."
-    );
-
-  }
-
-
-function selectRole(role) {
-  window.location.href = "cadastro.html?perfil=" + role;
-}
-
-</script>
+  </script>
 
 </body>
 </html>

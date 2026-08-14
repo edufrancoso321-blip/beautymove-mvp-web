@@ -16,6 +16,7 @@
     const credential = await backend.auth.createUserWithEmailAndPassword(profile.email, password);
     const session = { uid: credential.user.uid, role: profile.role, name: profileName(profile), email: credential.user.email || profile.email };
     setSession(session);
+    await backend.db.collection('users').doc(session.uid).set({ ...profile, uid: session.uid, createdAt: window.firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
     return session;
   }
 
@@ -34,7 +35,33 @@
     const backend = window.BeautyMoveFirebase;
     const session = getSession();
     if (!backend?.enabled || !session?.uid) return;
-    await backend.db.collection('users').doc(session.uid).set({ ...profile, uid: session.uid, createdAt: window.firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    await backend.db.collection('users').doc(session.uid).set({ ...profile, uid: session.uid }, { merge: true });
+  }
+
+  function bindRegistration() {
+    const form = document.querySelector('#registrationForm');
+    if (!form || form.dataset.firebaseBound === 'true') return;
+    form.dataset.firebaseBound = 'true';
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const data = Object.fromEntries(new FormData(form).entries());
+      const password = data.password || '';
+      delete data.password;
+      const button = form.querySelector('button[type="submit"]');
+      if (button) { button.disabled = true; button.textContent = 'Criando cadastro...'; }
+      try {
+        const session = await register(data, password);
+        window.location.href = `${data.role}.html`;
+        return session;
+      } catch (error) {
+        console.error('[BeautyMove] registration failed:', error);
+        const code = error?.code || '';
+        const message = code === 'auth/email-already-in-use' ? 'Este e-mail já está cadastrado.' : code === 'auth/weak-password' ? 'A senha precisa ter pelo menos 6 caracteres.' : code === 'auth/invalid-email' ? 'Informe um e-mail válido.' : 'Não foi possível concluir o cadastro. Verifique se o Firebase Authentication está ativado.';
+        alert(message);
+        if (button) { button.disabled = false; button.textContent = 'Continuar'; }
+      }
+    }, true);
   }
 
   window.BeautyMoveAuth = {
@@ -47,4 +74,5 @@
     signOut: async () => { if (window.BeautyMoveFirebase?.enabled) await window.BeautyMoveFirebase.auth.signOut(); clearSession(); },
     requireRole: (role) => { const session = getSession(); if (!session || session.role !== role) { window.location.href = `cadastro.html?perfil=${role}`; return false; } return true; }
   };
+  bindRegistration();
 })();

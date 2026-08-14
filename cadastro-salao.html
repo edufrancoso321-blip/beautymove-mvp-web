@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro do Salão | BeautyMove</title>
+
+  <style>
+    :root {
+      --purple: #6A00FF;
+      --dark: #111118;
+      --gray: #686875;
+      --line: #E8E6EE;
+      --background: #FAFAFC;
+      --white: #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: var(--background);
+      color: var(--dark);
+    }
+
+    header {
+      height: 76px;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 7%;
+    }
+
+    .brand-logo {
+      width: 150px;
+      height: auto;
+      display: block;
+    }
+
+    .login-link {
+      color: var(--purple);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    main {
+      min-height: calc(100vh - 136px);
+      display: flex;
+      justify-content: center;
+      padding: 55px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+
+    .intro {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .intro h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+    }
+
+    .intro p {
+      margin: 0;
+      color: var(--gray);
+      font-size: 16px;
+    }
+
+    .form-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      height: 48px;
+      border: 1px solid #D9D6E2;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--purple);
+    }
+
+    .button {
+      width: 100%;
+      height: 48px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--purple);
+      color: var(--white);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: var(--purple);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer {
+      height: 60px;
+      background: var(--white);
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray);
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="index.html">
+      <img
+        src="LOGO BM FUNDO BRANCO.png"
+        alt="BeautyMove"
+        class="brand-logo"
+      >
+    </a>
+
+    <a href="#" class="login-link">Entrar</a>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <div class="intro">
+        <h1>Cadastre seu salão</h1>
+        <p>Crie o perfil do seu salão para começar a encontrar profissionais.</p>
+      </div>
+
+      <div class="form-card">
+
+        <form onsubmit="salvarCadastro(event)">
+
+          <div class="form-group">
+            <label for="nomeSalao">Nome do salão</label>
+            <input
+              type="text"
+              id="nomeSalao"
+              name="nomeSalao"
+              placeholder="Digite o nome do salão"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="responsavel">Nome do responsável</label>
+            <input
+              type="text"
+              id="responsavel"
+              name="responsavel"
+              placeholder="Digite o nome do responsável"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="telefone">Telefone / WhatsApp</label>
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              placeholder="(00) 00000-0000"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="email">E-mail</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="seuemail@exemplo.com"
+              required
+            >
+          </div>
+
+          <button type="submit" class="button">
+            Continuar cadastro
+          </button>
+
+        </form>
+
+        <a href="index.html" class="back-link">
+          Voltar
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    BeautyMove © 2026 — Conectando talentos às oportunidades.
+  </footer>
+
+  <script>
+    function salvarCadastro(event) {
+      event.preventDefault();
+
+      alert("Cadastro inicial recebido. Próxima etapa em desenvolvimento.");
+    }
+  </script>
+
+</body>
+</html>

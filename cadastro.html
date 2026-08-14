@@ -38,6 +38,31 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/app.js"></script>
 <script>
+const registrationRole = new URLSearchParams(window.location.search).get('perfil') || '';
+const salaoField = document.querySelector('#salaoField');
+const specialtyField = document.querySelector('#specialtyField');
+const salonSpecialties = document.querySelector('#salonSpecialties');
+const singleSpecialty = document.querySelector('#singleSpecialty');
+const specialtyLabel = document.querySelector('#specialtyLabel');
+const nomeSalao = document.querySelector('#nomeSalao');
+const especialidade = document.querySelector('#especialidade');
+
+if (registrationRole !== 'salao') {
+  salaoField.hidden = true;
+  nomeSalao.required = false;
+}
+if (registrationRole === 'salao') {
+  singleSpecialty.hidden = true;
+  especialidade.required = false;
+} else if (registrationRole === 'profissional') {
+  salonSpecialties.hidden = true;
+  specialtyLabel.textContent = 'Tipo de profissional';
+  especialidade.required = true;
+} else {
+  specialtyField.hidden = true;
+  especialidade.required = false;
+}
+
 document.querySelectorAll('[data-password-toggle]').forEach((button) => {
   button.addEventListener('click', () => {
     const input = document.getElementById(button.dataset.passwordToggle);

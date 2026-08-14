@@ -1,0 +1,32 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "opportunities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "time", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "professionalOwnerId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "time", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clientOwnerId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "time", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

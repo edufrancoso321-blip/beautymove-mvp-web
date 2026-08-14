@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BeautyMove — Entrar</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <a href="index.html"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
+      <a class="header-link" href="index.html">Voltar</a>
+    </header>
+    <main>
+      <div class="container form-wrap">
+        <div class="card form-card">
+          <div class="form-head">
+            <div class="eyebrow">ACESSO BEAUTYMOVE</div>
+            <h1>Entrar</h1>
+            <p>Acesse sua área do BeautyMove com seu e-mail e senha.</p>
+          </div>
+          <form id="loginForm">
+            <div class="form-grid">
+              <div class="field full">
+                <label for="email">E-mail</label>
+                <input id="email" name="email" type="email" required autocomplete="email" placeholder="seuemail@exemplo.com">
+              </div>
+              <div class="field full">
+                <label for="password">Senha</label>
+                <input id="password" name="password" type="password" minlength="6" required autocomplete="current-password" placeholder="Sua senha">
+              </div>
+              <div class="field full">
+                <label for="role">Perfil</label>
+                <select id="role" name="role">
+                  <option value="">Selecionar automaticamente</option>
+                  <option value="salao">Salão</option>
+                  <option value="profissional">Profissional</option>
+                  <option value="cliente">Cliente</option>
+                </select>
+              </div>
+            </div>
+            <div class="notice" id="loginError" hidden></div>
+            <div class="form-actions">
+              <a class="secondary" href="cadastro.html?perfil=salao">Criar cadastro</a>
+              <button class="primary" type="submit">Entrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">BeautyMove © 2026</footer>
+  </div>
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>

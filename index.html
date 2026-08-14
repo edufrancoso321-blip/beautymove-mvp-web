@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>BeautyMove</title>
+
+  <style>
+    :root {
+      --purple: #6A00FF;
+      --purple-light: #F2EBFF;
+      --dark: #111118;
+      --gray: #686875;
+      --line: #E8E6EE;
+      --background: #FAFAFC;
+      --white: #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: var(--background);
+      color: var(--dark);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    header {
+      height: 76px;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 6%;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--dark);
+    }
+
+    /*
+      ESPAÇO RESERVADO PARA O LOGOTIPO OFICIAL
+      Substituiremos este bloco pelo arquivo oficial.
+    */
+
+    .brand-symbol {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--purple);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: white;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      font-size: 21px;
+      font-weight: 750;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-name span {
+      color: var(--purple);
+    }
+
+    .header-login {
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    .header-login button {
+      border: 0;
+      background: none;
+      color: var(--purple);
+      font-weight: 700;
+      margin-left: 5px;
+    }
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    main {
+      flex: 1;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      padding: 60px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1120px;
+
+      display: grid;
+      grid-template-columns: 1fr 430px;
+      gap: 80px;
+
+      align-items: center;
+    }
+
+    /* =========================
+       INTRO
+    ========================= */
+
+    .intro {
+      max-width: 570px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+
+      padding: 7px 12px;
+
+      background: var(--purple-light);
+      color: var(--purple);
+
+      border-radius: 20px;
+
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .3px;
+
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 5vw, 64px);
+      line-height: 1.02;
+
+      letter-spacing: -2.5px;
+
+      margin: 0 0 22px;
+    }
+
+    h1 span {
+      color: var(--purple);
+    }
+
+    .intro-text {
+      font-size: 19px;
+      line-height: 1.6;
+
+      color: var(--gray);
+
+      max-width: 510px;
+
+      margin: 0;
+    }
+
+    .principles {
+      display: flex;
+      gap: 12px;
+
+      margin-top: 35px;
+
+      flex-wrap: wrap;
+    }
+
+    .principle {
+      padding: 10px 14px;
+
+      border: 1px solid var(--line);
+      border-radius: 9px;
+
+      background: white;
+
+      font-size: 13px;
+      color: var(--gray);
+    }
+
+    /* =========================
+       ACCESS CARD
+    ========================= */
+
+    .card {
+      background: var(--white);
+
+      border: 1px solid var(--line);
+      border-radius: 22px;
+
+      padding: 34px;
+
+      box-shadow:
+        0 20px 50px rgba(20, 10, 40, .07);
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+
+      font-size: 27px;
+      letter-spacing: -.8px;
+    }
+
+    .card-subtitle {
+      color: var(--gray);
+      font-size: 14px;
+
+      margin: 0 0 28px;
+      line-height: 1.5;
+    }
+
+    .field {
+      margin-bottom: 17px;
+    }
+
+    .field label {
+      display: block;
+
+      font-size: 13px;
+      font-weight: 700;
+
+      margin-bottom: 7px;
+    }
+
+    .field input {
+      width: 100%;
+
+      height: 48px;
+
+      border: 1px solid #DCD9E3;
+      border-radius: 10px;
+
+      padding: 0 14px;
+
+      outline: none;
+
+      transition: .2s;
+    }
+
+    .field input:focus {
+      border-color: var(--purple);
+
+      box-shadow:
+        0 0 0 3px rgba(106, 0, 255, .09);
+    }
+
+    .primary-button {
+      width: 100%;
+
+      height: 50px;
+
+      border: 0;
+      border-radius: 10px;
+
+      background: var(--purple);
+      color: white;
+
+      font-weight: 750;
+
+      margin-top: 5px;
+
+      transition: .2s;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-1px);
+
+      box-shadow:
+        0 8px 20px rgba(106, 0, 255, .22);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      margin: 25px 0;
+
+      color: #9997A3;
+
+      font-size: 12px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+
+      height: 1px;
+
+      background: var(--line);
+
+      flex: 1;
+    }
+
+    .create-button {
+      width: 100%;
+
+      height: 48px;
+
+      background: white;
+
+      color: var(--purple);
+
+      border: 1px solid #CFC5E8;
+
+      border-radius: 10px;
+
+      font-weight: 750;
+    }
+
+    .create-button:hover {
+      background: var(--purple-light);
+    }
+
+    .terms {
+      margin: 20px 0 0;
+
+      text-align: center;
+
+      font-size: 11px;
+      line-height: 1.5;
+
+      color: #92909A;
+    }
+
+    /* =========================
+       ROLE SELECTION
+    ========================= */
+
+    .role-selection {
+      display: none;
+    }
+
+    .role-selection.active {
+      display: block;
+    }
+
+    .role-title {
+      margin-bottom: 20px;
+    }
+
+    .role {
+      width: 100%;
+
+      display: flex;
+      align-items: center;
+      gap: 14px;
+
+      padding: 16px;
+
+      margin-bottom: 10px;
+
+      background: white;
+
+      border: 1px solid var(--line);
+      border-radius: 12px;
+
+      text-align: left;
+
+      transition: .2s;
+    }
+
+    .role:hover {
+      border-color: var(--purple);
+
+      background: #FCFAFF;
+    }
+
+    .role-icon {
+      width: 40px;
+      height: 40px;
+
+      border-radius: 10px;
+
+      background: var(--purple-light);
+      color: var(--purple);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-weight: 800;
+    }
+
+    .role strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .role small {
+      color: var(--gray);
+    }
+
+    .back {
+      border: 0;
+      background: none;
+
+      color: var(--gray);
+
+      font-size: 13px;
+
+      padding: 0;
+
+      margin-bottom: 18px;
+    }
+
+    .back:hover {
+      color: var(--purple);
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      padding: 22px 6%;
+
+      text-align: center;
+
+      color: #9997A3;
+
+      font-size: 11px;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 850px) {
+
+      header {
+        padding: 0 25px;
+      }
+
+      .header-login {
+        display: none;
+      }
+
+      main {
+        padding: 40px 20px;
+      }
+
+      .container {
+        grid-template-columns: 1fr;
+
+        gap: 40px;
+
+        max-width: 520px;
+      }
+
+      .intro {
+        text-align: center;
+        margin: auto;
+      }
+
+      .intro-text {
+        margin: auto;
+      }
+
+      .principles {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <!-- =========================
+       HEADER
+  ========================= -->
+
+  <header>
+
+    <a class="brand" href="#">
+      <div class="brand-symbol">B</div>
+
+      <div class="brand-name">
+        Beauty<span>Move</span>
+      </div>
+    </a>
+
+    <div class="header-login">
+      Já possui uma conta?
+      <button onclick="showLogin()">Entrar</button>
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       MAIN
+  ========================= -->
+
+  <main>
+
+    <div class="container">
+
+      <!-- INTRODUÇÃO -->
+
+      <section class="intro">
+
+        <div class="eyebrow">
+          ECOSSISTEMA DA BELEZA
+        </div>
+
+        <h1>
+          Conectando talentos
+          <span>às oportunidades.</span>
+        </h1>
+
+        <p class="intro-text">
+          O BeautyMove conecta salões, profissionais e clientes
+          em um único ecossistema, tornando mais simples encontrar,
+          oferecer e organizar oportunidades na beleza.
+        </p>
+
+        <div class="principles">
+
+          <div class="principle">
+            Simples
+          </div>
+
+          <div class="principle">
+            Conectado
+          </div>
+
+          <div class="principle">
+            Inteligente
+          </div>
+
+          <div class="principle">
+            Em tempo real
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ACESSO -->
+
+      <section class="card">
+
+        <!-- LOGIN -->
+
+        <div id="login">
+
+          <h2>
+            Entrar no BeautyMove
+          </h2>
+
+          <p class="card-subtitle">
+            Acesse sua conta para continuar.
+          </p>
+
+          <div class="field">
+
+            <label for="email">
+              E-mail
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+            >
+
+          </div>
+
+          <div class="field">
+
+            <label for="password">
+              Senha
+            </label>
+
+            <input
+              id="password"
+              type="password"
+              placeholder="Sua senha"
+            >
+
+          </div>
+
+          <button
+            class="primary-button"
+            onclick="login()"
+          >
+            Entrar
+          </button>
+
+          <div class="divider">
+            ou
+          </div>
+
+          <button
+            class="create-button"
+            onclick="showRoles()"
+          >
+            Criar minha conta
+          </button>
+
+          <p class="terms">
+            Ao continuar, você concorda com os termos
+            e condições do BeautyMove.
+          </p>
+
+        </div>
+
+
+        <!-- ESCOLHA DO PERFIL -->
+
+        <div
+          id="roles"
+          class="role-selection"
+        >
+
+          <button
+            class="back"
+            onclick="showLogin()"
+          >
+            ← Voltar
+          </button>
+
+          <h2 class="role-title">
+            Como você quer entrar?
+          </h2>
+
+          <p class="card-subtitle">
+            Escolha o perfil que melhor representa você.
+          </p>
+
+
+          <button
+            class="role"
+            onclick="selectRole('salão')"
+          >
+
+            <div class="role-icon">
+              S
+            </div>
+
+            <div>
+              <strong>
+                Sou um Salão
+              </strong>
+
+              <small>
+                Encontrar profissionais e organizar oportunidades.
+              </small>
+            </div>
+
+          </button>
+
+
+          <button
+            class="role"
+            onclick="selectRole('profissional')"
+          >
+
+            <div class="role-icon">
+              P
+            </div>
+
+            <div>
+              <strong>
+                Sou um Profissional
+              </strong>
+
+              <small>
+                Encontrar oportunidades e disponibilizar meus serviços.
+              </small>
+            </div>
+
+          </button>
+
+
+          <button
+            class="role"
+            onclick="selectRole('cliente')"
+          >
+
+            <div class="role-icon">
+              C
+            </div>
+
+            <div>
+              <strong>
+                Sou um Cliente
+              </strong>
+
+              <small>
+                Encontrar serviços e profissionais.
+              </small>
+            </div>
+
+          </button>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+
+  <footer>
+    BeautyMove © 2026 — Conectando talentos às oportunidades.
+  </footer>
+
+</div>
+
+
+<script>
+
+  function showRoles() {
+
+    document.getElementById("login").style.display = "none";
+
+    document.getElementById("roles").classList.add("active");
+
+  }
+
+
+  function showLogin() {
+
+    document.getElementById("roles").classList.remove("active");
+
+    document.getElementById("login").style.display = "block";
+
+  }
+
+
+  function login() {
+
+    const email =
+      document.getElementById("email").value.trim();
+
+    const password =
+      document.getElementById("password").value.trim();
+
+
+    if (!email || !password) {
+
+      alert("Informe seu e-mail e sua senha.");
+
+      return;
+
+    }
+
+
+    alert(
+      "A autenticação será conectada ao Supabase na próxima etapa."
+    );
+
+  }
+
+
+  function selectRole(role) {
+
+    alert(
+      "Perfil selecionado: " +
+      role +
+      "\n\nA próxima etapa será o cadastro específico deste perfil."
+    );
+
+  }
+
+</script>
+
+</body>
+</html>

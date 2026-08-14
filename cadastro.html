@@ -9,9 +9,23 @@
 <div class="field"><label for="telefone">Telefone / WhatsApp</label><input id="telefone" name="telefone" type="tel" required placeholder="(00) 00000-0000"></div>
 <div class="field full"><label for="email">E-mail</label><input id="email" name="email" type="email" required placeholder="seuemail@exemplo.com"></div>
 <div class="field full"><label for="password">Senha</label><input id="password" name="password" type="password" minlength="6" required placeholder="Mínimo de 6 caracteres" autocomplete="new-password"></div>
+<div class="field full"><label for="passwordConfirm">Confirmar senha</label><input id="passwordConfirm" name="passwordConfirm" type="password" minlength="6" required placeholder="Digite a senha novamente" autocomplete="new-password"></div>
 <div class="field full" id="salaoField"><label for="nomeSalao">Nome do salão</label><input id="nomeSalao" name="nomeSalao" type="text" placeholder="Nome do estabelecimento"></div>
-<div class="field full" id="specialtyField"><label for="especialidade">Especialidade</label><select id="especialidade" name="especialidade"><option value="">Selecione</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option><option>Auxiliar de cabeleireiro</option></select></div>
-</div><div class="form-actions"><a class="secondary" href="index.html">Cancelar</a><button class="primary" type="submit">Continuar</button></div></form>
+<div class="field full" id="specialtyField">
+<label>Especialidades</label>
+<div id="salonSpecialties" class="choice-grid" hidden>
+<label class="choice"><input type="checkbox" name="especialidades" value="Cabelos"> Cabelos</label>
+<label class="choice"><input type="checkbox" name="especialidades" value="Mãos e Pés"> Mãos e Pés</label>
+<label class="choice"><input type="checkbox" name="especialidades" value="Estética"> Estética</label>
+<label class="choice"><input type="checkbox" name="especialidades" value="Depilação"> Depilação</label>
+<label class="choice"><input type="checkbox" name="especialidades" value="Sobrancelhas"> Sobrancelhas</label>
+<label class="choice"><input type="checkbox" name="especialidades" value="Auxiliar de cabeleireiro"> Auxiliar de cabeleireiro</label>
+</div>
+<div id="singleSpecialty">
+<select id="especialidade" name="especialidade"><option value="">Selecione</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option><option>Auxiliar de cabeleireiro</option></select>
+</div>
+</div>
+</div><p id="registrationError" class="form-error" hidden></p><div class="form-actions"><a class="secondary" href="index.html">Cancelar</a><button class="primary" type="submit">Continuar</button></div></form>
 </div></div></main><footer class="footer">BeautyMove © 2026</footer></div>
 <script src="assets/js/firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>

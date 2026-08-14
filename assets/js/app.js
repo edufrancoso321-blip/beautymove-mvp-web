@@ -7,18 +7,13 @@ function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; }
   catch { return fallback; }
 }
-
 function getProfile() { return readJson(PROFILE_KEY, null); }
 function saveProfile(profile) { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
 function getState() { return { ...EMPTY_STATE, ...readJson(STATE_KEY, EMPTY_STATE) }; }
 function saveState(state) { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
 function updateState(mutator) { const state = getState(); mutator(state); saveState(state); return state; }
 function makeId(prefix) { return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
-
-function roleLabel(role) {
-  return ({ salao: 'Salão', profissional: 'Profissional', cliente: 'Cliente' })[role] || '';
-}
-
+function roleLabel(role) { return ({ salao: 'Salão', profissional: 'Profissional', cliente: 'Cliente' })[role] || ''; }
 function roleFromQuery() {
   const value = new URLSearchParams(window.location.search).get('perfil');
   const normalized = (value || '').toLowerCase();
@@ -27,15 +22,10 @@ function roleFromQuery() {
   if (normalized.includes('clien')) return 'cliente';
   return null;
 }
-
 function continueToRole(role) { window.location.href = `${role}.html`; }
-
 function bindRoleButtons() {
-  document.querySelectorAll('[data-role]').forEach((button) => {
-    button.addEventListener('click', () => { window.location.href = `cadastro.html?perfil=${button.dataset.role}`; });
-  });
+  document.querySelectorAll('[data-role]').forEach((button) => button.addEventListener('click', () => { window.location.href = `cadastro.html?perfil=${button.dataset.role}`; }));
 }
-
 function setupRegistration() {
   const role = roleFromQuery();
   const form = document.querySelector('#registrationForm');
@@ -43,25 +33,14 @@ function setupRegistration() {
   const description = document.querySelector('#registrationDescription');
   const roleField = document.querySelector('#role');
   if (!form || !role) return;
-
   const labels = {
     salao: ['Cadastre seu salão', 'Comece pelo cadastro básico do estabelecimento.'],
     profissional: ['Cadastre seu perfil profissional', 'Comece pelo cadastro básico para receber oportunidades.'],
     cliente: ['Cadastre seu perfil', 'Comece pelo cadastro básico para usar o BeautyMove.']
   };
-  title.textContent = labels[role][0];
-  description.textContent = labels[role][1];
-  roleField.value = role;
-
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const data = Object.fromEntries(new FormData(form).entries());
-    data.role = role;
-    saveProfile(data);
-    continueToRole(role);
-  });
+  title.textContent = labels[role][0]; description.textContent = labels[role][1]; roleField.value = role;
+  form.addEventListener('submit', (event) => { event.preventDefault(); const data = Object.fromEntries(new FormData(form).entries()); data.role = role; saveProfile(data); continueToRole(role); });
 }
-
 function setupDashboard() {
   const role = document.body.dataset.role;
   if (!role) return;
@@ -69,16 +48,15 @@ function setupDashboard() {
   const title = document.querySelector('#dashboardTitle');
   const subtitle = document.querySelector('#dashboardSubtitle');
   const name = profile?.nome || profile?.nomeSalao || roleLabel(role);
-  if (title && role !== 'salao') title.textContent = `Área do ${roleLabel(role).toLowerCase()}`;
+  if (title && role !== 'salao' && role !== 'cliente') title.textContent = `Área do ${roleLabel(role).toLowerCase()}`;
   if (subtitle && role !== 'salao') subtitle.textContent = `Olá, ${name}. Esta é a base operacional do seu BeautyMove.`;
 }
-
 function localDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+function formatCurrency(value) { return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]); }
 
 function setupSalonAgenda() {
   if (document.body.dataset.role !== 'salao') return;
@@ -88,153 +66,85 @@ function setupSalonAgenda() {
   const form = document.querySelector('#appointmentForm');
   const dateLabel = document.querySelector('#agendaDate');
   let currentDate = new Date();
-
   const formatDate = (date) => new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).format(date);
   const renderDate = () => { if (dateLabel) dateLabel.textContent = formatDate(currentDate); renderAppointments(); };
   const openModal = () => { if (modal) { modal.classList.add('is-open'); modal.setAttribute('aria-hidden', 'false'); document.querySelector('#clientName')?.focus(); } };
   const closeModal = () => { if (modal) { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true'); } };
-
-  openButtons.forEach((button) => button.addEventListener('click', openModal));
-  closeButtons.forEach((button) => button.addEventListener('click', closeModal));
+  openButtons.forEach((button) => button.addEventListener('click', openModal)); closeButtons.forEach((button) => button.addEventListener('click', closeModal));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
   document.querySelector('#prevDay')?.addEventListener('click', () => { currentDate.setDate(currentDate.getDate() - 1); renderDate(); });
   document.querySelector('#nextDay')?.addEventListener('click', () => { currentDate.setDate(currentDate.getDate() + 1); renderDate(); });
   document.querySelector('#todayBtn')?.addEventListener('click', () => { currentDate = new Date(); renderDate(); });
-
-  document.querySelectorAll('[data-slot]').forEach((cell) => {
-    cell.addEventListener('click', () => {
-      const time = cell.dataset.slot.split('-')[0];
-      const timeField = document.querySelector('#appointmentTime');
-      if (timeField && [...timeField.options].some((option) => option.value === time)) timeField.value = time;
-      openModal();
-    });
-  });
-
+  document.querySelectorAll('[data-slot]').forEach((cell) => cell.addEventListener('click', () => { const time = cell.dataset.slot.split('-')[0]; const timeField = document.querySelector('#appointmentTime'); if (timeField && [...timeField.options].some((option) => option.value === time)) timeField.value = time; openModal(); }));
   form?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const data = Object.fromEntries(new FormData(form).entries());
-    const state = updateState((next) => {
-      next.appointments.push({
-        id: makeId('apt'), date: localDateKey(currentDate), time: data.appointmentTime,
-        professional: data.professionalName, client: data.clientName, service: data.serviceName,
-        value: Number(String(data.serviceValue || '').replace(',', '.')) || 0, status: 'agendado', source: 'salao'
-      });
-    });
-    renderAppointments(state);
-    closeModal();
-    form.reset();
+    event.preventDefault(); const data = Object.fromEntries(new FormData(form).entries());
+    const state = updateState((next) => next.appointments.push({ id: makeId('apt'), date: localDateKey(currentDate), time: data.appointmentTime, professional: data.professionalName, client: data.clientName, service: data.serviceName, value: Number(String(data.serviceValue || '').replace(',', '.')) || 0, status: 'agendado', source: 'salao' }));
+    renderAppointments(state); closeModal(); form.reset();
   });
-
   function renderAppointments(state = getState()) {
-    const date = localDateKey(currentDate);
-    document.querySelectorAll('[data-slot]').forEach((cell) => {
-      cell.classList.remove('appointment');
-      cell.innerHTML = 'Livre';
-    });
-    state.appointments.filter((appointment) => appointment.date === date).forEach((appointment) => {
-      const cell = document.querySelector(`[data-slot="${CSS.escape(appointment.time + '-' + appointment.professional)}"]`);
-      if (!cell) return;
-      cell.classList.add('appointment');
-      cell.innerHTML = `<strong>${escapeHtml(appointment.client)}</strong><span>${escapeHtml(appointment.service)}</span>`;
-    });
+    const date = localDateKey(currentDate); document.querySelectorAll('[data-slot]').forEach((cell) => { cell.classList.remove('appointment'); cell.innerHTML = 'Livre'; });
+    state.appointments.filter((appointment) => appointment.date === date).forEach((appointment) => { const cell = document.querySelector(`[data-slot="${CSS.escape(appointment.time + '-' + appointment.professional)}"]`); if (!cell) return; cell.classList.add('appointment'); cell.innerHTML = `<strong>${escapeHtml(appointment.client)}</strong><span>${escapeHtml(appointment.service)}</span>`; });
   }
-
   renderDate();
 }
 
 function setupSos() {
-  const form = document.querySelector('#sosForm');
-  if (!form) return;
-  const results = document.querySelector('#results');
-  const notice = document.querySelector('#sosNotice');
-  const mapButton = document.querySelector('#mapButton');
-
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const opportunity = Object.fromEntries(new FormData(form).entries());
-    opportunity.id = makeId('opp');
-    opportunity.status = 'aberta';
-    opportunity.createdAt = new Date().toISOString();
-    updateState((state) => state.opportunities.push(opportunity));
-    results.hidden = false;
-    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (notice) { notice.hidden = false; notice.textContent = 'Busca criada. O salão pode enviar a oportunidade aos profissionais compatíveis.'; }
-  });
-
-  document.querySelectorAll('.select-professional').forEach((button) => {
-    button.addEventListener('click', () => {
-      const cards = [...document.querySelectorAll('.select-professional')];
-      const professional = button.closest('.card')?.querySelector('h2')?.textContent?.trim() || 'Profissional';
-      const latest = getState().opportunities.at(-1);
-      if (latest) updateState((state) => {
-        const item = state.opportunities.find((entry) => entry.id === latest.id);
-        if (item) item.invited = [...new Set([...(item.invited || []), professional])];
-      });
-      button.disabled = true;
-      button.textContent = 'Oportunidade enviada';
-      if (notice) { notice.hidden = false; notice.textContent = `Oportunidade enviada para ${professional}. Aguarde a aceitação.`; }
-      cards.forEach((other) => { if (other !== button) other.disabled = true; });
-    });
-  });
-
-  mapButton?.addEventListener('click', () => {
-    if (notice) { notice.hidden = false; notice.textContent = 'A visualização no mapa será conectada à geolocalização real na próxima camada técnica.'; }
-  });
+  const form = document.querySelector('#sosForm'); if (!form) return;
+  const results = document.querySelector('#results'); const notice = document.querySelector('#sosNotice'); const mapButton = document.querySelector('#mapButton');
+  form.addEventListener('submit', (event) => { event.preventDefault(); const opportunity = Object.fromEntries(new FormData(form).entries()); opportunity.id = makeId('opp'); opportunity.status = 'aberta'; opportunity.createdAt = new Date().toISOString(); updateState((state) => state.opportunities.push(opportunity)); results.hidden = false; results.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (notice) { notice.hidden = false; notice.textContent = 'Busca criada. O salão pode enviar a oportunidade aos profissionais compatíveis.'; } });
+  document.querySelectorAll('.select-professional').forEach((button) => button.addEventListener('click', () => {
+    const cards = [...document.querySelectorAll('.select-professional')]; const professional = button.closest('.card')?.querySelector('h2')?.textContent?.trim() || 'Profissional'; const latest = getState().opportunities.at(-1);
+    if (latest) updateState((state) => { const item = state.opportunities.find((entry) => entry.id === latest.id); if (item) item.invited = [...new Set([...(item.invited || []), professional])]; });
+    button.disabled = true; button.textContent = 'Oportunidade enviada'; if (notice) { notice.hidden = false; notice.textContent = `Oportunidade enviada para ${professional}. Aguarde a aceitação.`; } cards.forEach((other) => { if (other !== button) other.disabled = true; });
+  }));
+  mapButton?.addEventListener('click', () => { if (notice) { notice.hidden = false; notice.textContent = 'A visualização no mapa será conectada à geolocalização real na próxima camada técnica.'; } });
 }
 
 function setupProfessional() {
   if (document.body.dataset.role !== 'profissional') return;
-  const profile = getProfile();
-  const name = profile?.nome || 'Profissional';
-  const state = getState();
-  const opportunities = document.querySelector('#professionalOpportunities');
-  const appointments = document.querySelector('#professionalAppointments');
-  const total = document.querySelector('#professionalFinanceTotal');
+  const profile = getProfile(); const name = profile?.nome || 'Profissional'; const opportunities = document.querySelector('#professionalOpportunities'); const appointments = document.querySelector('#professionalAppointments'); const total = document.querySelector('#professionalFinanceTotal'); const detailTotal = document.querySelector('#professionalFinanceTotalDetail'); const todayCount = document.querySelector('#professionalTodayCount'); const opportunityCount = document.querySelector('#professionalOpportunityCount');
   if (!opportunities) return;
-
   const render = () => {
-    const open = getState().opportunities.filter((item) => item.status === 'aberta');
-    opportunities.innerHTML = open.length ? open.map((item) => `
-      <article class="card opportunity-card">
-        <div><span class="eyebrow">NOVA OPORTUNIDADE</span><h3>${escapeHtml(item.service)}</h3><p>${escapeHtml(item.specialty)} · ${escapeHtml(item.date)} · ${escapeHtml(item.time)}</p><p>${escapeHtml(item.radius)} · R$ ${escapeHtml(item.value)}</p></div>
-        <button class="primary compact" type="button" data-accept-opportunity="${item.id}">Aceitar</button>
-      </article>`).join('') : '<div class="notice">Nenhuma oportunidade disponível no momento.</div>';
-
-    const mine = getState().appointments.filter((item) => item.professional === name || item.professional === 'Profissional');
+    const state = getState(); const open = state.opportunities.filter((item) => item.status === 'aberta');
+    if (opportunityCount) opportunityCount.textContent = String(open.length);
+    opportunities.innerHTML = open.length ? open.map((item) => `<article class="card opportunity-card"><div><span class="eyebrow">NOVA OPORTUNIDADE</span><h3>${escapeHtml(item.service)}</h3><p>${escapeHtml(item.specialty)} · ${escapeHtml(item.date)} · ${escapeHtml(item.time)}</p><p>${escapeHtml(item.radius)} · ${formatCurrency(String(item.value || '').replace(',', '.'))}</p></div><button class="primary compact" type="button" data-accept-opportunity="${item.id}">Aceitar</button></article>`).join('') : '<div class="notice">Nenhuma oportunidade disponível no momento.</div>';
+    const mine = state.appointments.filter((item) => item.professional === name || item.professional === 'Profissional');
+    if (todayCount) todayCount.textContent = String(mine.filter((item) => item.date === localDateKey()).length);
     appointments.innerHTML = mine.length ? mine.map((item) => `<tr><td>${escapeHtml(item.time)}</td><td>${escapeHtml(item.salao || 'Salão')}</td><td>${escapeHtml(item.client)}</td><td>${escapeHtml(item.service)}</td><td><span class="status">${escapeHtml(item.status || 'Agendado')}</span></td></tr>`).join('') : '<tr><td colspan="5">Nenhum agendamento confirmado.</td></tr>';
-    const amount = mine.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
-    if (total) total.textContent = amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
+    const amount = mine.reduce((sum, item) => sum + (Number(item.value) || 0), 0); if (total) total.textContent = formatCurrency(amount); if (detailTotal) detailTotal.textContent = formatCurrency(amount);
     opportunities.querySelectorAll('[data-accept-opportunity]').forEach((button) => button.addEventListener('click', () => acceptOpportunity(button.dataset.acceptOpportunity)));
   };
-
-  function acceptOpportunity(id) {
-    updateState((next) => {
-      const opportunity = next.opportunities.find((item) => item.id === id);
-      if (!opportunity || opportunity.status !== 'aberta') return;
-      opportunity.status = 'aceita';
-      opportunity.acceptedBy = name;
-      next.appointments.push({
-        id: makeId('apt'), date: opportunity.date, time: opportunity.time, professional: name,
-        salao: 'Salão BeautyMove', client: opportunity.client || 'Cliente', service: opportunity.service,
-        value: Number(String(opportunity.value || '').replace(',', '.')) || 0, status: 'confirmado', source: 'sos'
-      });
-      next.transactions.push({ id: makeId('txn'), appointmentId: next.appointments.at(-1).id, type: 'receita', value: Number(String(opportunity.value || '').replace(',', '.')) || 0, status: 'previsto' });
-    });
-    render();
-  }
+  function acceptOpportunity(id) { updateState((next) => { const opportunity = next.opportunities.find((item) => item.id === id); if (!opportunity || opportunity.status !== 'aberta') return; opportunity.status = 'aceita'; opportunity.acceptedBy = name; const appointment = { id: makeId('apt'), date: opportunity.date, time: opportunity.time, professional: name, salao: 'Salão BeautyMove', client: opportunity.client || 'Cliente', service: opportunity.service, value: Number(String(opportunity.value || '').replace(',', '.')) || 0, status: 'confirmado', source: 'sos' }; next.appointments.push(appointment); next.transactions.push({ id: makeId('txn'), appointmentId: appointment.id, type: 'receita', value: appointment.value, status: 'previsto' }); }); render(); }
   render();
 }
 
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+function setupClient() {
+  if (document.body.dataset.role !== 'cliente') return;
+  const state = getState(); const profile = getProfile(); const searchForm = document.querySelector('#clientSearchForm'); const results = document.querySelector('#clientResults'); const appointments = document.querySelector('#clientAppointments'); const upcomingCount = document.querySelector('#clientUpcomingCount'); const historyCount = document.querySelector('#clientHistoryCount'); const favoriteCount = document.querySelector('#clientFavoriteCount'); const modal = document.querySelector('#clientBookingModal'); const bookingForm = document.querySelector('#clientBookingForm'); const bookingProfessional = document.querySelector('#clientBookingProfessional');
+  const professionals = [
+    { name: 'Mariana', specialty: 'Cabelos', service: 'Corte', rating: 4.89, distance: 3.2, value: 80, salon: 'Studio BeautyMove' },
+    { name: 'Fernanda', specialty: 'Cabelos', service: 'Coloração', rating: 4.78, distance: 5.7, value: 150, salon: 'Espaço Bella' },
+    { name: 'Juliana', specialty: 'Mãos e Pés', service: 'Manicure', rating: 4.72, distance: 8.1, value: 55, salon: 'Ateliê da Beleza' },
+    { name: 'Carla', specialty: 'Estética', service: 'Limpeza de pele', rating: 4.91, distance: 6.4, value: 120, salon: 'Studio Carla' }
+  ];
+  let selectedProfessional = null;
+  const openModal = () => { modal?.classList.add('is-open'); modal?.setAttribute('aria-hidden', 'false'); document.querySelector('#bookingDate')?.focus(); };
+  const closeModal = () => { modal?.classList.remove('is-open'); modal?.setAttribute('aria-hidden', 'true'); };
+  document.querySelectorAll('[data-close-client-modal]').forEach((button) => button.addEventListener('click', closeModal));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+  function renderResults(list = professionals) {
+    if (!results) return;
+    results.innerHTML = list.length ? list.map((item) => `<article class="card client-result"><div class="result-top"><div><div class="eyebrow">${escapeHtml(item.specialty)}</div><h2>${escapeHtml(item.name)}</h2></div><strong class="rating">${item.rating.toFixed(2)} ★★★★★</strong></div><p>${escapeHtml(item.service)} · ${escapeHtml(item.salon)}</p><p>${item.distance.toFixed(1)} km · ${formatCurrency(item.value)}</p><button class="primary compact" type="button" data-book-professional="${escapeHtml(item.name)}">Agendar</button></article>`).join('') : '<div class="notice">Nenhum profissional encontrado com esses filtros.</div>';
+    results.querySelectorAll('[data-book-professional]').forEach((button) => button.addEventListener('click', () => { selectedProfessional = professionals.find((item) => item.name === button.dataset.bookProfessional) || null; if (!selectedProfessional) return; document.querySelector('#bookingProfessional').value = selectedProfessional.name; document.querySelector('#bookingService').value = selectedProfessional.service; document.querySelector('#bookingValue').value = String(selectedProfessional.value); if (bookingProfessional) bookingProfessional.textContent = `${selectedProfessional.name} · ${selectedProfessional.service} · ${selectedProfessional.salon} · ${formatCurrency(selectedProfessional.value)}`; openModal(); }));
+  }
+  function renderAppointments() {
+    const current = getState().appointments; const clientName = profile?.nome || 'Cliente'; const mine = current.filter((item) => item.client === clientName || item.client === 'Cliente'); const today = localDateKey(); const upcoming = mine.filter((item) => item.date >= today && item.status !== 'cancelado');
+    if (upcomingCount) upcomingCount.textContent = String(upcoming.length); if (historyCount) historyCount.textContent = String(mine.filter((item) => item.status === 'concluido').length); if (favoriteCount) favoriteCount.textContent = '0';
+    if (appointments) appointments.innerHTML = mine.length ? mine.map((item) => `<tr><td>${escapeHtml(item.date)}</td><td>${escapeHtml(item.time)}</td><td>${escapeHtml(item.professional)}</td><td>${escapeHtml(item.service)}</td><td>${formatCurrency(item.value)}</td><td><span class="status">${escapeHtml(item.status || 'Agendado')}</span></td></tr>`).join('') : '<tr><td colspan="6">Nenhum agendamento.</td></tr>';
+  }
+  searchForm?.addEventListener('submit', (event) => { event.preventDefault(); const data = Object.fromEntries(new FormData(searchForm).entries()); const specialty = data.specialty; const service = String(data.service || '').trim().toLowerCase(); const filtered = professionals.filter((item) => (!specialty || item.specialty === specialty) && (!service || item.service.toLowerCase().includes(service) || item.specialty.toLowerCase().includes(service))); renderResults(filtered); });
+  bookingForm?.addEventListener('submit', (event) => { event.preventDefault(); if (!selectedProfessional) return; const data = Object.fromEntries(new FormData(bookingForm).entries()); updateState((next) => next.appointments.push({ id: makeId('apt'), date: data.date, time: data.time, professional: data.professional, client: profile?.nome || 'Cliente', service: data.service, value: Number(data.value) || 0, status: 'solicitado', notes: data.notes || '', salao: selectedProfessional.salon, source: 'cliente' })); closeModal(); bookingForm.reset(); renderAppointments(); });
+  renderResults(); renderAppointments();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  bindRoleButtons();
-  setupRegistration();
-  setupDashboard();
-  setupSalonAgenda();
-  setupSos();
-  setupProfessional();
-});
+document.addEventListener('DOMContentLoaded', () => { bindRoleButtons(); setupRegistration(); setupDashboard(); setupSalonAgenda(); setupSos(); setupProfessional(); setupClient(); });

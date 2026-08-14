@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function sameUser(uid) { return signedIn() && request.auth.uid == uid; }
+    function salonMember(salonId) {
+      return signedIn() && get(/databases/$(database)/documents/salons/$(salonId)).data.ownerId == request.auth.uid;
+    }
+    function professionalMember(professionalId) {
+      return signedIn() && get(/databases/$(database)/documents/professionals/$(professionalId)).data.ownerId == request.auth.uid;
+    }
+
+    match /users/{uid} {
+      allow create, read, update: if sameUser(uid);
+      allow delete: if sameUser(uid);
+    }
+
+    match /salons/{salonId} {
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow read, update, delete: if salonMember(salonId);
+    }
+
+    match /professionals/{professionalId} {
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow read, update, delete: if professionalMember(professionalId);
+    }
+
+    match /clients/{clientId} {
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow read, update, delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /opportunities/{opportunityId} {
+      allow create: if signedIn() && request.resource.data.salonOwnerId == request.auth.uid;
+      allow read: if signedIn() && (resource.data.salonOwnerId == request.auth.uid || resource.data.professionalOwnerId == request.auth.uid);
+      allow update: if signedIn() && (resource.data.salonOwnerId == request.auth.uid || resource.data.professionalOwnerId == request.auth.uid);
+      allow delete: if signedIn() && resource.data.salonOwnerId == request.auth.uid;
+    }
+
+    match /appointments/{appointmentId} {
+      allow create: if signedIn() && (request.resource.data.salonOwnerId == request.auth.uid || request.resource.data.professionalOwnerId == request.auth.uid || request.resource.data.clientOwnerId == request.auth.uid);
+      allow read, update: if signedIn() && (resource.data.salonOwnerId == request.auth.uid || resource.data.professionalOwnerId == request.auth.uid || resource.data.clientOwnerId == request.auth.uid);
+      allow delete: if signedIn() && (resource.data.salonOwnerId == request.auth.uid || resource.data.clientOwnerId == request.auth.uid);
+    }
+
+    match /transactions/{transactionId} {
+      allow create: if signedIn() && request.resource.data.professionalOwnerId == request.auth.uid;
+      allow read, update: if signedIn() && resource.data.professionalOwnerId == request.auth.uid;
+      allow delete: if false;
+    }
+  }
+}

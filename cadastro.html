@@ -3,465 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Cadastro | BeautyMove</title>
-
-  <style>
-    :root {
-      --purple: #6A00FF;
-      --purple-light: #F2EBFF;
-      --dark: #111118;
-      --gray: #686875;
-      --line: #E8E6EE;
-      --background: #FAFAFC;
-      --white: #FFFFFF;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Inter, Arial, Helvetica, sans-serif;
-      background: var(--background);
-      color: var(--dark);
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .page {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* =========================
-       HEADER
-       ========================= */
-
-    header {
-      height: 76px;
-      background: var(--white);
-      border-bottom: 1px solid var(--line);
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      padding: 0 6%;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      text-decoration: none;
-      color: var(--dark);
-    }
-
-    .brand-symbol {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      background: var(--purple);
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      color: var(--white);
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .brand-name {
-      font-size: 21px;
-      font-weight: 750;
-      letter-spacing: -0.5px;
-    }
-
-    .brand-name span {
-      color: var(--purple);
-    }
-
-    .header-login {
-      color: var(--gray);
-      font-size: 14px;
-    }
-
-    .header-login button {
-      border: 0;
-      background: none;
-      color: var(--purple);
-      font-weight: 700;
-      margin-left: 5px;
-      padding: 0;
-    }
-
-    /* =========================
-       MAIN
-       ========================= */
-
-    main {
-      flex: 1;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      padding: 55px 20px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 1080px;
-    }
-
-    .intro {
-      text-align: center;
-      margin-bottom: 36px;
-    }
-
-    .intro h1 {
-      margin: 0 0 10px;
-
-      font-size: 34px;
-      line-height: 1.15;
-      letter-spacing: -1px;
-    }
-
-    .intro p {
-      margin: 0;
-
-      color: var(--gray);
-      font-size: 16px;
-    }
-
-    /* =========================
-       CARDS
-       ========================= */
-
-    .roles {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-    }
-
-    .role-card {
-      background: var(--white);
-
-      border: 1px solid var(--line);
-      border-radius: 18px;
-
-      padding: 32px 28px;
-
-      min-height: 300px;
-
-      display: flex;
-      flex-direction: column;
-
-      transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-    }
-
-    .role-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--purple);
-      box-shadow: 0 12px 30px rgba(106, 0, 255, 0.08);
-    }
-
-    .role-icon {
-      width: 54px;
-      height: 54px;
-
-      border-radius: 14px;
-      background: var(--purple-light);
-
-      color: var(--purple);
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      font-size: 24px;
-      font-weight: 800;
-
-      margin-bottom: 22px;
-    }
-
-    .role-card h2 {
-      margin: 0 0 10px;
-
-      font-size: 22px;
-      letter-spacing: -0.4px;
-    }
-
-    .role-card p {
-      margin: 0;
-
-      color: var(--gray);
-      font-size: 14px;
-      line-height: 1.55;
-
-      flex: 1;
-    }
-
-    .role-button {
-      width: 100%;
-
-      margin-top: 25px;
-      padding: 13px 18px;
-
-      border: 0;
-      border-radius: 10px;
-
-      background: var(--purple);
-      color: var(--white);
-
-      font-size: 14px;
-      font-weight: 700;
-
-      transition: background 0.2s ease;
-    }
-
-    .role-button:hover {
-      background: #5700D6;
-    }
-
-    /* =========================
-       FOOTER
-       ========================= */
-
-    footer {
-      padding: 22px;
-      text-align: center;
-
-      color: var(--gray);
-      font-size: 13px;
-
-      border-top: 1px solid var(--line);
-      background: var(--white);
-    }
-
-    /* =========================
-       RESPONSIVO
-       ========================= */
-
-    @media (max-width: 850px) {
-
-      .roles {
-        grid-template-columns: 1fr;
-      }
-
-      .role-card {
-        min-height: auto;
-      }
-
-      header {
-        padding: 0 25px;
-      }
-
-      .header-login {
-        display: none;
-      }
-
-      .intro h1 {
-        font-size: 29px;
-      }
-    }
-
-    @media (max-width: 500px) {
-
-      main {
-        padding: 40px 16px;
-      }
-
-      .intro {
-        margin-bottom: 28px;
-      }
-
-      .intro h1 {
-        font-size: 26px;
-      }
-
-      .intro p {
-        font-size: 14px;
-      }
-
-      .role-card {
-        padding: 25px 22px;
-      }
-    }
-  </style>
+  <title>Cadastro — BeautyMove</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-
 <body>
-
   <div class="page">
-
-    <!-- HEADER -->
-    <header>
-
-      <a href="index.html" class="brand">
-        <div class="brand-symbol">B</div>
-
-        <div class="brand-name">
-          Beauty<span>Move</span>
-        </div>
-      </a>
-
-      <div class="header-login">
-        Já possui uma conta?
-        <button onclick="voltarParaLogin()">
-          Entrar
-        </button>
-      </div>
-
+    <header class="header">
+      <a href="index.html"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
+      <a class="header-link" href="index.html">Voltar</a>
     </header>
 
-
-    <!-- MAIN -->
     <main>
+      <div class="container form-wrap">
+        <div class="card form-card">
+          <div class="form-head">
+            <h1 id="registrationTitle">Cadastro BeautyMove</h1>
+            <p id="registrationDescription">Preencha os dados básicos para continuar.</p>
+          </div>
 
-      <div class="container">
+          <div class="notice">Esta primeira etapa cria apenas o perfil local do MVP. A persistência em conta real será conectada ao backend na próxima camada.</div>
 
-        <div class="intro">
+          <form id="registrationForm">
+            <input type="hidden" id="role" name="role">
+            <div class="form-grid">
+              <div class="field">
+                <label for="nome">Nome</label>
+                <input id="nome" name="nome" type="text" required placeholder="Seu nome">
+              </div>
+              <div class="field">
+                <label for="telefone">Telefone / WhatsApp</label>
+                <input id="telefone" name="telefone" type="tel" required placeholder="(00) 00000-0000">
+              </div>
+              <div class="field full">
+                <label for="email">E-mail</label>
+                <input id="email" name="email" type="email" required placeholder="seuemail@exemplo.com">
+              </div>
+              <div class="field full">
+                <label for="nomeSalao">Nome do salão (quando aplicável)</label>
+                <input id="nomeSalao" name="nomeSalao" type="text" placeholder="Nome do estabelecimento">
+              </div>
+            </div>
 
-          <h1>
-            Como você quer usar o BeautyMove?
-          </h1>
-
-          <p>
-            Escolha seu perfil para começar seu cadastro.
-          </p>
-
+            <div class="form-actions">
+              <a class="secondary" href="index.html">Cancelar</a>
+              <button class="primary" type="submit">Continuar</button>
+            </div>
+          </form>
         </div>
-
-
-        <div class="roles">
-
-          <!-- SALÃO -->
-          <div class="role-card">
-
-            <div class="role-icon">
-              S
-            </div>
-
-            <h2>
-              Salão
-            </h2>
-
-            <p>
-              Encontre profissionais disponíveis para atender
-              às necessidades do seu salão.
-            </p>
-
-            <button
-              class="role-button"
-              onclick="selectRole('Salão')"
-            >
-              Cadastrar como Salão
-            </button>
-
-          </div>
-
-
-          <!-- PROFISSIONAL -->
-          <div class="role-card">
-
-            <div class="role-icon">
-              P
-            </div>
-
-            <h2>
-              Profissional
-            </h2>
-
-            <p>
-              Encontre oportunidades de trabalho e conecte-se
-              a salões que precisam das suas habilidades.
-            </p>
-
-            <button
-              class="role-button"
-              onclick="selectRole('Profissional')"
-            >
-              Cadastrar como Profissional
-            </button>
-
-          </div>
-
-
-          <!-- CLIENTE -->
-          <div class="role-card">
-
-            <div class="role-icon">
-              C
-            </div>
-
-            <h2>
-              Cliente
-            </h2>
-
-            <p>
-              Encontre profissionais e serviços de beleza
-              de forma simples e conveniente.
-            </p>
-
-            <button
-              class="role-button"
-              onclick="selectRole('Cliente')"
-            >
-              Cadastrar como Cliente
-            </button>
-
-          </div>
-
-        </div>
-
       </div>
-
     </main>
 
-
-    <!-- FOOTER -->
-    <footer>
-      BeautyMove © 2026 — Conectando talentos às oportunidades.
-    </footer>
-
+    <footer class="footer">BeautyMove © 2026</footer>
   </div>
-
-
-  <!-- JAVASCRIPT -->
-  <script>
-
-    function selectRole(role) {
-
-      window.location.href =
-        "cadastro.html?perfil=" +
-        encodeURIComponent(role);
-
-    }
-
-
-    function voltarParaLogin() {
-
-      window.location.href = "index.html";
-
-    }
-
-  </script>
-
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

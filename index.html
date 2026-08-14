@@ -3,277 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BeautyMove</title>
-
-  <style>
-    :root {
-      --purple: #6A00FF;
-      --purple-light: #F2EBFF;
-      --dark: #111118;
-      --gray: #686875;
-      --line: #E8E6EE;
-      --background: #FAFAFC;
-      --white: #FFFFFF;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Inter, Arial, Helvetica, sans-serif;
-      background: var(--background);
-      color: var(--dark);
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .page {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      height: 76px;
-      background: var(--white);
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 6%;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--dark);
-    }
-
-    .brand-symbol {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      background: var(--purple);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--white);
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .brand-name {
-      font-size: 21px;
-      font-weight: 750;
-      letter-spacing: -0.5px;
-    }
-
-    .brand-name span {
-      color: var(--purple);
-    }
-
-    .brand-logo {
-  width: 150px;
-  height: auto;
-  display: block;
-}
-    .header-login {
-      border: 0;
-      background: transparent;
-      color: var(--purple);
-      font-weight: 700;
-      padding: 8px;
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 1080px;
-      text-align: center;
-    }
-
-    .intro {
-      margin-bottom: 38px;
-    }
-
-    .intro h1 {
-      margin: 0 0 12px;
-      font-size: 40px;
-      line-height: 1.15;
-      letter-spacing: -1px;
-    }
-
-    .intro p {
-      margin: 0 auto;
-      max-width: 650px;
-      color: var(--gray);
-      font-size: 17px;
-      line-height: 1.6;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 22px;
-      max-width: 820px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 32px;
-      text-align: left;
-      transition: 0.2s ease;
-    }
-
-    .card:hover {
-      border-color: var(--purple);
-      transform: translateY(-2px);
-    }
-
-    .card h2 {
-      margin: 0 0 10px;
-      font-size: 22px;
-    }
-
-    .card p {
-      margin: 0 0 24px;
-      color: var(--gray);
-      line-height: 1.5;
-      font-size: 15px;
-    }
-
-    .card button {
-      width: 100%;
-      border: 0;
-      border-radius: 10px;
-      background: var(--purple);
-      color: var(--white);
-      padding: 13px 18px;
-      font-weight: 700;
-    }
-
-    .card button:hover {
-      opacity: 0.92;
-    }
-
-    footer {
-      padding: 22px 6%;
-      text-align: center;
-      border-top: 1px solid var(--line);
-      background: var(--white);
-      color: var(--gray);
-      font-size: 13px;
-    }
-
-    @media (max-width: 700px) {
-      header {
-        padding: 0 20px;
-      }
-
-      .cards {
-        grid-template-columns: 1fr;
-      }
-
-      .intro h1 {
-        font-size: 32px;
-      }
-
-      main {
-        padding: 40px 20px;
-      }
-    }
-  </style>
+  <title>BeautyMove — Acesso</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-
 <body>
-
   <div class="page">
-
-    <header>
-      <a class="brand" href="index.html">
-    <img src="LOGO%20BM%20FUNDO%20BRANCO.png" alt="BeautyMove" class="brand-logo">
-</a>
-
-      <button class="header-login" onclick="abrirCadastro('login')">
-        Entrar
-      </button>
+    <header class="header">
+      <a href="index.html"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
+      <a class="header-link" href="cadastro.html?perfil=salao">Entrar</a>
     </header>
 
     <main>
       <div class="container">
-
-        <section class="intro">
-          <h1>Conectando talentos às oportunidades.</h1>
-          <p>
-            Encontre profissionais, salões e novas oportunidades
-            dentro do ecossistema BeautyMove.
-          </p>
+        <section class="hero">
+          <h1>Bem-vindo ao BeautyMove</h1>
+          <p>Um ecossistema que conecta salões, profissionais e clientes de beleza.</p>
         </section>
 
-        <section class="cards">
-
+        <section class="role-grid" aria-label="Escolha seu perfil">
           <article class="card">
-            <h2>Sou Salão</h2>
-            <p>
-              Cadastre seu salão e encontre profissionais
-              disponíveis para atender suas necessidades.
-            </p>
-
-            <a href="cadastro.html?perfil=salao">
-              Cadastrar salão
-            </a>
+            <h2>Salão</h2>
+            <p>Organize seus atendimentos, encontre profissionais e acione o S.O.S. quando precisar.</p>
+            <button class="card-button" data-role="salao">Continuar como Salão</button>
           </article>
 
           <article class="card">
-            <h2>Sou Profissional</h2>
-            <p>
-              Crie seu perfil profissional e encontre
-              oportunidades compatíveis com sua disponibilidade.
-            </p>
-
-            <button onclick="abrirCadastro('profissional')">
-              Cadastrar profissional
-            </button>
+            <h2>Profissional</h2>
+            <p>Gerencie sua agenda, acompanhe suas oportunidades e tenha um financeiro simples.</p>
+            <button class="card-button" data-role="profissional">Continuar como Profissional</button>
           </article>
 
+          <article class="card">
+            <h2>Cliente</h2>
+            <p>Encontre serviços e acompanhe seus agendamentos dentro do ecossistema BeautyMove.</p>
+            <button class="card-button" data-role="cliente">Continuar como Cliente</button>
+          </article>
         </section>
-
       </div>
     </main>
 
-    <footer>
-      BeautyMove © 2026 — Conectando talentos às oportunidades.
-    </footer>
-
+    <footer class="footer">BeautyMove © 2026</footer>
   </div>
-
-  <script>
-    function abrirCadastro(perfil) {
-      window.location.href =
-        "cadastro.html?perfil=" + encodeURIComponent(perfil);
-    }
-  </script>
-
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

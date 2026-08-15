@@ -37,7 +37,20 @@
     const time = dash > -1 ? slot.slice(0, dash) : '';
     const professional = dash > -1 ? slot.slice(dash + 1) : '';
     const date = window.__beautymoveAgendaDate ? window.__beautymoveAgendaDate() : localDateKey();
-    return state().appointments.find(a => a.date === date && a.time === time && a.professional === professional) || null;
+    const existing = state().appointments.find(a => a.date === date && a.time === time && a.professional === professional);
+    if (existing) return existing;
+
+    // Os atendimentos demonstrativos visíveis na agenda também entram no fluxo operacional quando clicados.
+    if (cell.classList.contains('appointment')) {
+      const client = cell.querySelector('strong')?.textContent?.trim() || 'Cliente';
+      const service = cell.querySelector('span')?.textContent?.trim() || 'Serviço';
+      const demo = { id: `agenda-${date}-${time}-${professional}`, date, time, professional, client, service, value: 0, status: 'agendado', source: 'agenda-demo' };
+      save(next => {
+        if (!next.appointments.some(a => a.id === demo.id)) next.appointments.push(demo);
+      });
+      return demo;
+    }
+    return null;
   }
 
   function showFreeSlot(cell) {

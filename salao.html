@@ -3,127 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BeautyMove — Agenda do Salão</title>
+  <title>BeautyMove — Agenda</title>
   <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/agenda.css">
 </head>
 <body data-role="salao">
-  <div class="page">
-    <header class="header">
-      <a href="index.html" aria-label="BeautyMove início"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
-      <a class="header-link" href="index.html">Sair</a>
-    </header>
+  <div class="salon-app">
+    <aside class="salon-sidebar" aria-label="Navegação do salão">
+      <div class="salon-brand"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove"></div>
+      <nav class="salon-nav">
+        <a href="salao.html">Início</a>
+        <a href="salao.html" class="active">Agenda</a>
+        <a href="#">Clientes</a>
+        <a href="#">Profissionais</a>
+        <a href="#">Serviços</a>
+        <a href="sos.html">S.O.S. Profissionais</a>
+        <a href="#">Relatórios</a>
+        <a href="#">Financeiro</a>
+        <a href="#">Configurações</a>
+      </nav>
+      <div class="salon-sidebar-bottom"><strong>Operação do salão</strong><span>Agenda e controle dos atendimentos.</span></div>
+    </aside>
 
-    <main>
-      <div class="container dashboard salon-dashboard">
-        <div class="dashboard-head">
-          <div>
-            <div class="eyebrow">OPERAÇÃO DO SALÃO</div>
-            <h1 id="dashboardTitle">Agenda principal</h1>
-            <p id="dashboardSubtitle">Organize os atendimentos e encontre profissionais quando precisar.</p>
-          </div>
-          <div class="actions">
-            <button class="secondary" type="button" id="newAppointmentBtn">Novo agendamento</button>
-            <a class="primary compact" href="sos.html">S.O.S. Profissional</a>
-          </div>
-        </div>
+    <main class="salon-main">
+      <header class="salon-topbar">
+        <div><div class="eyebrow">OPERAÇÃO DO SALÃO</div><h1>Agenda</h1><p>Visualize e gerencie os atendimentos do dia.</p></div>
+        <div class="salon-top-actions"><button class="secondary compact" type="button" id="newAppointmentBtn">Novo agendamento</button><a class="primary compact" href="sos.html">S.O.S. Profissionais</a></div>
+      </header>
 
-        <section class="agenda-toolbar" aria-label="Controles da agenda">
-          <div class="date-control">
-            <button class="icon-button" type="button" aria-label="Dia anterior" id="prevDay">‹</button>
-            <strong id="agendaDate">Hoje</strong>
-            <button class="icon-button" type="button" aria-label="Próximo dia" id="nextDay">›</button>
-          </div>
-          <div class="agenda-tools">
-            <button class="secondary compact" type="button" id="todayBtn">Hoje</button>
-            <button class="secondary compact" type="button" id="addProfessionalBtn">Adicionar profissional</button>
-          </div>
-        </section>
-
-        <section class="agenda-shell" id="agenda" aria-label="Agenda principal">
-          <div class="agenda-scroll">
-            <table class="agenda-grid">
-              <thead>
-                <tr>
-                  <th class="time-col">Horário</th>
-                  <th>
-                    <span class="specialty-label">Cabelos</span>
-                    <span class="professional-name">Ana</span>
-                  </th>
-                  <th>
-                    <span class="specialty-label">Cabelos</span>
-                    <span class="professional-name">Bruna</span>
-                  </th>
-                  <th>
-                    <span class="specialty-label">Mãos e Pés</span>
-                    <span class="professional-name">Paula</span>
-                  </th>
-                  <th>
-                    <span class="specialty-label">Estética</span>
-                    <span class="professional-name">Carla</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="agendaBody">
-                <tr><th class="time-col">08:00</th><td data-slot="08:00-Ana">Livre</td><td data-slot="08:00-Bruna">Livre</td><td data-slot="08:00-Paula">Livre</td><td data-slot="08:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">08:30</th><td data-slot="08:30-Ana">Livre</td><td data-slot="08:30-Bruna">Livre</td><td data-slot="08:30-Paula">Livre</td><td data-slot="08:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">09:00</th><td data-slot="09:00-Ana" class="appointment"><strong>Maria</strong><span>Corte</span></td><td data-slot="09:00-Bruna">Livre</td><td data-slot="09:00-Paula" class="appointment"><strong>Maria</strong><span>Manicure</span></td><td data-slot="09:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">09:30</th><td data-slot="09:30-Ana" class="appointment"><strong>Maria</strong><span>Corte</span></td><td data-slot="09:30-Bruna">Livre</td><td data-slot="09:30-Paula">Livre</td><td data-slot="09:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">10:00</th><td data-slot="10:00-Ana">Livre</td><td data-slot="10:00-Bruna" class="appointment"><strong>João</strong><span>Coloração</span></td><td data-slot="10:00-Paula">Livre</td><td data-slot="10:00-Carla" class="appointment"><strong>Laura</strong><span>Limpeza de pele</span></td></tr>
-                <tr><th class="time-col">10:30</th><td data-slot="10:30-Ana">Livre</td><td data-slot="10:30-Bruna" class="appointment"><strong>João</strong><span>Coloração</span></td><td data-slot="10:30-Paula">Livre</td><td data-slot="10:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">11:00</th><td data-slot="11:00-Ana">Livre</td><td data-slot="11:00-Bruna">Livre</td><td data-slot="11:00-Paula" class="appointment"><strong>Rita</strong><span>Pedicure</span></td><td data-slot="11:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">11:30</th><td data-slot="11:30-Ana">Livre</td><td data-slot="11:30-Bruna">Livre</td><td data-slot="11:30-Paula" class="appointment"><strong>Rita</strong><span>Pedicure</span></td><td data-slot="11:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">12:00</th><td data-slot="12:00-Ana">Livre</td><td data-slot="12:00-Bruna">Livre</td><td data-slot="12:00-Paula">Livre</td><td data-slot="12:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">12:30</th><td data-slot="12:30-Ana">Livre</td><td data-slot="12:30-Bruna">Livre</td><td data-slot="12:30-Paula">Livre</td><td data-slot="12:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">13:00</th><td data-slot="13:00-Ana">Livre</td><td data-slot="13:00-Bruna">Livre</td><td data-slot="13:00-Paula">Livre</td><td data-slot="13:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">13:30</th><td data-slot="13:30-Ana">Livre</td><td data-slot="13:30-Bruna">Livre</td><td data-slot="13:30-Paula">Livre</td><td data-slot="13:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">14:00</th><td data-slot="14:00-Ana">Livre</td><td data-slot="14:00-Bruna">Livre</td><td data-slot="14:00-Paula">Livre</td><td data-slot="14:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">14:30</th><td data-slot="14:30-Ana">Livre</td><td data-slot="14:30-Bruna">Livre</td><td data-slot="14:30-Paula">Livre</td><td data-slot="14:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">15:00</th><td data-slot="15:00-Ana">Livre</td><td data-slot="15:00-Bruna">Livre</td><td data-slot="15:00-Paula">Livre</td><td data-slot="15:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">15:30</th><td data-slot="15:30-Ana">Livre</td><td data-slot="15:30-Bruna">Livre</td><td data-slot="15:30-Paula">Livre</td><td data-slot="15:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">16:00</th><td data-slot="16:00-Ana">Livre</td><td data-slot="16:00-Bruna">Livre</td><td data-slot="16:00-Paula">Livre</td><td data-slot="16:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">16:30</th><td data-slot="16:30-Ana">Livre</td><td data-slot="16:30-Bruna">Livre</td><td data-slot="16:30-Paula">Livre</td><td data-slot="16:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">17:00</th><td data-slot="17:00-Ana">Livre</td><td data-slot="17:00-Bruna">Livre</td><td data-slot="17:00-Paula">Livre</td><td data-slot="17:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">17:30</th><td data-slot="17:30-Ana">Livre</td><td data-slot="17:30-Bruna">Livre</td><td data-slot="17:30-Paula">Livre</td><td data-slot="17:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">18:00</th><td data-slot="18:00-Ana">Livre</td><td data-slot="18:00-Bruna">Livre</td><td data-slot="18:00-Paula">Livre</td><td data-slot="18:00-Carla">Livre</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="section operational-section">
-          <div class="section-head">
-            <div><div class="eyebrow">CONTROLE OPERACIONAL</div><h2>Ocorrências e oportunidades</h2></div>
-            <a class="secondary compact" href="sos.html">Ver profissionais</a>
-          </div>
-          <div class="operations-grid">
-            <article class="operation-card"><span class="operation-kicker">S.O.S.</span><strong>1 necessidade</strong><p>Profissional de cabelos para hoje às 15:00.</p><a href="sos.html">Buscar profissional</a></article>
-            <article class="operation-card"><span class="operation-kicker">ATENÇÃO</span><strong>1 confirmação</strong><p>Confirme a chegada do profissional das 10:00.</p><button class="text-button" type="button">Confirmar chegada</button></article>
-            <article class="operation-card"><span class="operation-kicker">AGENDA</span><strong>3 horários livres</strong><p>Há disponibilidade para novos agendamentos hoje.</p><button class="text-button" type="button" id="quickAppointmentBtn">Agendar cliente</button></article>
-          </div>
-        </section>
-      </div>
-    </main>
-
-    <div class="modal" id="appointmentModal" aria-hidden="true">
-      <div class="modal-backdrop" data-close-modal></div>
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="appointmentTitle">
-        <button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button>
-        <div class="eyebrow">NOVO AGENDAMENTO</div>
-        <h2 id="appointmentTitle">Agendar cliente</h2>
-        <p class="modal-intro">A agenda permanece limpa; os detalhes entram somente quando necessários.</p>
-        <form id="appointmentForm" class="form-grid compact-form">
-          <div class="field"><label for="clientName">Cliente</label><input id="clientName" name="clientName" required placeholder="Nome da cliente"></div>
-          <div class="field"><label for="serviceName">Serviço</label><input id="serviceName" name="serviceName" required placeholder="Ex.: Corte"></div>
-          <div class="field"><label for="appointmentTime">Horário</label><select id="appointmentTime" name="appointmentTime"><option>08:00</option><option>08:30</option><option>09:00</option><option>09:30</option><option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option><option>14:00</option><option>15:00</option><option>16:00</option></select></div>
-          <div class="field"><label for="professionalName">Profissional</label><select id="professionalName" name="professionalName"><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select></div>
-          <div class="field full"><label for="serviceValue">Valor fixo (R$)</label><input id="serviceValue" name="serviceValue" inputmode="decimal" placeholder="80,00"></div>
-          <div class="form-actions full"><button class="secondary" type="button" data-close-modal>Cancelar</button><button class="primary" type="submit">Adicionar à agenda</button></div>
-        </form>
+      <section class="agenda-toolbar-v2" aria-label="Controles da agenda">
+        <div class="agenda-date-controls"><button class="icon-button" type="button" id="prevDay" aria-label="Dia anterior">‹</button><strong id="agendaDate">Hoje</strong><button class="icon-button" type="button" id="nextDay" aria-label="Próximo dia">›</button></div>
+        <div class="agenda-toolbar-right"><button class="secondary compact" type="button" id="todayBtn">Hoje</button><input id="agendaDatePicker" type="date" aria-label="Escolher data"><select id="agendaInterval" aria-label="Intervalo da agenda"><option value="30">30 em 30 minutos</option><option value="45">45 em 45 minutos</option><option value="60">1 em 1 hora</option></select></div>
       </section>
-    </div>
 
-    <footer class="footer">BeautyMove © 2026</footer>
+      <section class="agenda-shell-v2" id="agendaGrid" aria-label="Agenda principal"></section>
+      <div class="agenda-legend" aria-label="Legenda de status"><span class="legend-item"><i class="legend-dot"></i>Livre</span><span class="legend-item"><i class="legend-dot gray"></i>Agendado</span><span class="legend-item"><i class="legend-dot green"></i>Cliente chegou / em andamento</span><span class="legend-item"><i class="legend-dot red"></i>Atendimento finalizado</span><span class="legend-item"><i class="legend-dot purple"></i>S.O.S.</span></div>
+      <div class="agenda-notice" id="agendaNotice" hidden></div>
+      <section class="agenda-metrics" aria-label="Resumo da agenda"><article class="agenda-metric"><span>Atendimentos do dia</span><strong id="metricAppointments">0</strong></article><article class="agenda-metric green-metric"><span>Em andamento</span><strong id="metricProgress">0</strong></article><article class="agenda-metric sos-metric"><span>S.O.S. ativos</span><strong id="metricSos">0</strong></article><article class="agenda-metric red-metric"><span>Cancelados</span><strong id="metricCanceled">0</strong></article></section>
+    </main>
   </div>
-  <script src="assets/js/app.js"></script>
+
+  <div class="modal" id="appointmentModal" aria-hidden="true"><div class="modal-backdrop" data-close-modal></div><section class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="appointmentTitle"><button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button><div class="eyebrow" id="appointmentMode">NOVO AGENDAMENTO</div><h2 id="appointmentTitle">Agendar cliente</h2><p class="modal-intro">O horário é definido pela célula selecionada. Serviços, duração e valor entram no atendimento.</p><form id="appointmentForm" class="modal-form-grid"><input type="hidden" id="appointmentId" name="id"><input type="hidden" id="selectedServices" name="selectedServices" value="[]"><div class="field"><label for="appointmentClient">Cliente</label><input id="appointmentClient" name="client" required placeholder="Nome da cliente"></div><div class="field"><label for="appointmentProfessional">Profissional</label><select id="appointmentProfessional" name="professional"><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select></div><div class="field"><label for="appointmentTime">Horário</label><select id="appointmentTime" name="appointmentTime"></select></div><div class="field"><label for="appointmentStatus">Status</label><select id="appointmentStatus" name="status"><option value="agendado">Agendado</option><option value="em_andamento">Em andamento</option><option value="finalizado">Finalizado</option></select></div><div class="field"><label for="appointmentDuration">Duração calculada (min)</label><input id="appointmentDuration" name="appointmentDuration" type="number" min="0" readonly></div><div class="field"><label for="appointmentValue">Valor calculado (R$)</label><input id="appointmentValue" name="appointmentValue" readonly></div><div class="field full"><label>Serviços</label><div class="service-list" id="appointmentServicePreview"><button class="secondary" type="button" id="openServicesFromAppointment">Selecionar serviços</button></div></div><div class="modal-actions full"><button class="secondary" type="button" data-close-modal>Cancelar</button><button class="primary compact" type="submit">Salvar atendimento</button></div></form></section></div>
+
+  <div class="modal" id="detailsModal" aria-hidden="true"><div class="modal-backdrop" data-close-modal></div><section class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="detailsTitle"><button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button><div class="eyebrow">ATENDIMENTO</div><h2 id="detailsTitle">Detalhes do atendimento</h2><div id="detailsContent"></div><div class="detail-actions" id="detailsActions"></div></section></div>
+
+  <div class="modal" id="servicesModal" aria-hidden="true"><div class="modal-backdrop" data-close-modal></div><section class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="servicesTitle"><button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button><div class="eyebrow">SERVIÇOS</div><h2 id="servicesTitle">Incluir ou remover serviços</h2><div class="service-list" id="serviceList"></div><div class="service-totals"><span>Duração total: <strong id="serviceDuration">0min</strong></span><span>Total: <strong id="serviceTotal">R$ 0,00</strong></span></div><div class="modal-actions"><button class="secondary" type="button" id="addServiceButton">Adicionar serviço</button><button class="primary compact" type="button" id="saveServicesButton">Salvar serviços</button></div></section></div>
+
+  <div class="modal" id="sosModal" aria-hidden="true"><div class="modal-backdrop" data-close-modal></div><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sosTitle"><button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button><div class="eyebrow">S.O.S. PROFISSIONAIS</div><h2 id="sosTitle">Solicitar profissional</h2><p class="sos-intro">A solicitação ficará registrada na coluna S.O.S. da agenda e será identificada exclusivamente em roxo.</p><form id="sosForm" class="modal-form-grid"><div class="field"><label for="sosClient">Cliente</label><input id="sosClient" name="client" required placeholder="Nome da cliente"></div><div class="field"><label for="sosService">Serviço</label><input id="sosService" name="service" required placeholder="Ex.: Corte + Escova"></div><div class="field"><label for="sosSpecialty">Especialidade</label><select id="sosSpecialty" name="specialty"><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div><div class="field"><label for="sosProfessional">Profissional selecionado</label><input id="sosProfessional" name="professional" placeholder="Deixe em branco para buscar"></div><div class="field"><label for="sosTime">Horário</label><select id="sosTime" name="time"></select></div><div class="field"><label for="sosRadius">Raio de busca</label><select id="sosRadius" name="radius"><option>5 km</option><option>10 km</option><option>20 km</option><option>Sem limite</option></select></div><div class="modal-actions full"><button class="secondary" type="button" data-close-modal>Cancelar</button><button class="primary compact" type="submit">Enviar S.O.S.</button></div></form></section></div>
+
+  <script src="assets/js/agenda.js"></script>
 </body>
 </html>

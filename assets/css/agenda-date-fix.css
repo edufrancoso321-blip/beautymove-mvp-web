@@ -9,17 +9,28 @@
   width:auto!important;
 }
 .agenda-toolbar-v2 .agenda-date-controls .agenda-calendar-control{
-  position:static!important;
+  position:relative!important;
   left:auto!important;
   top:auto!important;
   display:block!important;
   flex:0 0 auto!important;
-  z-index:auto!important;
+  z-index:20!important;
 }
 .agenda-toolbar-v2 .agenda-date-controls .calendar-button{
   position:relative!important;
-  z-index:1!important;
+  z-index:21!important;
   white-space:nowrap!important;
+}
+/* Ancoragem do seletor nativo logo abaixo do botão Calendário. */
+.agenda-toolbar-v2 .agenda-date-controls .agenda-calendar-control #agendaDatePicker{
+  position:absolute!important;
+  left:0!important;
+  top:calc(100% + 4px)!important;
+  width:123px!important;
+  height:42px!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  z-index:22!important;
 }
 .agenda-toolbar-v2 .agenda-date-controls .icon-button{
   width:42px!important;

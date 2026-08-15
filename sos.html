@@ -20,14 +20,14 @@
           <p>Cadastre uma solicitação e visualize profissionais compatíveis para decisão do salão.</p>
         </div>
         <section class="card form-card">
-          <form id="sosForm" class="form-grid">
+          <form id="sosForm" class="form-grid" action="javascript:void(0)">
             <div class="field"><label for="specialty">Especialidade</label><select id="specialty" name="specialty" required><option value="">Selecione</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div>
-            <div class="field"><label for="service">Serviço</label><input id="service" name="service" required placeholder="Ex.: Corte"></div>
+            <div class="field"><label for="service">Serviço</label><select id="service" name="service" required><option value="">Selecione o serviço</option></select></div>
             <div class="field"><label for="date">Data</label><input id="date" name="date" type="date" required></div>
             <div class="field"><label for="time">Horário</label><input id="time" name="time" type="time" required></div>
             <div class="field"><label for="duration">Duração estimada</label><select id="duration" name="duration"><option>30 minutos</option><option>45 minutos</option><option selected>60 minutos</option><option>90 minutos</option><option>120 minutos</option></select></div>
             <div class="field"><label for="radius">Raio de busca</label><select id="radius" name="radius"><option>5 km</option><option selected>10 km</option><option>20 km</option><option>30 km</option></select></div>
-            <div class="field"><label for="value">Valor fixo do serviço (R$)</label><input id="value" name="value" inputmode="decimal" placeholder="80,00" required></div>
+            <div class="field"><label for="value">Valor fixo do serviço (R$)</label><input id="value" name="value" inputmode="decimal" placeholder="80,00" required readonly></div>
             <div class="field"><label for="materials">Equipamento/material</label><select id="materials" name="materials"><option>Profissional leva o necessário</option><option>Salão fornece</option><option>A combinar</option></select></div>
             <div class="field full"><label for="notes">Observações</label><input id="notes" name="notes" placeholder="Informações importantes para o atendimento"></div>
             <div class="form-actions full"><a class="secondary" href="salao.html">Cancelar</a><button class="primary" type="submit">Buscar profissionais</button></div>

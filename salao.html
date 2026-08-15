@@ -17,6 +17,9 @@
     .operation-info>div,.finance-grid>div { border:1px solid #eee; border-radius:12px; padding:12px; display:grid; gap:4px; }
     .operation-info small,.finance-grid small { color:#777; }
     .operation-actions,.form-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .sos-subtle { border:1px solid #7438ff; background:#fff; color:#6f35e8; font-weight:700; }
+    .sos-subtle:hover { background:#f7f2ff; }
+    .sos-nav { font-size:.92rem; padding:10px 16px; border:1px solid #7438ff; background:#7438ff; color:#fff; }
     .service-catalog-section { margin-top:24px; }
     @media (max-width:700px) { .operation-info,.finance-grid { grid-template-columns:1fr; } }
   </style>
@@ -37,8 +40,8 @@
             <p id="dashboardSubtitle">Organize os atendimentos e encontre profissionais quando precisar.</p>
           </div>
           <div class="actions">
-            <button class="secondary" type="button" id="newAppointmentBtn">Novo agendamento</button>
-            <a class="primary compact" href="sos.html">S.O.S. Profissionais</a>
+            <button class="primary compact" type="button" id="newAppointmentBtn">Novo agendamento</button>
+            <a class="sos-nav compact" href="sos.html">S.O.S. Profissionais</a>
           </div>
         </div>
 
@@ -82,7 +85,7 @@
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="appointmentTitle">
         <button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button>
         <div class="eyebrow">NOVO AGENDAMENTO</div><h2 id="appointmentTitle">Agendar cliente</h2>
-        <p class="modal-intro">O serviço determina o valor. O valor registrado fica vinculado ao atendimento.</p>
+        <p class="modal-intro">Escolha a profissional e o serviço. O valor é preenchido automaticamente pelo catálogo.</p>
         <form id="appointmentForm" class="form-grid compact-form">
           <div class="field"><label for="clientName">Cliente</label><input id="clientName" name="clientName" required placeholder="Nome da cliente"></div>
           <div class="field"><label for="serviceName">Serviço</label><select id="serviceName" name="serviceName" required><option value="">Selecione o serviço</option></select></div>
@@ -96,7 +99,7 @@
 
     <div class="modal" id="appointmentDetailModal" aria-hidden="true"><div class="modal-backdrop" data-close-operation-modal></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button><div id="appointmentDetailBody"></div></section></div>
     <div class="modal" id="financeModal" aria-hidden="true"><div class="modal-backdrop" data-close-operation-modal></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button><div id="financeBody"></div></section></div>
-    <div class="modal" id="professionalModal" aria-hidden="true"><div class="modal-backdrop" data-close-operation-modal></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button><div class="eyebrow">EQUIPE</div><h2>Adicionar profissional</h2><form id="professionalForm" class="form-grid compact-form"><div class="field"><label for="professionalNewName">Nome</label><input id="professionalNewName" name="name" required></div><div class="field"><label for="professionalNewSpecialty">Especialidade</label><select id="professionalNewSpecialty" name="specialty"><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option></select></div><div class="form-actions full"><button class="secondary" type="button" data-close-operation-modal>Cancelar</button><button class="primary" type="submit">Adicionar</button></div></form></section></div>
+    <div class="modal" id="professionalModal" aria-hidden="true"><div class="modal-backdrop" data-close-operation-modal></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button><div class="eyebrow">EQUIPE</div><h2>Adicionar profissional</h2><form id="professionalForm" class="form-grid compact-form"><div class="field"><label for="professionalNewName">Nome</label><input id="professionalNewName" name="name" required></div><div class="field"><label for="professionalNewSpecialty">Especialidade</label><select id="professionalNewSpecialty" name="specialty"><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div><div class="form-actions full"><button class="secondary" type="button" data-close-operation-modal>Cancelar</button><button class="primary" type="submit">Adicionar</button></div></form></section></div>
 
     <footer class="footer">BeautyMove © 2026</footer>
   </div>
@@ -116,6 +119,6 @@
     })();
   </script>
   <script src="assets/js/auth.js?v=20260814-2"></script>
-  <script src="assets/js/agenda-operations.js?v=20260814-4"></script>
+  <script src="assets/js/agenda-operations.js?v=20260814-5"></script>
 </body>
 </html>

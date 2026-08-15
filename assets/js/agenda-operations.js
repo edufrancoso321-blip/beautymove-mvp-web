@@ -5,13 +5,28 @@
   const SERVICES_KEY = 'beautymove.mvp.services';
   const PROFESSIONALS_KEY = 'beautymove.mvp.professionals';
   const SOS_CONTEXT_KEY = 'beautymove.mvp.sosContext';
+
   const DEFAULT_SERVICES = [
-    { id:'svc-corte', name:'Corte', category:'Cabelos', value:80, status:'ativo' },
+    { id:'svc-corte-feminino', name:'Corte feminino', category:'Cabelos', value:80, status:'ativo' },
+    { id:'svc-corte-masculino', name:'Corte masculino', category:'Cabelos', value:50, status:'ativo' },
+    { id:'svc-escova', name:'Escova', category:'Cabelos', value:60, status:'ativo' },
+    { id:'svc-hidratacao', name:'Hidratação', category:'Cabelos', value:70, status:'ativo' },
     { id:'svc-coloracao', name:'Coloração', category:'Cabelos', value:150, status:'ativo' },
-    { id:'svc-manicure', name:'Manicure', category:'Mãos e Pés', value:55, status:'ativo' },
-    { id:'svc-pedicure', name:'Pedicure', category:'Mãos e Pés', value:60, status:'ativo' },
-    { id:'svc-limpeza-pele', name:'Limpeza de pele', category:'Estética', value:120, status:'ativo' }
+    { id:'svc-luzes', name:'Luzes', category:'Cabelos', value:220, status:'ativo' },
+    { id:'svc-maos', name:'Mãos', category:'Mãos e Pés', value:40, status:'ativo' },
+    { id:'svc-pes', name:'Pés', category:'Mãos e Pés', value:45, status:'ativo' },
+    { id:'svc-maos-pes', name:'Mãos e pés', category:'Mãos e Pés', value:80, status:'ativo' },
+    { id:'svc-esmaltacao', name:'Esmaltação', category:'Mãos e Pés', value:35, status:'ativo' },
+    { id:'svc-limpeza-pele', name:'Limpeza de pele', category:'Estética', value:120, status:'ativo' },
+    { id:'svc-design-facial', name:'Design facial', category:'Estética', value:70, status:'ativo' },
+    { id:'svc-virilha', name:'Virilha', category:'Depilação', value:55, status:'ativo' },
+    { id:'svc-axila', name:'Axila', category:'Depilação', value:35, status:'ativo' },
+    { id:'svc-buco', name:'Buço', category:'Depilação', value:25, status:'ativo' },
+    { id:'svc-pernas', name:'Pernas', category:'Depilação', value:70, status:'ativo' },
+    { id:'svc-design-sobrancelhas', name:'Design de sobrancelhas', category:'Sobrancelhas', value:45, status:'ativo' },
+    { id:'svc-henna', name:'Design com henna', category:'Sobrancelhas', value:60, status:'ativo' }
   ];
+
   const DEFAULT_PROFESSIONALS = [
     { name:'Ana', specialty:'Cabelos' }, { name:'Bruna', specialty:'Cabelos' },
     { name:'Paula', specialty:'Mãos e Pés' }, { name:'Carla', specialty:'Estética' }
@@ -27,8 +42,22 @@
   const dateKey = date => { const d=date||new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
   let agendaDate = new Date();
 
-  function getServices(){ const saved=read(SERVICES_KEY,null); if(Array.isArray(saved)&&saved.length)return saved; write(SERVICES_KEY,DEFAULT_SERVICES); return [...DEFAULT_SERVICES]; }
+  function getServices(){
+    const saved=read(SERVICES_KEY,null);
+    if(!Array.isArray(saved)||!saved.length){ write(SERVICES_KEY,DEFAULT_SERVICES); return [...DEFAULT_SERVICES]; }
+    const byId=new Map(saved.map(s=>[s.id,s]));
+    DEFAULT_SERVICES.forEach(service=>{ if(!byId.has(service.id)) byId.set(service.id,{...service}); });
+    const merged=[...byId.values()];
+    if(merged.length!==saved.length) write(SERVICES_KEY,merged);
+    return merged;
+  }
   function getProfessionals(){ const saved=read(PROFESSIONALS_KEY,null); return Array.isArray(saved)&&saved.length?saved:[...DEFAULT_PROFESSIONALS]; }
+  function getProfessional(name){ return getProfessionals().find(p=>p.name===name)||{}; }
+  function servicesForProfessional(name){
+    const specialty=getProfessional(name).specialty;
+    const services=getServices().filter(s=>s.status!=='inativo');
+    return specialty ? services.filter(s=>s.category===specialty) : services;
+  }
   function open(id){ const el=document.querySelector(id); if(el){el.classList.add('is-open');el.setAttribute('aria-hidden','false');} }
   function close(id){ const el=document.querySelector(id); if(el){el.classList.remove('is-open');el.setAttribute('aria-hidden','true');} }
 
@@ -38,10 +67,9 @@
     while(names.length<4) names.push(DEFAULT_PROFESSIONALS[names.length].name);
     body.innerHTML=TIMES.map(time=>`<tr><th class="time-col">${time}</th>${names.map(name=>`<td data-slot="${time}-${esc(name)}">Livre</td>`).join('')}</tr>`).join('');
     const header=document.querySelector('.agenda-grid thead tr');
-    if(header) header.innerHTML='<th class="time-col">Horário</th>'+names.map(name=>{const p=getProfessionals().find(x=>x.name===name)||{};return `<th><span class="specialty-label">${esc(p.specialty||'Beleza')}</span><span class="professional-name">${esc(name)}</span></th>`}).join('');
+    if(header) header.innerHTML='<th class="time-col">Horário</th>'+names.map(name=>{const p=getProfessional(name);return `<th><span class="specialty-label">${esc(p.specialty||'Beleza')}</span><span class="professional-name">${esc(name)}</span></th>`}).join('');
     document.querySelector('#agendaDate').textContent = dateKey(agendaDate) === dateKey(new Date()) ? 'Hoje' : agendaDate.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
-    bindCells();
-    renderAppointments();
+    bindCells(); renderAppointments();
   }
 
   function renderAppointments(){
@@ -59,19 +87,28 @@
     const sos=document.querySelector('#sosCount'); if(sos)sos.textContent=`${state.opportunities.filter(o=>o.status==='aberta').length} solicitações`;
   }
 
-  function populateServices(){
+  function renderServiceSelect(select,value,professional,selectedId){
+    if(!select)return;
+    const services=servicesForProfessional(professional);
+    select.innerHTML='<option value="">Selecione o serviço</option>'+services.map(s=>`<option value="${esc(s.id)}" ${s.id===selectedId?'selected':''}>${esc(s.name)} — ${money(s.value)}</option>`).join('');
+    if(value){ const selected=services.find(s=>s.id===selectedId); value.value=selected?Number(selected.value).toFixed(2).replace('.',','):''; }
+    select.onchange=()=>{const s=services.find(x=>x.id===select.value);if(value)value.value=s?Number(s.value).toFixed(2).replace('.',','):'';};
+  }
+
+  function populateServices(professional){
     const select=document.querySelector('#serviceName'); const value=document.querySelector('#serviceValue'); if(!select||!value)return;
-    const services=getServices().filter(s=>s.status!=='inativo');
-    select.innerHTML='<option value="">Selecione o serviço</option>'+services.map(s=>`<option value="${esc(s.id)}">${esc(s.name)} — ${money(s.value)}</option>`).join('');
-    select.onchange=()=>{const s=services.find(x=>x.id===select.value);value.value=s?Number(s.value).toFixed(2).replace('.',','):'';};
+    const prof=professional || document.querySelector('#professionalName')?.value || '';
+    renderServiceSelect(select,value,prof,'');
   }
 
   function openNew(time, professional){
-    populateServices();
+    const list=getProfessionals();
+    const prof=document.querySelector('#professionalName');
+    prof.innerHTML=list.map(p=>`<option value="${esc(p.name)}" ${p.name===professional?'selected':''}>${esc(p.name)}</option>`).join('');
+    populateServices(prof.value);
+    prof.onchange=()=>populateServices(prof.value);
     const timeField=document.querySelector('#appointmentTime');
     timeField.innerHTML=TIMES.map(t=>`<option value="${t}" ${t===time?'selected':''}>${t}</option>`).join('');
-    const prof=document.querySelector('#professionalName'); const list=getProfessionals();
-    prof.innerHTML=list.map(p=>`<option value="${esc(p.name)}" ${p.name===professional?'selected':''}>${esc(p.name)}</option>`).join('');
     document.querySelector('#clientName').value=''; document.querySelector('#serviceValue').value='';
     open('#appointmentModal'); setTimeout(()=>document.querySelector('#clientName')?.focus(),50);
   }
@@ -86,11 +123,11 @@
 
   function showFreeSlot(time, professional){
     const body=document.querySelector('#appointmentDetailBody');
-    const services=getServices().filter(s=>s.status!=='inativo');
+    const services=servicesForProfessional(professional);
     const serviceOptions='<option value="">Selecione o serviço</option>'+services.map(s=>`<option value="${esc(s.id)}">${esc(s.name)} — ${money(s.value)}</option>`).join('');
-    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">HORÁRIO SELECIONADO</span><h2>${esc(time)}</h2><p>${esc(professional)} · ${esc(agendaDate.toLocaleDateString('pt-BR'))}</p><span class="status">Horário livre</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(professional)}</strong></div><div><small>Data</small><strong>${esc(agendaDate.toLocaleDateString('pt-BR'))}</strong></div><div><small>Horário</small><strong>${esc(time)}</strong></div></div><div class="form-grid compact-form"><div class="field"><label for="slotService">Serviço</label><select id="slotService">${serviceOptions}</select></div><div class="field"><label for="slotServiceValue">Valor do serviço (R$)</label><input id="slotServiceValue" readonly aria-readonly="true" placeholder="Selecione o serviço"></div></div><div class="operation-actions"><button class="primary compact" type="button" data-slot-op="sos">S.O.S. Profissionais</button><button class="secondary compact" type="button" data-slot-op="schedule">Agendar cliente</button></div></div>`;
-    const serviceSelect=body.querySelector('#slotService');
-    const serviceValue=body.querySelector('#slotServiceValue');
+    const specialty=getProfessional(professional).specialty||'Serviços';
+    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">HORÁRIO SELECIONADO</span><h2>${esc(time)}</h2><p>${esc(professional)} · ${esc(agendaDate.toLocaleDateString('pt-BR'))}</p><span class="status">Horário livre · ${esc(specialty)}</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(professional)}</strong></div><div><small>Data</small><strong>${esc(agendaDate.toLocaleDateString('pt-BR'))}</strong></div><div><small>Horário</small><strong>${esc(time)}</strong></div></div><div class="form-grid compact-form"><div class="field"><label for="slotService">Serviço</label><select id="slotService">${serviceOptions}</select></div><div class="field"><label for="slotServiceValue">Valor do serviço (R$)</label><input id="slotServiceValue" readonly aria-readonly="true" placeholder="Selecione o serviço"></div></div><div class="operation-actions"><button class="primary compact" type="button" data-slot-op="schedule">Agendar cliente</button><button class="sos-subtle compact" type="button" data-slot-op="sos">S.O.S. Profissionais</button></div></div>`;
+    const serviceSelect=body.querySelector('#slotService'); const serviceValue=body.querySelector('#slotServiceValue');
     serviceSelect.onchange=()=>{const s=services.find(x=>x.id===serviceSelect.value);serviceValue.value=s?Number(s.value).toFixed(2).replace('.',','):'';};
     body.querySelector('[data-slot-op="sos"]').onclick=()=>{
       const service=services.find(s=>s.id===serviceSelect.value);
@@ -104,7 +141,7 @@
   function showDetail(a){
     const labels={agendado:'Agendado',confirmado:'Confirmado',em_atendimento:'Em atendimento',concluido:'Finalizado',cancelado:'Cancelado'};
     let actions='';
-    if(['agendado','confirmado'].includes(a.status)) actions='<button class="secondary compact" data-op="cancel">Cancelar</button><button class="primary compact" data-op="sos">S.O.S. Profissionais</button><button class="primary compact" data-op="start">Iniciar atendimento</button>';
+    if(['agendado','confirmado'].includes(a.status)) actions='<button class="primary compact" data-op="start">Iniciar atendimento</button><button class="secondary compact" data-op="cancel">Cancelar</button><button class="sos-subtle compact" data-op="sos">S.O.S. Profissionais</button>';
     else if(a.status==='em_atendimento') actions='<button class="primary compact" data-op="finish">Finalizar atendimento</button>';
     else if(a.status==='concluido') actions='<button class="primary compact" data-op="finance">Abrir financeiro</button>';
     const body=document.querySelector('#appointmentDetailBody');
@@ -129,7 +166,8 @@
   }
 
   function bindForm(){
-    const form=document.querySelector('#appointmentForm'); if(form)form.onsubmit=e=>{e.preventDefault();e.stopPropagation();const data=Object.fromEntries(new FormData(form).entries());const service=getServices().find(s=>s.id===data.serviceName);if(!service)return;const state=getState();state.appointments.push({id:makeId('apt'),date:dateKey(agendaDate),time:data.appointmentTime,professional:data.professionalName,client:data.clientName.trim(),service:service.name,serviceId:service.id,value:Number(service.value),status:'agendado',source:'salao'});saveState(state);close('#appointmentModal');renderAppointments();};
+    const form=document.querySelector('#appointmentForm');
+    if(form)form.onsubmit=e=>{e.preventDefault();e.stopPropagation();const data=Object.fromEntries(new FormData(form).entries());const service=getServices().find(s=>s.id===data.serviceName);const professional=getProfessional(data.professionalName);if(!service||service.category!==professional.specialty)return;const state=getState();state.appointments.push({id:makeId('apt'),date:dateKey(agendaDate),time:data.appointmentTime,professional:data.professionalName,client:data.clientName.trim(),service:service.name,serviceId:service.id,value:Number(service.value),status:'agendado',source:'salao'});saveState(state);close('#appointmentModal');renderAppointments();};
   }
 
   function bindProfessional(){
@@ -147,5 +185,5 @@
     document.querySelectorAll('[data-close-operation-modal]').forEach(b=>b.onclick=()=>{close('#appointmentDetailModal');close('#financeModal');close('#professionalModal');});
   }
 
-  populateServices(); bindNavigation(); bindForm(); bindProfessional(); renderGrid();
+  getServices(); bindNavigation(); bindForm(); bindProfessional(); renderGrid();
 })();

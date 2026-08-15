@@ -106,7 +106,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"></script>
   <script src="assets/js/firebase-client.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=20260814-2"></script>
   <script>
     (function(){
       const body=document.querySelector('#agendaBody');
@@ -115,7 +115,7 @@
       body.innerHTML=times.map(time=>`<tr><th class="time-col">${time}</th>${professionals.map(name=>`<td data-slot="${time}-${name}">Livre</td>`).join('')}</tr>`).join('');
     })();
   </script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/agenda-operations.js"></script>
+  <script src="assets/js/auth.js?v=20260814-2"></script>
+  <script src="assets/js/agenda-operations.js?v=20260814-2"></script>
 </body>
 </html>

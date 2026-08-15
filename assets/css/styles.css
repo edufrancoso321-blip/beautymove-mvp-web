@@ -17,7 +17,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
 .page { min-height: 100vh; display: flex; flex-direction: column; }
 .header { height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 6%; background: var(--surface); border-bottom: 1px solid var(--line); }
-.logo { width: 150px; height: auto; display: block; }
+.logo { width: 150px; height: auto; display: block; mix-blend-mode: multiply; }
 .header-link { color: var(--purple); text-decoration: none; font-weight: 700; }
 main { flex: 1; }
 .container { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }

@@ -94,6 +94,45 @@
     return session;
   }
 
+  async function restoreFirebaseSession() {
+    const backend = window.BeautyMoveFirebase;
+    if (!backend?.enabled || !backend.auth) return null;
+
+    const currentUser = await new Promise((resolve) => {
+      let settled = false;
+      let unsubscribe = null;
+      const finish = (user) => {
+        if (settled) return;
+        settled = true;
+        if (unsubscribe) unsubscribe();
+        resolve(user || null);
+      };
+      unsubscribe = backend.auth.onAuthStateChanged(finish);
+      setTimeout(() => finish(backend.auth.currentUser || null), 4000);
+    });
+
+    if (!currentUser) return null;
+
+    try {
+      const snapshot = await backend.db.collection('users').doc(currentUser.uid).get();
+      if (!snapshot.exists) return null;
+      const data = snapshot.data() || {};
+      const session = {
+        uid: currentUser.uid,
+        role: data.role || '',
+        name: data.nome || data.nomeSalao || '',
+        email: currentUser.email || data.email || ''
+      };
+      if (!session.role) return null;
+      setSession(session);
+      try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ ...data, uid: currentUser.uid })); } catch (storageError) { console.warn('[BeautyMove] local profile cache failed:', storageError); }
+      return session;
+    } catch (error) {
+      console.error('[BeautyMove] session restore failed:', error);
+      return null;
+    }
+  }
+
   async function saveUserProfile(profile) {
     const backend = window.BeautyMoveFirebase;
     const session = getSession();
@@ -170,14 +209,20 @@
     });
   }
 
-  function protectPage() {
+  async function protectPage() {
     const role = document.body?.dataset?.role;
     if (!role) return;
-    const session = getSession();
+
+    let session = getSession();
+    if (!session || session.role !== role) {
+      session = await restoreFirebaseSession();
+    }
+
     if (!session || session.role !== role) {
       window.location.replace(`login.html?perfil=${role}`);
       return;
     }
+
     document.querySelectorAll('[data-signout]').forEach((button) => button.addEventListener('click', async (event) => {
       event.preventDefault();
       try { if (window.BeautyMoveFirebase?.enabled) await window.BeautyMoveFirebase.auth.signOut(); } catch (error) { console.error(error); }
@@ -191,6 +236,7 @@
     current: getSession,
     register,
     signIn,
+    restoreFirebaseSession,
     saveUserProfile,
     signInLocal: (profile) => { const session = { uid: profile.uid || `local-${Date.now()}`, role: profile.role, name: profileName(profile), email: profile.email || '' }; setSession(session); return session; },
     signOut: async () => { if (window.BeautyMoveFirebase?.enabled) await window.BeautyMoveFirebase.auth.signOut(); clearSession(); },

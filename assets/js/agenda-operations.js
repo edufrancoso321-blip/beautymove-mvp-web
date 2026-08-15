@@ -58,6 +58,11 @@
     const services=getServices().filter(s=>s.status!=='inativo');
     return specialty ? services.filter(s=>s.category===specialty) : services;
   }
+  function appointmentServices(a){
+    if(Array.isArray(a.services)&&a.services.length) return a.services;
+    if(a.serviceId){ const s=getServices().find(x=>x.id===a.serviceId); if(s)return [{id:s.id,name:s.name,value:Number(a.value||s.value),category:s.category}]; }
+    return a.service ? [{id:a.serviceId||'',name:a.service,value:Number(a.value||0),category:''}] : [];
+  }
   function open(id){ const el=document.querySelector(id); if(el){el.classList.add('is-open');el.setAttribute('aria-hidden','false');} }
   function close(id){ const el=document.querySelector(id); if(el){el.classList.remove('is-open');el.setAttribute('aria-hidden','true');} }
 
@@ -78,7 +83,11 @@
       cell.classList.remove('appointment'); cell.innerHTML='Livre';
       const [time,...rest]=cell.dataset.slot.split('-'); const professional=rest.join('-');
       const appointment=state.appointments.find(a=>a.date===current&&a.time===time&&a.professional===professional&&a.status!=='cancelado');
-      if(appointment){cell.classList.add('appointment');cell.innerHTML=`<strong>${esc(appointment.client)}</strong><span>${esc(appointment.service)}</span>`;}
+      if(appointment){
+        const services=appointmentServices(appointment);
+        cell.classList.add('appointment');
+        cell.innerHTML=`<strong>${esc(appointment.client)}</strong><span>${esc(services.map(s=>s.name).join(' + '))}</span>`;
+      }
     });
     const today=state.appointments.filter(a=>a.date===current&&a.status!=='cancelado');
     const free=document.querySelector('#freeCount'); const pending=document.querySelector('#pendingCount');
@@ -87,26 +96,54 @@
     const sos=document.querySelector('#sosCount'); if(sos)sos.textContent=`${state.opportunities.filter(o=>o.status==='aberta').length} solicitações`;
   }
 
-  function renderServiceSelect(select,value,professional,selectedId){
-    if(!select)return;
+  function renderServicePicker(container, professional, initialIds=[], onChange){
+    if(!container)return;
     const services=servicesForProfessional(professional);
-    select.innerHTML='<option value="">Selecione o serviço</option>'+services.map(s=>`<option value="${esc(s.id)}" ${s.id===selectedId?'selected':''}>${esc(s.name)} — ${money(s.value)}</option>`).join('');
-    if(value){ const selected=services.find(s=>s.id===selectedId); value.value=selected?Number(selected.value).toFixed(2).replace('.',','):''; }
-    select.onchange=()=>{const s=services.find(x=>x.id===select.value);if(value)value.value=s?Number(s.value).toFixed(2).replace('.',','):'';};
+    let ids=[...new Set(initialIds)].filter(id=>services.some(s=>s.id===id));
+    const selected=()=>services.filter(s=>ids.includes(s.id));
+    const total=()=>selected().reduce((sum,s)=>sum+Number(s.value||0),0);
+    const label=()=>{
+      const items=selected();
+      if(!items.length)return 'Selecione os serviços';
+      if(items.length===1)return items[0].name;
+      return `${items.length} serviços selecionados`;
+    };
+    container.innerHTML=`<button type="button" class="service-picker-trigger" aria-expanded="false"><span class="service-picker-label">${esc(label())}</span><span class="service-picker-arrow">⌄</span></button><div class="service-picker-menu" hidden>${services.map(s=>`<label class="service-option"><input type="checkbox" value="${esc(s.id)}" ${ids.includes(s.id)?'checked':''}><span>${esc(s.name)}</span><strong>${money(s.value)}</strong></label>`).join('')}</div>`;
+    const trigger=container.querySelector('.service-picker-trigger');
+    const menu=container.querySelector('.service-picker-menu');
+    const sync=()=>{
+      container.querySelector('.service-picker-label').textContent=label();
+      const value=document.querySelector(container.dataset.valueTarget);
+      if(value)value.value=total().toFixed(2).replace('.',',');
+      if(onChange)onChange(ids,selected(),total());
+    };
+    trigger.onclick=()=>{
+      const willOpen=menu.hidden;
+      document.querySelectorAll('.service-picker-menu').forEach(m=>m.hidden=true);
+      document.querySelectorAll('.service-picker-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
+      menu.hidden=!willOpen;
+      trigger.setAttribute('aria-expanded',String(willOpen));
+    };
+    menu.querySelectorAll('input[type="checkbox"]').forEach(input=>input.onchange=()=>{
+      if(input.checked) ids.push(input.value); else ids=ids.filter(id=>id!==input.value);
+      sync();
+    });
+    container._getSelected=()=>({ids:[...ids],services:selected(),total:total()});
+    sync();
   }
 
-  function populateServices(professional){
-    const select=document.querySelector('#serviceName'); const value=document.querySelector('#serviceValue'); if(!select||!value)return;
-    const prof=professional || document.querySelector('#professionalName')?.value || '';
-    renderServiceSelect(select,value,prof,'');
+  function populateServices(professional, initialIds=[]){
+    const picker=document.querySelector('#servicePicker'); const value=document.querySelector('#serviceValue'); if(!picker||!value)return;
+    picker.dataset.valueTarget='#serviceValue';
+    renderServicePicker(picker,professional,initialIds);
   }
 
   function openNew(time, professional){
     const list=getProfessionals();
     const prof=document.querySelector('#professionalName');
     prof.innerHTML=list.map(p=>`<option value="${esc(p.name)}" ${p.name===professional?'selected':''}>${esc(p.name)}</option>`).join('');
-    populateServices(prof.value);
-    prof.onchange=()=>populateServices(prof.value);
+    populateServices(prof.value,[]);
+    prof.onchange=()=>populateServices(prof.value,[]);
     const timeField=document.querySelector('#appointmentTime');
     timeField.innerHTML=TIMES.map(t=>`<option value="${t}" ${t===time?'selected':''}>${t}</option>`).join('');
     document.querySelector('#clientName').value=''; document.querySelector('#serviceValue').value='';
@@ -123,15 +160,13 @@
 
   function showFreeSlot(time, professional){
     const body=document.querySelector('#appointmentDetailBody');
-    const services=servicesForProfessional(professional);
-    const serviceOptions='<option value="">Selecione o serviço</option>'+services.map(s=>`<option value="${esc(s.id)}">${esc(s.name)} — ${money(s.value)}</option>`).join('');
     const specialty=getProfessional(professional).specialty||'Serviços';
-    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">HORÁRIO SELECIONADO</span><h2>${esc(time)}</h2><p>${esc(professional)} · ${esc(agendaDate.toLocaleDateString('pt-BR'))}</p><span class="status">Horário livre · ${esc(specialty)}</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(professional)}</strong></div><div><small>Data</small><strong>${esc(agendaDate.toLocaleDateString('pt-BR'))}</strong></div><div><small>Horário</small><strong>${esc(time)}</strong></div></div><div class="form-grid compact-form"><div class="field"><label for="slotService">Serviço</label><select id="slotService">${serviceOptions}</select></div><div class="field"><label for="slotServiceValue">Valor do serviço (R$)</label><input id="slotServiceValue" readonly aria-readonly="true" placeholder="Selecione o serviço"></div></div><div class="operation-actions"><button class="primary compact" type="button" data-slot-op="schedule">Agendar cliente</button><button class="sos-subtle compact" type="button" data-slot-op="sos">S.O.S. Profissionais</button></div></div>`;
-    const serviceSelect=body.querySelector('#slotService'); const serviceValue=body.querySelector('#slotServiceValue');
-    serviceSelect.onchange=()=>{const s=services.find(x=>x.id===serviceSelect.value);serviceValue.value=s?Number(s.value).toFixed(2).replace('.',','):'';};
+    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">HORÁRIO SELECIONADO</span><h2>${esc(time)}</h2><p>${esc(professional)} · ${esc(agendaDate.toLocaleDateString('pt-BR'))}</p><span class="status">Horário livre · ${esc(specialty)}</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(professional)}</strong></div><div><small>Data</small><strong>${esc(agendaDate.toLocaleDateString('pt-BR'))}</strong></div><div><small>Horário</small><strong>${esc(time)}</strong></div></div><div class="form-grid compact-form"><div class="field full"><label>Serviços</label><div class="service-picker" id="slotServicePicker" data-value-target="#slotServiceValue"></div></div><div class="field full"><label for="slotServiceValue">Valor total dos serviços (R$)</label><input id="slotServiceValue" readonly aria-readonly="true" placeholder="Selecione os serviços"></div></div><div class="operation-actions"><button class="secondary compact" type="button" data-slot-op="schedule">Agendar cliente</button><button class="sos-subtle compact" type="button" data-slot-op="sos">S.O.S. Profissionais</button></div></div>`;
+    const picker=body.querySelector('#slotServicePicker');
+    renderServicePicker(picker,professional,[],()=>{});
     body.querySelector('[data-slot-op="sos"]').onclick=()=>{
-      const service=services.find(s=>s.id===serviceSelect.value);
-      write(SOS_CONTEXT_KEY,{date:dateKey(agendaDate),time,professional,source:'agenda-slot',serviceId:service?.id||null,service:service?.name||'',value:Number(service?.value||0)});
+      const selection=picker._getSelected();
+      write(SOS_CONTEXT_KEY,{date:dateKey(agendaDate),time,professional,source:'agenda-slot',serviceIds:selection.ids,services:selection.services.map(s=>({id:s.id,name:s.name,value:Number(s.value),category:s.category})),service:selection.services.map(s=>s.name).join(' + '),value:selection.total});
       window.location.href='sos.html?origem=agenda&horario=selecionado';
     };
     body.querySelector('[data-slot-op="schedule"]').onclick=()=>{close('#appointmentDetailModal');openNew(time,professional);};
@@ -140,12 +175,13 @@
 
   function showDetail(a){
     const labels={agendado:'Agendado',confirmado:'Confirmado',em_atendimento:'Em atendimento',concluido:'Finalizado',cancelado:'Cancelado'};
+    const services=appointmentServices(a);
     let actions='';
     if(['agendado','confirmado'].includes(a.status)) actions='<button class="primary compact" data-op="start">Iniciar atendimento</button><button class="secondary compact" data-op="cancel">Cancelar</button><button class="sos-subtle compact" data-op="sos">S.O.S. Profissionais</button>';
     else if(a.status==='em_atendimento') actions='<button class="primary compact" data-op="finish">Finalizar atendimento</button>';
     else if(a.status==='concluido') actions='<button class="primary compact" data-op="finance">Abrir financeiro</button>';
     const body=document.querySelector('#appointmentDetailBody');
-    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">ATENDIMENTO</span><h2>${esc(a.client)}</h2><p>${esc(a.service)} · ${esc(a.professional)} · ${esc(a.time)}</p><span class="status">${esc(labels[a.status]||a.status)}</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(a.professional)}</strong></div><div><small>Serviço</small><strong>${esc(a.service)}</strong></div><div><small>Valor</small><strong>${money(a.value)}</strong></div></div><div class="operation-actions">${actions}</div></div>`;
+    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">ATENDIMENTO</span><h2>${esc(a.client)}</h2><p>${esc(services.map(s=>s.name).join(' + '))} · ${esc(a.professional)} · ${esc(a.time)}</p><span class="status">${esc(labels[a.status]||a.status)}</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(a.professional)}</strong></div><div><small>Serviços</small><strong>${esc(services.map(s=>s.name).join(' + '))}</strong></div><div><small>Valor total</small><strong>${money(a.value)}</strong></div></div><div class="operation-actions">${actions}</div></div>`;
     body.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>operation(b.dataset.op,a.id));
     open('#appointmentDetailModal');
   }
@@ -156,18 +192,31 @@
     if(action==='start'){a.status='em_atendimento';a.startedAt=new Date().toISOString();saveState(state);showDetail(a);renderAppointments();return;}
     if(action==='finish'){a.status='concluido';a.finishedAt=new Date().toISOString();saveState(state);close('#appointmentDetailModal');openFinance(a);renderAppointments();return;}
     if(action==='finance'){close('#appointmentDetailModal');openFinance(a);return;}
-    if(action==='sos'){write(SOS_CONTEXT_KEY,{appointmentId:id,client:a.client,service:a.service,serviceId:a.serviceId||null,value:Number(a.value||0),date:a.date,time:a.time,professional:a.professional,source:'appointment'});window.location.href='sos.html?origem=agenda&atendimento='+encodeURIComponent(id);}
+    if(action==='sos'){const services=appointmentServices(a);write(SOS_CONTEXT_KEY,{appointmentId:id,client:a.client,serviceIds:services.map(s=>s.id),services:services.map(s=>({id:s.id,name:s.name,value:Number(s.value||0),category:s.category})),service:services.map(s=>s.name).join(' + '),value:Number(a.value||0),date:a.date,time:a.time,professional:a.professional,source:'appointment'});window.location.href='sos.html?origem=agenda&atendimento='+encodeURIComponent(id);}
   }
 
   function openFinance(a){
-    const body=document.querySelector('#financeBody'); body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">FECHAMENTO FINANCEIRO</span><h2>${esc(a.client)}</h2><p>${esc(a.service)} · ${esc(a.professional)}</p></div><div class="finance-grid"><div><small>Serviço</small><strong>${esc(a.service)}</strong></div><div><small>Valor registrado</small><strong>${money(a.value)}</strong></div></div><div class="field"><label for="financePaymentStatus">Status financeiro</label><select id="financePaymentStatus"><option value="pendente">Pendente</option><option value="recebido">Recebido</option></select></div><div class="form-actions"><button class="secondary" type="button" data-close-operation-modal>Fechar</button><button class="primary" type="button" id="saveFinanceBtn">Salvar fechamento</button></div></div>`;
+    const services=appointmentServices(a);
+    const body=document.querySelector('#financeBody'); body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">FECHAMENTO FINANCEIRO</span><h2>${esc(a.client)}</h2><p>${esc(services.map(s=>s.name).join(' + '))} · ${esc(a.professional)}</p></div><div class="finance-grid"><div><small>Serviços</small><strong>${esc(services.map(s=>s.name).join(' + '))}</strong></div><div><small>Valor registrado</small><strong>${money(a.value)}</strong></div></div><div class="field"><label for="financePaymentStatus">Status financeiro</label><select id="financePaymentStatus"><option value="pendente">Pendente</option><option value="recebido">Recebido</option></select></div><div class="form-actions"><button class="secondary" type="button" data-close-operation-modal>Fechar</button><button class="primary" type="button" id="saveFinanceBtn">Salvar fechamento</button></div></div>`;
     body.querySelector('#saveFinanceBtn').onclick=()=>{const s=getState();const item=s.appointments.find(x=>x.id===a.id);const status=body.querySelector('#financePaymentStatus').value;if(item)item.financeStatus=status;const tx=s.transactions.find(x=>x.appointmentId===a.id);if(tx){tx.value=Number(a.value||0);tx.status=status;}else s.transactions.push({id:makeId('txn'),appointmentId:a.id,type:'receita',value:Number(a.value||0),status});saveState(s);close('#financeModal');};
     open('#financeModal');
   }
 
   function bindForm(){
     const form=document.querySelector('#appointmentForm');
-    if(form)form.onsubmit=e=>{e.preventDefault();e.stopPropagation();const data=Object.fromEntries(new FormData(form).entries());const service=getServices().find(s=>s.id===data.serviceName);const professional=getProfessional(data.professionalName);if(!service||service.category!==professional.specialty)return;const state=getState();state.appointments.push({id:makeId('apt'),date:dateKey(agendaDate),time:data.appointmentTime,professional:data.professionalName,client:data.clientName.trim(),service:service.name,serviceId:service.id,value:Number(service.value),status:'agendado',source:'salao'});saveState(state);close('#appointmentModal');renderAppointments();};
+    if(form)form.onsubmit=e=>{
+      e.preventDefault();e.stopPropagation();
+      const data=Object.fromEntries(new FormData(form).entries());
+      const picker=document.querySelector('#servicePicker');
+      const selection=picker?picker._getSelected():{ids:[],services:[],total:0};
+      if(!data.clientName.trim()||!data.professionalName||!selection.services.length)return;
+      const professional=getProfessional(data.professionalName);
+      if(!professional.specialty || selection.services.some(s=>s.category!==professional.specialty))return;
+      const state=getState();
+      const snapshot=selection.services.map(s=>({id:s.id,name:s.name,value:Number(s.value),category:s.category}));
+      state.appointments.push({id:makeId('apt'),date:dateKey(agendaDate),time:data.appointmentTime,professional:data.professionalName,client:data.clientName.trim(),service:snapshot.map(s=>s.name).join(' + '),serviceId:snapshot[0]?.id||null,serviceIds:snapshot.map(s=>s.id),services:snapshot,value:Number(selection.total),status:'agendado',source:'salao'});
+      saveState(state);close('#appointmentModal');renderAppointments();
+    };
   }
 
   function bindProfessional(){
@@ -183,6 +232,9 @@
     document.querySelector('#todayBtn')?.addEventListener('click',()=>{agendaDate=new Date();renderGrid();});
     document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=()=>close('#appointmentModal'));
     document.querySelectorAll('[data-close-operation-modal]').forEach(b=>b.onclick=()=>{close('#appointmentDetailModal');close('#financeModal');close('#professionalModal');});
+    document.addEventListener('click',e=>{
+      if(!e.target.closest('.service-picker')) document.querySelectorAll('.service-picker-menu').forEach(m=>{m.hidden=true;});
+    });
   }
 
   getServices(); bindNavigation(); bindForm(); bindProfessional(); renderGrid();

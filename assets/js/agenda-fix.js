@@ -285,17 +285,14 @@
   function interceptClicks() {
     document.addEventListener('click', e => {
       if (e.target.closest?.('#prevDay')) {
-        e.preventDefault(); e.stopImmediatePropagation();
         selectedDate.setDate(selectedDate.getDate() - 1);
         return;
       }
       if (e.target.closest?.('#nextDay')) {
-        e.preventDefault(); e.stopImmediatePropagation();
         selectedDate.setDate(selectedDate.getDate() + 1);
         return;
       }
       if (e.target.closest?.('#todayBtn')) {
-        e.preventDefault(); e.stopImmediatePropagation();
         selectedDate = new Date();
         return;
       }

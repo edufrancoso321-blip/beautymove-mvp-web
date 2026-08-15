@@ -235,10 +235,20 @@
     window.location.href = 'sos.html?origem=agenda&horario=selecionado';
   }
 
+  function refreshScheduledCell(date, time, professional, client, services) {
+    const cell = document.querySelector(`[data-slot="${CSS.escape(`${time}-${professional}`)}"]`);
+    if (!cell) return;
+    cell.classList.add('appointment');
+    cell.innerHTML = `<strong>${esc(client)}</strong><span>${esc(services.map(s => s.name).join(' + '))}</span>`;
+    const free = document.querySelector('#freeCount');
+    const pending = document.querySelector('#pendingCount');
+    if (free) free.textContent = `${document.querySelectorAll('[data-slot]:not(.appointment)').length} horários livres`;
+    if (pending) pending.textContent = `${document.querySelectorAll('[data-slot].appointment').length} atendimentos`;
+  }
+
   function submitAppointment(e) {
     e.preventDefault();
     e.stopPropagation();
-    const form = e.currentTarget;
     const client = document.querySelector('#clientName')?.value.trim();
     const professional = document.querySelector('#professionalName')?.value;
     const time = document.querySelector('#appointmentTime')?.value;
@@ -269,13 +279,27 @@
     });
     saveState(state);
     closeAppointment();
-    if (typeof window.renderAppointments === 'function') window.renderAppointments();
-    document.querySelector('#agendaBody')?.dispatchEvent(new Event('beautymove:refresh'));
-    window.location.reload();
+    refreshScheduledCell(currentDate, time, professional, client, snapshot);
   }
 
   function interceptClicks() {
     document.addEventListener('click', e => {
+      if (e.target.closest?.('#prevDay')) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        selectedDate.setDate(selectedDate.getDate() - 1);
+        return;
+      }
+      if (e.target.closest?.('#nextDay')) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        selectedDate.setDate(selectedDate.getDate() + 1);
+        return;
+      }
+      if (e.target.closest?.('#todayBtn')) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        selectedDate = new Date();
+        return;
+      }
+
       const slot = e.target.closest?.('[data-slot]');
       if (slot) {
         e.preventDefault();
@@ -293,7 +317,6 @@
       if (button) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        selectedDate = new Date();
         openAppointment('', '');
       }
     }, true);

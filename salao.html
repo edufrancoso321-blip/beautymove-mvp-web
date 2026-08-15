@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BeautyMove — Agenda do Salão</title>
   <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    .operation-detail { display:grid; gap:18px; }
+    .operation-summary { border-bottom:1px solid #eee; padding-bottom:14px; }
+    .operation-summary h2 { margin:5px 0 6px; }
+    .operation-info, .finance-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .finance-grid { grid-template-columns:repeat(2,1fr); }
+    .operation-info > div, .finance-grid > div { border:1px solid #eee; border-radius:12px; padding:12px; display:grid; gap:4px; }
+    .operation-info small, .finance-grid small { color:#777; }
+    .operation-actions, .form-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    @media (max-width:700px) { .operation-info, .finance-grid { grid-template-columns:1fr; } }
+  </style>
 </head>
 <body data-role="salao">
   <div class="page">
@@ -45,22 +56,10 @@
               <thead>
                 <tr>
                   <th class="time-col">Horário</th>
-                  <th>
-                    <span class="specialty-label">Cabelos</span>
-                    <span class="professional-name">Ana</span>
-                  </th>
-                  <th>
-                    <span class="specialty-label">Cabelos</span>
-                    <span class="professional-name">Bruna</span>
-                  </th>
-                  <th>
-                    <span class="specialty-label">Mãos e Pés</span>
-                    <span class="professional-name">Paula</span>
-                  </th>
-                  <th>
-                    <span class="specialty-label">Estética</span>
-                    <span class="professional-name">Carla</span>
-                  </th>
+                  <th><span class="specialty-label">Cabelos</span><span class="professional-name">Ana</span></th>
+                  <th><span class="specialty-label">Cabelos</span><span class="professional-name">Bruna</span></th>
+                  <th><span class="specialty-label">Mãos e Pés</span><span class="professional-name">Paula</span></th>
+                  <th><span class="specialty-label">Estética</span><span class="professional-name">Carla</span></th>
                 </tr>
               </thead>
               <tbody id="agendaBody">
@@ -114,10 +113,41 @@
         <form id="appointmentForm" class="form-grid compact-form">
           <div class="field"><label for="clientName">Cliente</label><input id="clientName" name="clientName" required placeholder="Nome da cliente"></div>
           <div class="field"><label for="serviceName">Serviço</label><input id="serviceName" name="serviceName" required placeholder="Ex.: Corte"></div>
-          <div class="field"><label for="appointmentTime">Horário</label><select id="appointmentTime" name="appointmentTime"><option>08:00</option><option>08:30</option><option>09:00</option><option>09:30</option><option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option><option>14:00</option><option>15:00</option><option>16:00</option></select></div>
+          <div class="field"><label for="appointmentTime">Horário</label><select id="appointmentTime" name="appointmentTime"><option>08:00</option><option>08:30</option><option>09:00</option><option>09:30</option><option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option><option>12:00</option><option>12:30</option><option>13:00</option><option>13:30</option><option>14:00</option><option>14:30</option><option>15:00</option><option>15:30</option><option>16:00</option><option>16:30</option><option>17:00</option><option>17:30</option><option>18:00</option></select></div>
           <div class="field"><label for="professionalName">Profissional</label><select id="professionalName" name="professionalName"><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select></div>
-          <div class="field full"><label for="serviceValue">Valor fixo (R$)</label><input id="serviceValue" name="serviceValue" inputmode="decimal" placeholder="80,00"></div>
+          <div class="field full"><label for="serviceValue">Valor do serviço (R$)</label><input id="serviceValue" name="serviceValue" inputmode="decimal" placeholder="80,00"></div>
           <div class="form-actions full"><button class="secondary" type="button" data-close-modal>Cancelar</button><button class="primary" type="submit">Adicionar à agenda</button></div>
+        </form>
+      </section>
+    </div>
+
+    <div class="modal" id="appointmentDetailModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-operation-modal></div>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button>
+        <div id="appointmentDetailBody"></div>
+      </section>
+    </div>
+
+    <div class="modal" id="financeModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-operation-modal></div>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="financeTitle">
+        <button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button>
+        <div id="financeBody"></div>
+      </section>
+    </div>
+
+    <div class="modal" id="professionalModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-operation-modal></div>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="professionalTitle">
+        <button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button>
+        <div class="eyebrow">EQUIPE DO SALÃO</div>
+        <h2 id="professionalTitle">Adicionar profissional</h2>
+        <p class="modal-intro">Adicione um profissional à agenda do salão sem voltar ao cadastro do estabelecimento.</p>
+        <form id="professionalForm" class="form-grid compact-form">
+          <div class="field"><label for="professionalNewName">Nome</label><input id="professionalNewName" name="name" required placeholder="Nome do profissional"></div>
+          <div class="field"><label for="professionalNewSpecialty">Especialidade</label><select id="professionalNewSpecialty" name="specialty" required><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div>
+          <div class="form-actions full"><button class="secondary" type="button" data-close-operation-modal>Cancelar</button><button class="primary" type="submit">Adicionar à agenda</button></div>
         </form>
       </section>
     </div>
@@ -125,5 +155,6 @@
     <footer class="footer">BeautyMove © 2026</footer>
   </div>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/agenda-operations.js"></script>
 </body>
 </html>

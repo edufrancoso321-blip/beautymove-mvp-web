@@ -86,21 +86,25 @@
 
   function showFreeSlot(time, professional){
     const body=document.querySelector('#appointmentDetailBody');
-    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">HORÁRIO SELECIONADO</span><h2>${esc(time)}</h2><p>${esc(professional)} · ${esc(agendaDate.toLocaleDateString('pt-BR'))}</p><span class="status">Horário livre</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(professional)}</strong></div><div><small>Data</small><strong>${esc(agendaDate.toLocaleDateString('pt-BR'))}</strong></div><div><small>Horário</small><strong>${esc(time)}</strong></div></div><div class="operation-actions"><button class="secondary compact" type="button" data-slot-op="sos">Acionar S.O.S. para este horário</button><button class="primary compact" type="button" data-slot-op="schedule">Agendar cliente</button></div></div>`;
-    body.querySelector('[data-slot-op="sos"]').onclick=()=>openSosForSlot(time,professional);
+    const services=getServices().filter(s=>s.status!=='inativo');
+    const serviceOptions='<option value="">Selecione o serviço</option>'+services.map(s=>`<option value="${esc(s.id)}">${esc(s.name)} — ${money(s.value)}</option>`).join('');
+    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">HORÁRIO SELECIONADO</span><h2>${esc(time)}</h2><p>${esc(professional)} · ${esc(agendaDate.toLocaleDateString('pt-BR'))}</p><span class="status">Horário livre</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(professional)}</strong></div><div><small>Data</small><strong>${esc(agendaDate.toLocaleDateString('pt-BR'))}</strong></div><div><small>Horário</small><strong>${esc(time)}</strong></div></div><div class="form-grid compact-form"><div class="field"><label for="slotService">Serviço</label><select id="slotService">${serviceOptions}</select></div><div class="field"><label for="slotServiceValue">Valor do serviço (R$)</label><input id="slotServiceValue" readonly aria-readonly="true" placeholder="Selecione o serviço"></div></div><div class="operation-actions"><button class="primary compact" type="button" data-slot-op="sos">S.O.S. Profissionais</button><button class="secondary compact" type="button" data-slot-op="schedule">Agendar cliente</button></div></div>`;
+    const serviceSelect=body.querySelector('#slotService');
+    const serviceValue=body.querySelector('#slotServiceValue');
+    serviceSelect.onchange=()=>{const s=services.find(x=>x.id===serviceSelect.value);serviceValue.value=s?Number(s.value).toFixed(2).replace('.',','):'';};
+    body.querySelector('[data-slot-op="sos"]').onclick=()=>{
+      const service=services.find(s=>s.id===serviceSelect.value);
+      write(SOS_CONTEXT_KEY,{date:dateKey(agendaDate),time,professional,source:'agenda-slot',serviceId:service?.id||null,service:service?.name||'',value:Number(service?.value||0)});
+      window.location.href='sos.html?origem=agenda&horario=selecionado';
+    };
     body.querySelector('[data-slot-op="schedule"]').onclick=()=>{close('#appointmentDetailModal');openNew(time,professional);};
     open('#appointmentDetailModal');
-  }
-
-  function openSosForSlot(time, professional){
-    write(SOS_CONTEXT_KEY,{date:dateKey(agendaDate),time,professional,source:'agenda-slot'});
-    window.location.href='sos.html?origem=agenda&horario=selecionado';
   }
 
   function showDetail(a){
     const labels={agendado:'Agendado',confirmado:'Confirmado',em_atendimento:'Em atendimento',concluido:'Finalizado',cancelado:'Cancelado'};
     let actions='';
-    if(['agendado','confirmado'].includes(a.status)) actions='<button class="secondary compact" data-op="cancel">Cancelar</button><button class="secondary compact" data-op="sos">Acionar S.O.S.</button><button class="primary compact" data-op="start">Iniciar atendimento</button>';
+    if(['agendado','confirmado'].includes(a.status)) actions='<button class="secondary compact" data-op="cancel">Cancelar</button><button class="primary compact" data-op="sos">S.O.S. Profissionais</button><button class="primary compact" data-op="start">Iniciar atendimento</button>';
     else if(a.status==='em_atendimento') actions='<button class="primary compact" data-op="finish">Finalizar atendimento</button>';
     else if(a.status==='concluido') actions='<button class="primary compact" data-op="finance">Abrir financeiro</button>';
     const body=document.querySelector('#appointmentDetailBody');

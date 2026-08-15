@@ -99,16 +99,11 @@
     if (!backend?.enabled || !backend.auth) return null;
 
     const currentUser = await new Promise((resolve) => {
-      let settled = false;
       let unsubscribe = null;
-      const finish = (user) => {
-        if (settled) return;
-        settled = true;
+      unsubscribe = backend.auth.onAuthStateChanged((user) => {
         if (unsubscribe) unsubscribe();
         resolve(user || null);
-      };
-      unsubscribe = backend.auth.onAuthStateChanged(finish);
-      setTimeout(() => finish(backend.auth.currentUser || null), 4000);
+      });
     });
 
     if (!currentUser) return null;
@@ -213,22 +208,23 @@
     const role = document.body?.dataset?.role;
     if (!role) return;
 
-    let session = getSession();
-    if (!session || session.role !== role) {
-      session = await restoreFirebaseSession();
-    }
+    // A sessão local válida é suficiente para manter o usuário na página.
+    // Não fazemos uma segunda verificação assíncrona que possa redirecionar
+    // o usuário enquanto ele interage com a agenda.
+    const localSession = getSession();
+    if (localSession?.uid && localSession.role === role) return;
 
-    if (!session || session.role !== role) {
+    const backend = window.BeautyMoveFirebase;
+    if (!backend?.enabled || !backend.auth) {
       window.location.replace(`login.html?perfil=${role}`);
       return;
     }
 
-    document.querySelectorAll('[data-signout]').forEach((button) => button.addEventListener('click', async (event) => {
-      event.preventDefault();
-      try { if (window.BeautyMoveFirebase?.enabled) await window.BeautyMoveFirebase.auth.signOut(); } catch (error) { console.error(error); }
-      clearSession();
-      window.location.href = 'index.html';
-    }));
+    const session = await restoreFirebaseSession();
+    if (!session || session.role !== role) {
+      window.location.replace(`login.html?perfil=${role}`);
+      return;
+    }
   }
 
   window.BeautyMoveAuth = {

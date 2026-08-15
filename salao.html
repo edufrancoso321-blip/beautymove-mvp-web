@@ -6,15 +6,19 @@
   <title>BeautyMove — Agenda do Salão</title>
   <link rel="stylesheet" href="assets/css/styles.css">
   <style>
+    .header .logo { mix-blend-mode: multiply; background: transparent; }
+    .agenda-grid td { cursor: pointer; }
+    .agenda-grid td.appointment { cursor: pointer; }
     .operation-detail { display:grid; gap:18px; }
     .operation-summary { border-bottom:1px solid #eee; padding-bottom:14px; }
     .operation-summary h2 { margin:5px 0 6px; }
-    .operation-info, .finance-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .operation-info,.finance-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
     .finance-grid { grid-template-columns:repeat(2,1fr); }
-    .operation-info > div, .finance-grid > div { border:1px solid #eee; border-radius:12px; padding:12px; display:grid; gap:4px; }
-    .operation-info small, .finance-grid small { color:#777; }
-    .operation-actions, .form-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
-    @media (max-width:700px) { .operation-info, .finance-grid { grid-template-columns:1fr; } }
+    .operation-info>div,.finance-grid>div { border:1px solid #eee; border-radius:12px; padding:12px; display:grid; gap:4px; }
+    .operation-info small,.finance-grid small { color:#777; }
+    .operation-actions,.form-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .service-catalog-section { margin-top:24px; }
+    @media (max-width:700px) { .operation-info,.finance-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body data-role="salao">
@@ -53,38 +57,8 @@
         <section class="agenda-shell" id="agenda" aria-label="Agenda principal">
           <div class="agenda-scroll">
             <table class="agenda-grid">
-              <thead>
-                <tr>
-                  <th class="time-col">Horário</th>
-                  <th><span class="specialty-label">Cabelos</span><span class="professional-name">Ana</span></th>
-                  <th><span class="specialty-label">Cabelos</span><span class="professional-name">Bruna</span></th>
-                  <th><span class="specialty-label">Mãos e Pés</span><span class="professional-name">Paula</span></th>
-                  <th><span class="specialty-label">Estética</span><span class="professional-name">Carla</span></th>
-                </tr>
-              </thead>
-              <tbody id="agendaBody">
-                <tr><th class="time-col">08:00</th><td data-slot="08:00-Ana">Livre</td><td data-slot="08:00-Bruna">Livre</td><td data-slot="08:00-Paula">Livre</td><td data-slot="08:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">08:30</th><td data-slot="08:30-Ana">Livre</td><td data-slot="08:30-Bruna">Livre</td><td data-slot="08:30-Paula">Livre</td><td data-slot="08:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">09:00</th><td data-slot="09:00-Ana" class="appointment"><strong>Maria</strong><span>Corte</span></td><td data-slot="09:00-Bruna">Livre</td><td data-slot="09:00-Paula" class="appointment"><strong>Maria</strong><span>Manicure</span></td><td data-slot="09:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">09:30</th><td data-slot="09:30-Ana" class="appointment"><strong>Maria</strong><span>Corte</span></td><td data-slot="09:30-Bruna">Livre</td><td data-slot="09:30-Paula">Livre</td><td data-slot="09:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">10:00</th><td data-slot="10:00-Ana">Livre</td><td data-slot="10:00-Bruna" class="appointment"><strong>João</strong><span>Coloração</span></td><td data-slot="10:00-Paula">Livre</td><td data-slot="10:00-Carla" class="appointment"><strong>Laura</strong><span>Limpeza de pele</span></td></tr>
-                <tr><th class="time-col">10:30</th><td data-slot="10:30-Ana">Livre</td><td data-slot="10:30-Bruna" class="appointment"><strong>João</strong><span>Coloração</span></td><td data-slot="10:30-Paula">Livre</td><td data-slot="10:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">11:00</th><td data-slot="11:00-Ana">Livre</td><td data-slot="11:00-Bruna">Livre</td><td data-slot="11:00-Paula" class="appointment"><strong>Rita</strong><span>Pedicure</span></td><td data-slot="11:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">11:30</th><td data-slot="11:30-Ana">Livre</td><td data-slot="11:30-Bruna">Livre</td><td data-slot="11:30-Paula" class="appointment"><strong>Rita</strong><span>Pedicure</span></td><td data-slot="11:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">12:00</th><td data-slot="12:00-Ana">Livre</td><td data-slot="12:00-Bruna">Livre</td><td data-slot="12:00-Paula">Livre</td><td data-slot="12:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">12:30</th><td data-slot="12:30-Ana">Livre</td><td data-slot="12:30-Bruna">Livre</td><td data-slot="12:30-Paula">Livre</td><td data-slot="12:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">13:00</th><td data-slot="13:00-Ana">Livre</td><td data-slot="13:00-Bruna">Livre</td><td data-slot="13:00-Paula">Livre</td><td data-slot="13:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">13:30</th><td data-slot="13:30-Ana">Livre</td><td data-slot="13:30-Bruna">Livre</td><td data-slot="13:30-Paula">Livre</td><td data-slot="13:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">14:00</th><td data-slot="14:00-Ana">Livre</td><td data-slot="14:00-Bruna">Livre</td><td data-slot="14:00-Paula">Livre</td><td data-slot="14:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">14:30</th><td data-slot="14:30-Ana">Livre</td><td data-slot="14:30-Bruna">Livre</td><td data-slot="14:30-Paula">Livre</td><td data-slot="14:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">15:00</th><td data-slot="15:00-Ana">Livre</td><td data-slot="15:00-Bruna">Livre</td><td data-slot="15:00-Paula">Livre</td><td data-slot="15:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">15:30</th><td data-slot="15:30-Ana">Livre</td><td data-slot="15:30-Bruna">Livre</td><td data-slot="15:30-Paula">Livre</td><td data-slot="15:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">16:00</th><td data-slot="16:00-Ana">Livre</td><td data-slot="16:00-Bruna">Livre</td><td data-slot="16:00-Paula">Livre</td><td data-slot="16:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">16:30</th><td data-slot="16:30-Ana">Livre</td><td data-slot="16:30-Bruna">Livre</td><td data-slot="16:30-Paula">Livre</td><td data-slot="16:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">17:00</th><td data-slot="17:00-Ana">Livre</td><td data-slot="17:00-Bruna">Livre</td><td data-slot="17:00-Paula">Livre</td><td data-slot="17:00-Carla">Livre</td></tr>
-                <tr><th class="time-col">17:30</th><td data-slot="17:30-Ana">Livre</td><td data-slot="17:30-Bruna">Livre</td><td data-slot="17:30-Paula">Livre</td><td data-slot="17:30-Carla">Livre</td></tr>
-                <tr><th class="time-col">18:00</th><td data-slot="18:00-Ana">Livre</td><td data-slot="18:00-Bruna">Livre</td><td data-slot="18:00-Paula">Livre</td><td data-slot="18:00-Carla">Livre</td></tr>
-              </tbody>
+              <thead><tr><th class="time-col">Horário</th><th><span class="specialty-label">Cabelos</span><span class="professional-name">Ana</span></th><th><span class="specialty-label">Cabelos</span><span class="professional-name">Bruna</span></th><th><span class="specialty-label">Mãos e Pés</span><span class="professional-name">Paula</span></th><th><span class="specialty-label">Estética</span><span class="professional-name">Carla</span></th></tr></thead>
+              <tbody id="agendaBody"></tbody>
             </table>
           </div>
         </section>
@@ -95,9 +69,9 @@
             <a class="secondary compact" href="sos.html">Ver profissionais</a>
           </div>
           <div class="operations-grid">
-            <article class="operation-card"><span class="operation-kicker">S.O.S.</span><strong>1 necessidade</strong><p>Profissional de cabelos para hoje às 15:00.</p><a href="sos.html">Buscar profissional</a></article>
-            <article class="operation-card"><span class="operation-kicker">ATENÇÃO</span><strong>1 confirmação</strong><p>Confirme a chegada do profissional das 10:00.</p><button class="text-button" type="button">Confirmar chegada</button></article>
-            <article class="operation-card"><span class="operation-kicker">AGENDA</span><strong>3 horários livres</strong><p>Há disponibilidade para novos agendamentos hoje.</p><button class="text-button" type="button" id="quickAppointmentBtn">Agendar cliente</button></article>
+            <article class="operation-card"><span class="operation-kicker">S.O.S.</span><strong id="sosCount">0 solicitações</strong><p>Centralize as buscas de profissionais e acompanhe as oportunidades.</p><a href="sos.html">Abrir central S.O.S.</a></article>
+            <article class="operation-card"><span class="operation-kicker">ATENÇÃO</span><strong id="pendingCount">0 atendimentos</strong><p>Os detalhes e ações ficam disponíveis ao clicar diretamente no horário.</p></article>
+            <article class="operation-card"><span class="operation-kicker">AGENDA</span><strong id="freeCount">0 horários livres</strong><p>Agende um cliente diretamente em qualquer horário livre.</p><button class="text-button" type="button" id="quickAppointmentBtn">Agendar cliente</button></article>
           </div>
         </section>
       </div>
@@ -107,54 +81,41 @@
       <div class="modal-backdrop" data-close-modal></div>
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="appointmentTitle">
         <button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button>
-        <div class="eyebrow">NOVO AGENDAMENTO</div>
-        <h2 id="appointmentTitle">Agendar cliente</h2>
-        <p class="modal-intro">A agenda permanece limpa; os detalhes entram somente quando necessários.</p>
+        <div class="eyebrow">NOVO AGENDAMENTO</div><h2 id="appointmentTitle">Agendar cliente</h2>
+        <p class="modal-intro">O serviço determina o valor. O valor registrado fica vinculado ao atendimento.</p>
         <form id="appointmentForm" class="form-grid compact-form">
           <div class="field"><label for="clientName">Cliente</label><input id="clientName" name="clientName" required placeholder="Nome da cliente"></div>
-          <div class="field"><label for="serviceName">Serviço</label><input id="serviceName" name="serviceName" required placeholder="Ex.: Corte"></div>
-          <div class="field"><label for="appointmentTime">Horário</label><select id="appointmentTime" name="appointmentTime"><option>08:00</option><option>08:30</option><option>09:00</option><option>09:30</option><option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option><option>12:00</option><option>12:30</option><option>13:00</option><option>13:30</option><option>14:00</option><option>14:30</option><option>15:00</option><option>15:30</option><option>16:00</option><option>16:30</option><option>17:00</option><option>17:30</option><option>18:00</option></select></div>
-          <div class="field"><label for="professionalName">Profissional</label><select id="professionalName" name="professionalName"><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select></div>
-          <div class="field full"><label for="serviceValue">Valor do serviço (R$)</label><input id="serviceValue" name="serviceValue" inputmode="decimal" placeholder="80,00"></div>
+          <div class="field"><label for="serviceName">Serviço</label><select id="serviceName" name="serviceName" required><option value="">Selecione o serviço</option></select></div>
+          <div class="field"><label for="appointmentTime">Horário</label><select id="appointmentTime" name="appointmentTime" required></select></div>
+          <div class="field"><label for="professionalName">Profissional</label><select id="professionalName" name="professionalName" required><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select></div>
+          <div class="field full"><label for="serviceValue">Valor do serviço (R$)</label><input id="serviceValue" name="serviceValue" readonly aria-readonly="true" placeholder="Selecione o serviço"></div>
           <div class="form-actions full"><button class="secondary" type="button" data-close-modal>Cancelar</button><button class="primary" type="submit">Adicionar à agenda</button></div>
         </form>
       </section>
     </div>
 
-    <div class="modal" id="appointmentDetailModal" aria-hidden="true">
-      <div class="modal-backdrop" data-close-operation-modal></div>
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
-        <button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button>
-        <div id="appointmentDetailBody"></div>
-      </section>
-    </div>
-
-    <div class="modal" id="financeModal" aria-hidden="true">
-      <div class="modal-backdrop" data-close-operation-modal></div>
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="financeTitle">
-        <button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button>
-        <div id="financeBody"></div>
-      </section>
-    </div>
-
-    <div class="modal" id="professionalModal" aria-hidden="true">
-      <div class="modal-backdrop" data-close-operation-modal></div>
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="professionalTitle">
-        <button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button>
-        <div class="eyebrow">EQUIPE DO SALÃO</div>
-        <h2 id="professionalTitle">Adicionar profissional</h2>
-        <p class="modal-intro">Adicione um profissional à agenda do salão sem voltar ao cadastro do estabelecimento.</p>
-        <form id="professionalForm" class="form-grid compact-form">
-          <div class="field"><label for="professionalNewName">Nome</label><input id="professionalNewName" name="name" required placeholder="Nome do profissional"></div>
-          <div class="field"><label for="professionalNewSpecialty">Especialidade</label><select id="professionalNewSpecialty" name="specialty" required><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div>
-          <div class="form-actions full"><button class="secondary" type="button" data-close-operation-modal>Cancelar</button><button class="primary" type="submit">Adicionar à agenda</button></div>
-        </form>
-      </section>
-    </div>
+    <div class="modal" id="appointmentDetailModal" aria-hidden="true"><div class="modal-backdrop" data-close-operation-modal></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button><div id="appointmentDetailBody"></div></section></div>
+    <div class="modal" id="financeModal" aria-hidden="true"><div class="modal-backdrop" data-close-operation-modal></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button><div id="financeBody"></div></section></div>
+    <div class="modal" id="professionalModal" aria-hidden="true"><div class="modal-backdrop" data-close-operation-modal></div><section class="modal-card" role="dialog" aria-modal="true"><button class="modal-close" type="button" aria-label="Fechar" data-close-operation-modal>×</button><div class="eyebrow">EQUIPE</div><h2>Adicionar profissional</h2><form id="professionalForm" class="form-grid compact-form"><div class="field"><label for="professionalNewName">Nome</label><input id="professionalNewName" name="name" required></div><div class="field"><label for="professionalNewSpecialty">Especialidade</label><select id="professionalNewSpecialty" name="specialty"><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option></select></div><div class="form-actions full"><button class="secondary" type="button" data-close-operation-modal>Cancelar</button><button class="primary" type="submit">Adicionar</button></div></form></section></div>
 
     <footer class="footer">BeautyMove © 2026</footer>
   </div>
+
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-client.js"></script>
   <script src="assets/js/app.js"></script>
+  <script>
+    (function(){
+      const body=document.querySelector('#agendaBody');
+      const times=['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+      const professionals=['Ana','Bruna','Paula','Carla'];
+      body.innerHTML=times.map(time=>`<tr><th class="time-col">${time}</th>${professionals.map(name=>`<td data-slot="${time}-${name}">Livre</td>`).join('')}</tr>`).join('');
+    })();
+  </script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/agenda-operations.js"></script>
 </body>
 </html>

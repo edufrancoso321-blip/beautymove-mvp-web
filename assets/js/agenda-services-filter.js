@@ -1,4 +1,5 @@
 (function(){
+  const PROFESSIONAL_SPECIALTY={Ana:'Cabelos',Bruna:'Cabelos',Paula:'Mãos e Pés',Carla:'Estética'};
   const RULES={
     'Cabelos':['Corte','Escova','Coloração','Luzes','Corte feminino','Corte masculino'],
     'Mãos e Pés':['Manicure','Pedicure'],
@@ -7,10 +8,7 @@
     'Sobrancelhas':['Design de sobrancelhas']
   };
 
-  function specialtyForProfessional(name){
-    const p=Array.isArray(window.AGENDA_PROFESSIONALS)?window.AGENDA_PROFESSIONALS.find(x=>x.name===name):null;
-    return p?.specialty||'';
-  }
+  function specialtyForProfessional(name){return PROFESSIONAL_SPECIALTY[name]||'';}
 
   function applyFilter(){
     const professional=document.getElementById('appointmentProfessional');
@@ -37,8 +35,7 @@
 
     if(title)title.textContent=specialty?`Serviços — ${specialty}`:'Incluir ou remover serviços';
 
-    const empty=list.querySelector('.specialty-empty');
-    if(empty)empty.remove();
+    list.querySelector('.specialty-empty')?.remove();
     if(!visible){
       const msg=document.createElement('div');
       msg.className='specialty-empty';

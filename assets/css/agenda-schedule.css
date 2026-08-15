@@ -1,0 +1,15 @@
+.schedule-settings-button{white-space:nowrap}
+.schedule-settings-card{max-width:760px}
+.schedule-week{display:flex;flex-direction:column;gap:8px;margin:18px 0 6px}
+.schedule-row{display:grid;grid-template-columns:minmax(150px,1fr) 90px 1fr 1fr;align-items:center;gap:12px;padding:11px 14px;border:1px solid #e8e3ef;border-radius:10px;background:#fff}
+.schedule-day{font-weight:700;color:#171321}
+.schedule-open{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:#4b4654}
+.schedule-open input{width:16px;height:16px;accent-color:#7b35f4}
+.schedule-field{display:flex;flex-direction:column;gap:4px}
+.schedule-field label{font-size:11px;font-weight:700;color:#77717f;text-transform:uppercase;letter-spacing:.04em}
+.schedule-field select{width:100%;min-height:38px;border:1px solid #ddd7e7;border-radius:8px;background:#fff;padding:0 10px;font:inherit;color:#171321}
+.schedule-row.is-closed{opacity:.58;background:#faf9fb}
+.schedule-row.is-closed .schedule-field select{background:#f5f3f7;color:#9a95a1}
+.schedule-settings-actions{margin-top:18px}
+@media(max-width:900px){.schedule-row{grid-template-columns:1fr 90px 1fr 1fr}.schedule-settings-card{width:min(94vw,760px)}}
+@media(max-width:620px){.schedule-row{grid-template-columns:1fr 1fr}.schedule-day{grid-column:1/-1}.schedule-open{grid-column:1/-1}}

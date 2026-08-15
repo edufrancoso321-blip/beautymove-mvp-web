@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-7">
   <link rel="stylesheet" href="assets/css/agenda-clock.css?v=20260815-1">
   <link rel="stylesheet" href="assets/css/agenda-schedule.css?v=20260815-2">
-  <link rel="stylesheet" href="assets/css/agenda-toolbar-final.css?v=20260815-1">
+  <link rel="stylesheet" href="assets/css/agenda-toolbar-final.css?v=20260815-2">
 </head>
 <body data-role="salao">
   <div class="salon-app">
@@ -24,8 +24,10 @@
         <a href="sos.html">S.O.S. Profissionais</a>
         <a href="#">Relatórios</a>
         <a href="#">Financeiro</a>
-        <a href="#">Configurações</a>
-        <button type="button" class="nav-schedule-settings" id="scheduleSettingsBtn">Configurar horários</button>
+        <button type="button" class="nav-settings-toggle" id="settingsMenuBtn" aria-expanded="false">Configurações <span aria-hidden="true">⌄</span></button>
+        <div class="nav-settings-submenu" id="settingsSubmenu" hidden>
+          <button type="button" id="scheduleSettingsBtn">Horários da agenda</button>
+        </div>
       </nav>
     </aside>
     <main class="salon-main">
@@ -41,10 +43,6 @@
 
       <section class="agenda-toolbar-v2" aria-label="Controles da agenda">
         <div class="agenda-left-controls">
-          <div class="agenda-calendar-control">
-            <button class="calendar-button" type="button" id="calendarBtn" aria-label="Abrir calendário">▣&nbsp; Calendário</button>
-            <input id="agendaDatePicker" type="date" aria-label="Escolher data">
-          </div>
           <select id="agendaInterval" aria-label="Intervalo da agenda" class="agenda-interval-left">
             <option value="30">30 em 30 minutos</option>
             <option value="45">45 em 45 minutos</option>
@@ -53,6 +51,10 @@
         </div>
 
         <div class="agenda-date-controls">
+          <div class="agenda-calendar-control">
+            <button class="calendar-button" type="button" id="calendarBtn" aria-label="Abrir calendário">▣&nbsp; Calendário</button>
+            <input id="agendaDatePicker" type="date" aria-label="Escolher data">
+          </div>
           <button class="icon-button" type="button" id="prevDay" aria-label="Dia anterior">‹</button>
           <button class="top-today agenda-today-button" type="button" id="todayBtn">Hoje</button>
           <strong id="agendaDate">Hoje</strong>
@@ -124,6 +126,14 @@
   <script src="assets/js/agenda-clock.js?v=20260815-1"></script>
   <script src="assets/js/agenda-schedule.js?v=20260815-2"></script>
   <script>
+    const settingsMenuBtn = document.getElementById('settingsMenuBtn');
+    const settingsSubmenu = document.getElementById('settingsSubmenu');
+    settingsMenuBtn?.addEventListener('click', () => {
+      const open = settingsSubmenu?.hasAttribute('hidden');
+      if (!settingsSubmenu) return;
+      settingsSubmenu.toggleAttribute('hidden', !open);
+      settingsMenuBtn.setAttribute('aria-expanded', String(open));
+    });
     document.getElementById('addProfessionalBtn')?.addEventListener('click',()=>{const n=document.getElementById('agendaNotice');if(n){n.textContent='Adicionar profissionais: utilize o cadastro de Profissionais para incluir novos nomes na agenda.';n.hidden=false;setTimeout(()=>n.hidden=true,4000);}});
   </script>
 </body>

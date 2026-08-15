@@ -1,0 +1,28 @@
+/* BeautyMove — Agenda: faixa superior final */
+.agenda-toolbar-v2{
+  grid-template-columns:minmax(300px,1fr) auto minmax(300px,1fr)!important;
+  align-items:center!important;
+  gap:20px!important;
+  margin-bottom:14px!important;
+}
+.agenda-left-controls{justify-content:flex-start!important}
+.agenda-date-controls{display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;white-space:nowrap!important}
+.agenda-date-controls .agenda-today-button{
+  height:42px!important;
+  padding:0 15px!important;
+  border:1px solid #e5e0e9!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#17131f!important;
+  font-size:12px!important;
+  font-weight:850!important;
+  cursor:pointer!important;
+}
+.agenda-date-controls .agenda-today-button:hover{border-color:var(--purple)!important;color:var(--purple)!important;background:#faf8ff!important}
+.agenda-date-controls strong{min-width:240px!important;text-align:center!important;font-size:16px!important;font-weight:850!important}
+.agenda-toolbar-right{justify-content:flex-end!important}
+@media(max-width:1180px){
+  .agenda-toolbar-v2{grid-template-columns:1fr auto!important}
+  .agenda-toolbar-right{grid-column:1 / -1;justify-content:flex-start!important}
+}
+@media(max-width:1050px){.agenda-toolbar-v2{grid-template-columns:1fr!important}.agenda-date-controls{justify-content:flex-start!important}}

@@ -14,12 +14,12 @@ function updateState(mutator) { const state = getState(); mutator(state); saveSt
 function makeId(prefix) { return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
 function localDateKey(date = new Date()) { const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, '0'); const d = String(date.getDate()).padStart(2, '0'); return `${y}-${m}-${d}`; }
 function formatCurrency(value) { return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char])); }
+function escapeHtml(value) { return String(value ?? '').replace(/[&<>'\"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char])); }
 function roleLabel(role) { return ({ salao:'Salão', profissional:'Profissional', cliente:'Cliente' })[role] || ''; }
 function roleFromQuery() { const value = new URLSearchParams(window.location.search).get('perfil') || ''; const v = value.toLowerCase(); if (v.includes('sala')) return 'salao'; if (v.includes('prof')) return 'profissional'; if (v.includes('clien')) return 'cliente'; return null; }
 
 function bindRoleButtons() {
-  document.querySelectorAll('[data-role]').forEach(button => button.addEventListener('click', () => { window.location.href = `cadastro.html?perfil=${button.dataset.role}`; }));
+  document.querySelectorAll('button[data-role], a[data-role], [role="button"][data-role]').forEach(button => button.addEventListener('click', () => { window.location.href = `cadastro.html?perfil=${button.dataset.role}`; }));
 }
 function setupRegistration() {
   const role = roleFromQuery(); const form = document.querySelector('#registrationForm');

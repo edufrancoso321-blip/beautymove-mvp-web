@@ -17,7 +17,7 @@
     { name:'Paula', specialty:'Mãos e Pés' }, { name:'Carla', specialty:'Estética' }
   ];
   const TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
-  const esc = value => String(value ?? '').replace(/[&<>\'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const esc = value => String(value ?? '').replace(/[&<>\'\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
   const money = value => Number(value || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; } };
   const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
@@ -80,8 +80,21 @@
     document.querySelectorAll('[data-slot]').forEach(cell=>cell.onclick=()=>{
       const [time,...rest]=cell.dataset.slot.split('-'); const professional=rest.join('-');
       const appointment=getState().appointments.find(a=>a.date===dateKey(agendaDate)&&a.time===time&&a.professional===professional&&a.status!=='cancelado');
-      if(appointment) showDetail(appointment); else openNew(time,professional);
+      if(appointment) showDetail(appointment); else showFreeSlot(time,professional);
     });
+  }
+
+  function showFreeSlot(time, professional){
+    const body=document.querySelector('#appointmentDetailBody');
+    body.innerHTML=`<div class="operation-detail"><div class="operation-summary"><span class="eyebrow">HORÁRIO SELECIONADO</span><h2>${esc(time)}</h2><p>${esc(professional)} · ${esc(agendaDate.toLocaleDateString('pt-BR'))}</p><span class="status">Horário livre</span></div><div class="operation-info"><div><small>Profissional</small><strong>${esc(professional)}</strong></div><div><small>Data</small><strong>${esc(agendaDate.toLocaleDateString('pt-BR'))}</strong></div><div><small>Horário</small><strong>${esc(time)}</strong></div></div><div class="operation-actions"><button class="secondary compact" type="button" data-slot-op="sos">Acionar S.O.S. para este horário</button><button class="primary compact" type="button" data-slot-op="schedule">Agendar cliente</button></div></div>`;
+    body.querySelector('[data-slot-op="sos"]').onclick=()=>openSosForSlot(time,professional);
+    body.querySelector('[data-slot-op="schedule"]').onclick=()=>{close('#appointmentDetailModal');openNew(time,professional);};
+    open('#appointmentDetailModal');
+  }
+
+  function openSosForSlot(time, professional){
+    write(SOS_CONTEXT_KEY,{date:dateKey(agendaDate),time,professional,source:'agenda-slot'});
+    window.location.href='sos.html?origem=agenda&horario=selecionado';
   }
 
   function showDetail(a){
@@ -102,7 +115,7 @@
     if(action==='start'){a.status='em_atendimento';a.startedAt=new Date().toISOString();saveState(state);showDetail(a);renderAppointments();return;}
     if(action==='finish'){a.status='concluido';a.finishedAt=new Date().toISOString();saveState(state);close('#appointmentDetailModal');openFinance(a);renderAppointments();return;}
     if(action==='finance'){close('#appointmentDetailModal');openFinance(a);return;}
-    if(action==='sos'){write(SOS_CONTEXT_KEY,{appointmentId:id,client:a.client,service:a.service,serviceId:a.serviceId||null,value:Number(a.value||0),date:a.date,time:a.time,professional:a.professional});window.location.href='sos.html?origem=agenda';}
+    if(action==='sos'){write(SOS_CONTEXT_KEY,{appointmentId:id,client:a.client,service:a.service,serviceId:a.serviceId||null,value:Number(a.value||0),date:a.date,time:a.time,professional:a.professional,source:'appointment'});window.location.href='sos.html?origem=agenda&atendimento='+encodeURIComponent(id);}
   }
 
   function openFinance(a){

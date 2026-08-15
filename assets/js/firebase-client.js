@@ -8,9 +8,15 @@
   }
   try {
     const app = window.firebase.apps.length ? window.firebase.app() : window.firebase.initializeApp(config);
+    const auth = window.firebase.auth();
+    try {
+      auth.setPersistence(window.firebase.auth.Auth.Persistence.LOCAL).catch((error) => console.warn('[BeautyMove] Firebase persistence setup failed:', error));
+    } catch (error) {
+      console.warn('[BeautyMove] Firebase persistence setup failed:', error);
+    }
     window.BeautyMoveFirebase = {
       app,
-      auth: window.firebase.auth(),
+      auth,
       db: window.firebase.firestore(),
       enabled: true
     };

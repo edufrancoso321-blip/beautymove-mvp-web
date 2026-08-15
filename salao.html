@@ -6,7 +6,7 @@
   <title>BeautyMove — Agenda</title>
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/agenda.css">
-  <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-6">
+  <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-7">
   <link rel="stylesheet" href="assets/css/agenda-clock.css?v=20260815-1">
   <link rel="stylesheet" href="assets/css/agenda-schedule.css?v=20260815-2">
 </head>
@@ -32,23 +32,44 @@
         <div><div class="eyebrow">OPERAÇÃO DO SALÃO</div><h1>Agenda</h1><p>Visualize e gerencie os atendimentos do dia.</p></div>
         <div class="salon-top-actions">
           <div class="current-clock" aria-label="Horário atual"><span class="current-clock-time">--:--:--</span><span class="current-clock-label">horário atual</span></div>
-          <button class="top-today" type="button" id="todayBtn">Hoje</button>
           <button class="top-notification" type="button" aria-label="Notificações"><span>3</span>♧</button>
           <div class="top-profile"><div class="avatar">A</div><div><strong>Salão Exemplo</strong><small>Administrador</small></div><b>⌄</b></div>
           <button class="secondary compact" type="button" id="newAppointmentBtn">Novo agendamento</button>
         </div>
       </header>
+
       <section class="agenda-toolbar-v2" aria-label="Controles da agenda">
         <div class="agenda-left-controls">
           <div class="agenda-calendar-control">
             <button class="calendar-button" type="button" id="calendarBtn" aria-label="Abrir calendário">▣&nbsp; Calendário</button>
             <input id="agendaDatePicker" type="date" aria-label="Escolher data">
           </div>
-          <select id="agendaInterval" aria-label="Intervalo da agenda" class="agenda-interval-left"><option value="30">30 em 30 minutos</option><option value="45">45 em 45 minutos</option><option value="60">1 em 1 hora</option></select>
+          <select id="agendaInterval" aria-label="Intervalo da agenda" class="agenda-interval-left">
+            <option value="30">30 em 30 minutos</option>
+            <option value="45">45 em 45 minutos</option>
+            <option value="60">1 em 1 hora</option>
+          </select>
         </div>
-        <div class="agenda-date-controls"><button class="icon-button" type="button" id="prevDay" aria-label="Dia anterior">‹</button><strong id="agendaDate">Hoje</strong><button class="icon-button" type="button" id="nextDay" aria-label="Próximo dia">›</button></div>
-        <div class="agenda-toolbar-right"><select id="professionalFilter" aria-label="Profissionais"><option>Todos os profissionais</option><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select><button class="secondary compact add-professional" type="button" id="addProfessionalBtn">Adicionar profissionais</button></div>
+
+        <div class="agenda-date-controls">
+          <button class="icon-button" type="button" id="prevDay" aria-label="Dia anterior">‹</button>
+          <button class="top-today agenda-today-button" type="button" id="todayBtn">Hoje</button>
+          <strong id="agendaDate">Hoje</strong>
+          <button class="icon-button" type="button" id="nextDay" aria-label="Próximo dia">›</button>
+        </div>
+
+        <div class="agenda-toolbar-right">
+          <select id="professionalFilter" aria-label="Profissionais">
+            <option>Todos os profissionais</option>
+            <option>Ana</option>
+            <option>Bruna</option>
+            <option>Paula</option>
+            <option>Carla</option>
+          </select>
+          <button class="secondary compact add-professional" type="button" id="addProfessionalBtn">Adicionar profissionais</button>
+        </div>
       </section>
+
       <section class="agenda-shell-v2" id="agendaGrid" aria-label="Agenda principal"></section>
       <div class="agenda-legend" aria-label="Legenda de status"><span class="legend-item"><i class="legend-dot"></i>Livre</span><span class="legend-item"><i class="legend-dot gray"></i>Agendado</span><span class="legend-item"><i class="legend-dot green"></i>Cliente chegou / em andamento</span><span class="legend-item"><i class="legend-dot red"></i>Atendimento finalizado</span><span class="legend-item"><i class="legend-dot purple"></i>S.O.S.</span></div>
       <div class="agenda-notice" id="agendaNotice" hidden></div>

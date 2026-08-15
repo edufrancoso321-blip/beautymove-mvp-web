@@ -9,30 +9,38 @@
   const esc = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const getServices = () => { try { return JSON.parse(localStorage.getItem(SERVICES_KEY) || '[]'); } catch { return []; } };
 
-  const serviceInput = field('#service');
+  const select = field('#service');
   const valueInput = field('#value');
-  const services = getServices().filter(item => item.status !== 'inativo');
+  const storedServices = getServices().filter(item => item.status !== 'inativo');
+  const fallbackServices = [
+    { id: 'svc-corte', name: 'Corte', value: 80 },
+    { id: 'svc-coloracao', name: 'Coloração', value: 150 },
+    { id: 'svc-escova', name: 'Escova', value: 60 },
+    { id: 'svc-manicure', name: 'Manicure', value: 55 },
+    { id: 'svc-pedicure', name: 'Pedicure', value: 60 },
+    { id: 'svc-limpeza-pele', name: 'Limpeza de pele', value: 120 }
+  ];
+  const services = storedServices.length ? storedServices : fallbackServices;
 
-  if (serviceInput && services.length) {
-    const select = document.createElement('select');
-    select.id = 'service';
-    select.name = 'service';
-    select.required = true;
+  if (select) {
     select.innerHTML = '<option value="">Selecione o serviço</option>' + services.map(service => `<option value="${esc(service.name)}" data-service-id="${esc(service.id)}">${esc(service.name)} — ${money(service.value)}</option>`).join('');
-    serviceInput.replaceWith(select);
-
     const syncValue = () => {
-      const service = services.find(item => item.name === select.value);
-      if (valueInput && !context?.appointmentId) valueInput.value = service ? Number(service.value).toFixed(2).replace('.', ',') : '';
+      const selected = services.find(item => item.name === select.value);
+      if (!selected || !valueInput || context?.appointmentId) return;
+      valueInput.value = Number(selected.value).toFixed(2).replace('.', ',');
+      valueInput.readOnly = true;
     };
     select.addEventListener('change', syncValue);
     window.__beautymoveSosService = () => services.find(item => item.name === select.value) || null;
 
-    if (context?.serviceId && services.some(item => item.id === context.serviceId)) select.value = services.find(item => item.id === context.serviceId).name;
-    else if (context?.service) {
+    if (context?.serviceId) {
+      const match = services.find(item => item.id === context.serviceId);
+      if (match) select.value = match.name;
+    } else if (context?.service) {
       const match = services.find(item => item.name.toLowerCase() === String(context.service).toLowerCase());
       if (match) select.value = match.name;
     }
+    if (select.value) syncValue();
   }
 
   if (context) {
@@ -44,9 +52,6 @@
       field('#value').setAttribute('aria-readonly', 'true');
       field('#value').style.background = '#f8f7fb';
       field('#value').style.cursor = 'not-allowed';
-    } else if (window.__beautymoveSosService) {
-      const selected = window.__beautymoveSosService();
-      if (selected && field('#value')) field('#value').value = Number(selected.value).toFixed(2).replace('.', ',');
     }
     const intro = document.querySelector('.form-head p');
     if (intro) intro.textContent = `S.O.S. vinculado ao atendimento de ${context.client || 'cliente'} às ${context.time || ''}. O serviço e o valor permanecem vinculados ao atendimento original.`;

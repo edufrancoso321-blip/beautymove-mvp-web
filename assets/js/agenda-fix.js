@@ -284,29 +284,21 @@
 
   function interceptClicks() {
     document.addEventListener('click', e => {
-      if (e.target.closest?.('#prevDay')) {
-        selectedDate.setDate(selectedDate.getDate() - 1);
-        return;
-      }
-      if (e.target.closest?.('#nextDay')) {
-        selectedDate.setDate(selectedDate.getDate() + 1);
-        return;
-      }
-      if (e.target.closest?.('#todayBtn')) {
-        selectedDate = new Date();
-        return;
-      }
+      if (e.target.closest?.('#prevDay')) { selectedDate.setDate(selectedDate.getDate() - 1); return; }
+      if (e.target.closest?.('#nextDay')) { selectedDate.setDate(selectedDate.getDate() + 1); return; }
+      if (e.target.closest?.('#todayBtn')) { selectedDate = new Date(); return; }
 
       const slot = e.target.closest?.('[data-slot]');
       if (slot) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
         const [time, ...rest] = slot.dataset.slot.split('-');
         const professional = rest.join('-');
         const state = getState();
         const currentDate = dateKey(selectedDate);
         const appointment = state.appointments.find(a => a.date === currentDate && a.time === time && a.professional === professional && a.status !== 'cancelado');
-        if (!appointment) openAppointment(time, professional);
+        if (appointment) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openAppointment(time, professional);
         return;
       }
 

@@ -6,9 +6,9 @@
   <title>BeautyMove — Agenda</title>
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/agenda.css">
-  <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-5">
+  <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-6">
   <link rel="stylesheet" href="assets/css/agenda-clock.css?v=20260815-1">
-  <link rel="stylesheet" href="assets/css/agenda-schedule.css?v=20260815-1">
+  <link rel="stylesheet" href="assets/css/agenda-schedule.css?v=20260815-2">
 </head>
 <body data-role="salao">
   <div class="salon-app">
@@ -24,6 +24,7 @@
         <a href="#">Relatórios</a>
         <a href="#">Financeiro</a>
         <a href="#">Configurações</a>
+        <button type="button" class="nav-schedule-settings" id="scheduleSettingsBtn">Configurar horários</button>
       </nav>
     </aside>
     <main class="salon-main">
@@ -38,12 +39,15 @@
         </div>
       </header>
       <section class="agenda-toolbar-v2" aria-label="Controles da agenda">
-        <div class="agenda-calendar-control">
-          <button class="calendar-button" type="button" id="calendarBtn" aria-label="Abrir calendário">▣&nbsp; Calendário</button>
-          <input id="agendaDatePicker" type="date" aria-label="Escolher data">
+        <div class="agenda-left-controls">
+          <div class="agenda-calendar-control">
+            <button class="calendar-button" type="button" id="calendarBtn" aria-label="Abrir calendário">▣&nbsp; Calendário</button>
+            <input id="agendaDatePicker" type="date" aria-label="Escolher data">
+          </div>
+          <select id="agendaInterval" aria-label="Intervalo da agenda" class="agenda-interval-left"><option value="30">30 em 30 minutos</option><option value="45">45 em 45 minutos</option><option value="60">1 em 1 hora</option></select>
         </div>
         <div class="agenda-date-controls"><button class="icon-button" type="button" id="prevDay" aria-label="Dia anterior">‹</button><strong id="agendaDate">Hoje</strong><button class="icon-button" type="button" id="nextDay" aria-label="Próximo dia">›</button></div>
-        <div class="agenda-toolbar-right"><select id="professionalFilter" aria-label="Profissionais"><option>Todos os profissionais</option><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select><button class="secondary compact add-professional" type="button" id="addProfessionalBtn">Adicionar profissionais</button><button class="secondary compact schedule-settings-button" type="button" id="scheduleSettingsBtn">Configurar horários</button><select id="agendaInterval" aria-label="Intervalo da agenda"><option value="30">30 em 30 minutos</option><option value="45">45 em 45 minutos</option><option value="60">1 em 1 hora</option></select></div>
+        <div class="agenda-toolbar-right"><select id="professionalFilter" aria-label="Profissionais"><option>Todos os profissionais</option><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select><button class="secondary compact add-professional" type="button" id="addProfessionalBtn">Adicionar profissionais</button></div>
       </section>
       <section class="agenda-shell-v2" id="agendaGrid" aria-label="Agenda principal"></section>
       <div class="agenda-legend" aria-label="Legenda de status"><span class="legend-item"><i class="legend-dot"></i>Livre</span><span class="legend-item"><i class="legend-dot gray"></i>Agendado</span><span class="legend-item"><i class="legend-dot green"></i>Cliente chegou / em andamento</span><span class="legend-item"><i class="legend-dot red"></i>Atendimento finalizado</span><span class="legend-item"><i class="legend-dot purple"></i>S.O.S.</span></div>
@@ -96,7 +100,7 @@
   <script src="assets/js/agenda-ui-fixes.js?v=20260815-1"></script>
   <script src="assets/js/agenda-services-filter.js?v=20260815-1"></script>
   <script src="assets/js/agenda-clock.js?v=20260815-1"></script>
-  <script src="assets/js/agenda-schedule.js?v=20260815-1"></script>
+  <script src="assets/js/agenda-schedule.js?v=20260815-2"></script>
   <script>
     document.getElementById('addProfessionalBtn')?.addEventListener('click',()=>{const n=document.getElementById('agendaNotice');if(n){n.textContent='Adicionar profissionais: utilize o cadastro de Profissionais para incluir novos nomes na agenda.';n.hidden=false;setTimeout(()=>n.hidden=true,4000);}});
   </script>

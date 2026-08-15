@@ -40,17 +40,17 @@
 .sos-header-button { height: 28px; padding: 0 10px; border: 1px solid var(--purple); border-radius: 7px; background: #fff; color: var(--purple); font-weight: 800; font-size: 11px; cursor: pointer; }
 .sos-header-button:hover { background: var(--purple-soft); }
 .free-cell { background: #fff; }
-.appointment-cell { color: var(--ink) !important; border-left: 3px solid #62606a; background: #fff; }
-.appointment-cell.status-progress { border-left-color: var(--success); background: #f1faf5; }
-.appointment-cell.status-finished { border-left-color: #c62828; background: #fff3f3; }
+.appointment-cell { color: var(--ink) !important; border-left: 3px solid #68666f; background: #f5f4f6; }
+.appointment-cell.status-progress { border-left-color: var(--success); background: #eaf8f0; }
+.appointment-cell.status-finished { border-left-color: #c62828; background: #fdeaea; }
 .appointment-cell.status-canceled { border-left-color: #cfd0d4; background: #fafafa; color: #8b8a90 !important; }
-.appointment-cell.status-scheduled { border-left-color: #68666f; background: #fff; }
+.appointment-cell.status-scheduled { border-left-color: #68666f; background: #f5f4f6; }
 .appointment-cell.status-sos { border-left-color: var(--purple); background: var(--purple-soft); }
+.appointment-cell.appointment-continuation { opacity: 1; }
 .appointment-cell strong, .appointment-cell span, .appointment-cell small { display: block; }
 .appointment-cell strong { font-size: 12px; margin-bottom: 2px; }
 .appointment-cell span { color: var(--muted); font-size: 11px; }
 .appointment-cell small { margin-top: 3px; color: var(--ink); font-weight: 700; font-size: 10px; }
-.appointment-continuation { opacity: .68; }
 .sos-free-cell { color: #aaa6b0 !important; background: #fff; }
 .sos-cell { background: var(--purple-soft) !important; color: var(--ink) !important; border-left: 3px solid var(--purple); }
 .sos-cell strong, .sos-cell span, .sos-cell small { display: block; }

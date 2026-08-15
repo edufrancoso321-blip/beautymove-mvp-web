@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/agenda.css">
   <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-5">
+  <link rel="stylesheet" href="assets/css/agenda-clock.css?v=20260815-1">
 </head>
 <body data-role="salao">
   <div class="salon-app">
@@ -28,6 +29,7 @@
       <header class="salon-topbar">
         <div><div class="eyebrow">OPERAÇÃO DO SALÃO</div><h1>Agenda</h1><p>Visualize e gerencie os atendimentos do dia.</p></div>
         <div class="salon-top-actions">
+          <div class="current-clock" aria-label="Horário atual"><span class="current-clock-time">--:--:--</span><span class="current-clock-label">horário atual</span></div>
           <button class="top-today" type="button" id="todayBtn">Hoje</button>
           <button class="top-notification" type="button" aria-label="Notificações"><span>3</span>♧</button>
           <div class="top-profile"><div class="avatar">A</div><div><strong>Salão Exemplo</strong><small>Administrador</small></div><b>⌄</b></div>
@@ -78,6 +80,7 @@
   <div class="modal" id="sosModal" aria-hidden="true"><div class="modal-backdrop" data-close-modal></div><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sosTitle"><button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button><div class="eyebrow">S.O.S. PROFISSIONAIS</div><h2 id="sosTitle">Solicitar profissional</h2><p class="sos-intro">A solicitação ficará registrada na coluna S.O.S. da agenda e será identificada exclusivamente em roxo.</p><form id="sosForm" class="modal-form-grid"><div class="field"><label for="sosClient">Cliente</label><input id="sosClient" name="client" required placeholder="Nome da cliente"></div><div class="field"><label for="sosService">Serviço</label><input id="sosService" name="service" required placeholder="Ex.: Corte + Escova"></div><div class="field"><label for="sosSpecialty">Especialidade</label><select id="sosSpecialty" name="specialty"><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div><div class="field"><label for="sosProfessional">Profissional selecionado</label><input id="sosProfessional" name="professional" placeholder="Deixe em branco para buscar"></div><div class="field"><label for="sosTime">Horário</label><select id="sosTime" name="time"></select></div><div class="field"><label for="sosRadius">Raio de busca</label><select id="sosRadius" name="radius"><option>5 km</option><option>10 km</option><option>20 km</option><option>Sem limite</option></select></div><div class="modal-actions full"><button class="secondary" type="button" data-close-modal>Cancelar</button><button class="primary compact" type="submit">Enviar S.O.S.</button></div></form></section></div>
   <script src="assets/js/agenda.js?v=20260815-3"></script>
   <script src="assets/js/agenda-ui-fixes.js?v=20260815-1"></script>
+  <script src="assets/js/agenda-clock.js?v=20260815-1"></script>
   <script>
     document.getElementById('addProfessionalBtn')?.addEventListener('click',()=>{const n=document.getElementById('agendaNotice');if(n){n.textContent='Adicionar profissionais: utilize o cadastro de Profissionais para incluir novos nomes na agenda.';n.hidden=false;setTimeout(()=>n.hidden=true,4000);}});
   </script>

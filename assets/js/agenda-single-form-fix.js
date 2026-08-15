@@ -5,7 +5,6 @@
   const SERVICES_KEY = 'beautymove.mvp.services';
   const PROFESSIONALS_KEY = 'beautymove.mvp.professionals';
   const SOS_CONTEXT_KEY = 'beautymove.mvp.sosContext';
-  const TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
 
   const read = (key, fallback) => {
     try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; }
@@ -37,6 +36,17 @@
   };
 
   let activeDate = new Date();
+  let installed = false;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .single-form-menu { padding:0 !important; overflow:hidden !important; max-height:none !important; }
+    .single-form-service-list { max-height:240px; overflow:auto; padding:7px; }
+    .service-picker-actions { display:flex; justify-content:flex-end; gap:8px; padding:10px; border-top:1px solid #eee7f5; background:#fff; position:sticky; bottom:0; }
+    .single-agenda-form .operation-actions { margin-top:4px; }
+    .single-form-actions { align-items:center; }
+  `;
+  document.head.appendChild(style);
 
   function openModal() {
     const modal = document.querySelector('#appointmentDetailModal');
@@ -103,9 +113,7 @@
     menu.querySelectorAll('input').forEach(input => input.onchange = () => {
       draftIds = input.checked ? [...new Set([...draftIds, input.value])] : draftIds.filter(id => id !== input.value);
     });
-    menu.querySelector('[data-service-cancel]').onclick = () => {
-      closeMenu();
-    };
+    menu.querySelector('[data-service-cancel]').onclick = closeMenu;
     menu.querySelector('[data-service-confirm]').onclick = () => {
       selectedIds = [...draftIds];
       confirmed = true;
@@ -132,17 +140,13 @@
     }));
     s.appointments.push({
       id: `apt-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
-      date,
-      time,
-      professional,
-      client: client.trim(),
+      date, time, professional, client: client.trim(),
       service: snapshot.map(x => x.name).join(' + '),
       serviceId: snapshot[0]?.id || null,
       serviceIds: snapshot.map(x => x.id),
       services: snapshot,
       value: Number(selection.total || 0),
-      status: 'agendado',
-      source: 'salao'
+      status: 'agendado', source: 'salao'
     });
     write(STATE_KEY, s);
   }
@@ -198,7 +202,7 @@
       if (!selection.confirmed || !selection.services.length) return;
       saveAppointment({ client, professional, date:dateKey(date), time, selection });
       closeModal();
-      document.dispatchEvent(new CustomEvent('beautymove:agenda-updated'));
+      window.location.reload();
     };
     body.querySelector('[data-single-sos]').onclick = () => {
       const selection = picker._getSelection();
@@ -226,27 +230,36 @@
     return state().appointments.some(a => a.date === current && a.time === time && a.professional === professional && a.status !== 'cancelado');
   }
 
+  function syncDateFromNavigation(button) {
+    if (!button) return;
+    const id = button.id;
+    if (id === 'todayBtn') activeDate = new Date();
+    if (id === 'prevDay') activeDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), activeDate.getDate() - 1);
+    if (id === 'nextDay') activeDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), activeDate.getDate() + 1);
+  }
+
   function install() {
+    if (installed) return;
+    installed = true;
     const agenda = document.querySelector('#agenda');
     if (!agenda) return;
 
-    agenda.addEventListener('click', event => {
-      const cell = event.target.closest('td[data-slot]');
-      if (!cell || isOccupied(...Object.values(getSlotFromCell(cell)))) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      const {time, professional} = getSlotFromCell(cell);
-      renderSingleForm(time, professional);
+    document.addEventListener('click', event => {
+      const navButton = event.target.closest('#todayBtn, #prevDay, #nextDay');
+      if (navButton) syncDateFromNavigation(navButton);
     }, true);
 
-    document.addEventListener('beautymove:agenda-updated', () => {
-      if (typeof window.renderAppointments === 'function') window.renderAppointments();
-      else window.location.reload();
-    });
-
-    document.querySelectorAll('[data-close-operation-modal]').forEach(el => el.addEventListener('click', closeModal));
+    agenda.addEventListener('click', event => {
+      const cell = event.target.closest('td[data-slot]');
+      if (!cell) return;
+      const {time, professional} = getSlotFromCell(cell);
+      if (isOccupied(time, professional)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      renderSingleForm(time, professional);
+    }, true);
   }
 
-  document.addEventListener('DOMContentLoaded', install);
-  if (document.readyState !== 'loading') install();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, {once:true});
+  else install();
 })();

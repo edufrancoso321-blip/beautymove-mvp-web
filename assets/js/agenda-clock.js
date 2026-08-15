@@ -7,6 +7,11 @@
     return new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
   }
 
+  function localDateKey(date){
+    const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');
+    return `${y}-${m}-${d}`;
+  }
+
   function updateClock(){
     const now=new Date();
     const hh=String(now.getHours()).padStart(2,'0');
@@ -30,6 +35,8 @@
       shell.appendChild(line);
     }
     const now=new Date();
+    const picker=document.querySelector('#agendaDatePicker');
+    if(picker&&picker.value&&picker.value!==localDateKey(now)){line.style.display='none';return;}
     const minutes=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
     const start=8*60;
     const end=18*60;

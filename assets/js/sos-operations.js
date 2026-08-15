@@ -1,96 +1,24 @@
-(function () {
-  if (!document.querySelector('#sosForm')) return;
-
-  const CONTEXT_KEY = 'beautymove.mvp.sosContext';
-  const SERVICES_KEY = 'beautymove.mvp.services';
-  const context = (() => { try { return JSON.parse(localStorage.getItem(CONTEXT_KEY) || 'null'); } catch { return null; } })();
-  const field = id => document.querySelector(id);
-  const money = value => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  const esc = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const getServices = () => { try { return JSON.parse(localStorage.getItem(SERVICES_KEY) || '[]'); } catch { return []; } };
-
-  const select = field('#service');
-  const valueInput = field('#value');
-  const storedServices = getServices().filter(item => item.status !== 'inativo');
-  const fallbackServices = [
-    { id: 'svc-corte', name: 'Corte', value: 80 },
-    { id: 'svc-coloracao', name: 'Coloração', value: 150 },
-    { id: 'svc-escova', name: 'Escova', value: 60 },
-    { id: 'svc-manicure', name: 'Manicure', value: 55 },
-    { id: 'svc-pedicure', name: 'Pedicure', value: 60 },
-    { id: 'svc-limpeza-pele', name: 'Limpeza de pele', value: 120 }
-  ];
-  const services = storedServices.length ? storedServices : fallbackServices;
-
-  if (select) {
-    select.innerHTML = '<option value="">Selecione o serviço</option>' + services.map(service => `<option value="${esc(service.name)}" data-service-id="${esc(service.id)}">${esc(service.name)} — ${money(service.value)}</option>`).join('');
-    const syncValue = () => {
-      const selected = services.find(item => item.name === select.value);
-      if (!selected || !valueInput || context?.appointmentId) return;
-      valueInput.value = Number(selected.value).toFixed(2).replace('.', ',');
-      valueInput.readOnly = true;
-    };
-    select.addEventListener('change', syncValue);
-    window.__beautymoveSosService = () => services.find(item => item.name === select.value) || null;
-
-    if (context?.serviceId) {
-      const match = services.find(item => item.id === context.serviceId);
-      if (match) select.value = match.name;
-    } else if (context?.service) {
-      const match = services.find(item => item.name.toLowerCase() === String(context.service).toLowerCase());
-      if (match) select.value = match.name;
-    }
-    if (select.value) syncValue();
-  }
-
-  if (context) {
-    if (field('#date') && context.date) field('#date').value = context.date;
-    if (field('#time') && context.time) field('#time').value = context.time;
-    if (field('#value') && context.value != null) {
-      field('#value').value = Number(context.value).toFixed(2).replace('.', ',');
-      field('#value').readOnly = true;
-      field('#value').setAttribute('aria-readonly', 'true');
-      field('#value').style.background = '#f8f7fb';
-      field('#value').style.cursor = 'not-allowed';
-    }
-    const intro = document.querySelector('.form-head p');
-    if (intro) intro.textContent = `S.O.S. vinculado ao atendimento de ${context.client || 'cliente'} às ${context.time || ''}. O serviço e o valor permanecem vinculados ao atendimento original.`;
-  }
-
-  const form = document.querySelector('#sosForm');
-  form?.addEventListener('submit', () => {
-    const selected = window.__beautymoveSosService?.();
-    if (!selected) return;
-    const hidden = document.createElement('input');
-    hidden.type = 'hidden';
-    hidden.name = 'serviceId';
-    hidden.value = selected.id;
-    form.appendChild(hidden);
-  }, true);
-
-  document.querySelectorAll('.select-professional').forEach(button => button.addEventListener('click', event => {
-    event.preventDefault(); event.stopImmediatePropagation();
-    const professional = button.closest('.card')?.querySelector('h2')?.textContent?.trim() || 'Profissional';
-    const state = getState();
-    const latest = state.opportunities.at(-1);
-    if (latest) {
-      updateState(next => {
-        const opportunity = next.opportunities.find(item => item.id === latest.id);
-        if (opportunity) { opportunity.status = 'aceita'; opportunity.acceptedBy = professional; }
-        if (context?.appointmentId) {
-          const appointment = next.appointments.find(item => item.id === context.appointmentId);
-          if (appointment) { appointment.professional = professional; appointment.status = 'confirmado'; appointment.source = 'sos'; }
-        }
-      });
-    } else if (context?.appointmentId) {
-      updateState(next => {
-        const appointment = next.appointments.find(item => item.id === context.appointmentId);
-        if (appointment) { appointment.professional = professional; appointment.status = 'confirmado'; appointment.source = 'sos'; }
-      });
-    }
-    localStorage.removeItem(CONTEXT_KEY);
-    button.disabled = true;
-    button.textContent = 'Profissional confirmado';
-    setTimeout(() => { window.location.href = 'salao.html'; }, 500);
-  }, true));
+/* BeautyMove — S.O.S. Profissionais v2 */
+(function(){
+  const form=document.querySelector('#sosForm');if(!form)return;
+  const STATE='beautymove.mvp.state',SERVICES='beautymove.mvp.services',CONTEXT='beautymove.mvp.sosContext';
+  const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k)||'null')??f}catch{return f}};
+  const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+  const ctx=read(CONTEXT,null), all=read(SERVICES,[]).filter(s=>s.status!=='inativo');
+  const specialty=document.querySelector('#specialty'),oldService=document.querySelector('#service'),value=document.querySelector('#value'),duration=document.querySelector('#duration'),date=document.querySelector('#date'),time=document.querySelector('#time');
+  const selectedIds=()=>Array.from(document.querySelectorAll('#sosServicePicker input:checked')).map(x=>x.value);
+  const selectedServices=()=>all.filter(s=>selectedIds().includes(s.id));
+  const total=()=>selectedServices().reduce((n,s)=>n+Number(s.value||0),0);
+  const dur=()=>selectedServices().reduce((n,s)=>n+Number(s.durationMinutes||30),0)||30;
+  if(oldService){const wrap=document.createElement('div');wrap.id='sosServicePicker';wrap.className='sos-service-picker';oldService.replaceWith(wrap)}
+  function renderServices(){const box=document.querySelector('#sosServicePicker');if(!box)return;const cat=specialty.value;const list=all.filter(s=>!cat||s.category===cat);const ctxIds=(ctx?.serviceIds||[]).filter(id=>list.some(s=>s.id===id));box.innerHTML=`<div class="sos-service-list">${list.map(s=>`<label><input type="checkbox" value="${esc(s.id)}" ${ctxIds.includes(s.id)?'checked':''}><span>${esc(s.name)}</span><strong>${money(s.value)} · ${Number(s.durationMinutes||30)} min</strong></label>`).join('')}</div><div class="sos-service-summary"><strong id="sosServiceSummary">Selecione um ou mais serviços</strong><span id="sosServiceTotal"></span></div>`;box.querySelectorAll('input').forEach(i=>i.onchange=sync);sync()}
+  function sync(){const items=selectedServices(),d=dur();const sum=document.querySelector('#sosServiceSummary'),tot=document.querySelector('#sosServiceTotal');if(sum)sum.textContent=items.length?`${items.length} serviço${items.length>1?'s':''} selecionado${items.length>1?'s':''}`:'Selecione um ou mais serviços';if(tot)tot.textContent=items.length?`${money(total())} · ${d} min`:'';if(value)value.value=items.length?total().toFixed(2).replace('.',','):'';if(duration&&items.length){duration.value=d<=30?'30 minutos':d<=45?'45 minutos':d<=60?'60 minutos':d<=90?'90 minutos':'120 minutos'}}
+  specialty?.addEventListener('change',()=>renderServices());
+  if(ctx?.date&&date)date.value=ctx.date;if(ctx?.time&&time)time.value=ctx.time;if(ctx?.services?.length){const cats=[...new Set(ctx.services.map(s=>s.category).filter(Boolean))];if(cats.length===1&&specialty)specialty.value=cats[0]}
+  renderServices();
+  form.addEventListener('submit',e=>{e.preventDefault();const items=selectedServices();if(!items.length)return alert('Selecione pelo menos um serviço para solicitar o S.O.S.');const st={appointments:[],opportunities:[],transactions:[],...read(STATE,{})},f=new FormData(form),op={id:`sos-${Date.now()}`,date:f.get('date'),time:f.get('time'),specialty:f.get('specialty'),serviceIds:items.map(s=>s.id),services:items.map(s=>({id:s.id,name:s.name,value:Number(s.value||0),category:s.category,durationMinutes:Number(s.durationMinutes||30)})),service:items.map(s=>s.name).join(' + '),value:total(),durationMinutes:dur(),radius:f.get('radius'),materials:f.get('materials'),notes:f.get('notes'),status:'aberta',createdAt:new Date().toISOString(),appointmentId:ctx?.appointmentId||null,client:ctx?.client||''};st.opportunities.push(op);if(ctx?.appointmentId){const a=st.appointments.find(x=>x.id===ctx.appointmentId);if(a){a.sosRequested=true;a.sosOpportunityId=op.id}}write(STATE,st);write(CONTEXT,{...ctx,...op});const results=document.querySelector('#results');if(results)results.hidden=false;const notice=document.querySelector('#sosNotice');if(notice){notice.hidden=false;notice.textContent='Solicitação S.O.S. criada. Escolha uma profissional disponível para enviar a oportunidade.'}window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},true);
+  document.querySelectorAll('.select-professional').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();const card=btn.closest('.card'),professional=card?.querySelector('h2')?.textContent?.trim()||'Profissional',st={appointments:[],opportunities:[],transactions:[],...read(STATE,{})},op=st.opportunities.filter(x=>x.status==='aberta').at(-1);if(op){op.status='enviada';op.sentTo=professional;op.sentAt=new Date().toISOString();if(op.appointmentId){const a=st.appointments.find(x=>x.id===op.appointmentId);if(a){a.professional=professional;a.status='confirmado';a.sosRequested=false;a.source='sos'}}write(STATE,st)}localStorage.removeItem(CONTEXT);btn.disabled=true;btn.textContent='Oportunidade enviada';setTimeout(()=>window.location.href='salao.html',500)},true));
+  const css=document.createElement('style');css.textContent=`.sos-service-list{border:1px solid #ddd6eb;border-radius:9px;max-height:240px;overflow:auto}.sos-service-list label{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:10px;border-bottom:1px solid #eee;cursor:pointer}.sos-service-list label:last-child{border-bottom:0}.sos-service-list label:hover{background:#f5f0ff}.sos-service-list input{accent-color:#7438ff}.sos-service-list strong{font-size:12px;color:#6f35e8}.sos-service-summary{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;color:#5f2fd0}.sos-service-summary span{font-weight:700}`;document.head.appendChild(css);
 })();

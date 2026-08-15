@@ -22,6 +22,13 @@
       cell.classList.add('appointment-start');
     });
   }
+  function decorateTodayLabel(){
+    const label=document.getElementById('agendaDate'), picker=document.getElementById('agendaDatePicker');
+    if(!label||!picker||!label.textContent.trim())return;
+    const now=new Date(), today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const base=label.textContent.replace(/^Hoje\s*·\s*/i,'').trim();
+    label.textContent=picker.value===today?`Hoje · ${base}`:base;
+  }
   function escapeHtml(value){return String(value??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
   document.addEventListener('DOMContentLoaded',function(){
     const calendarBtn=document.getElementById('calendarBtn'),picker=document.getElementById('agendaDatePicker');
@@ -31,9 +38,10 @@
       catch{picker.click();}
     });
     const grid=document.getElementById('agendaGrid'),interval=document.getElementById('agendaInterval');
-    const observer=new MutationObserver(()=>{decorateLongInterval();});
+    const observer=new MutationObserver(()=>{decorateLongInterval();decorateTodayLabel();});
     if(grid)observer.observe(grid,{childList:true,subtree:true});
-    interval?.addEventListener('change',()=>setTimeout(decorateLongInterval,0));
-    setTimeout(decorateLongInterval,0);
+    interval?.addEventListener('change',()=>setTimeout(()=>{decorateLongInterval();decorateTodayLabel();},0));
+    picker?.addEventListener('change',()=>setTimeout(decorateTodayLabel,0));
+    setTimeout(()=>{decorateLongInterval();decorateTodayLabel();},0);
   });
 })();

@@ -17,7 +17,26 @@
 .detailgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}.detailbox{border:1px solid var(--line);border-radius:9px;padding:11px}.detailbox span{display:block;color:var(--muted);font-size:10px}.detailbox strong{font-size:12px}.services-list{display:grid;gap:7px;margin:10px 0}.service-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--line);border-radius:9px;font-size:12px}.service-row small{color:var(--muted)}.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}.action{height:42px;border:1px solid var(--line);border-radius:9px;background:#fff;font-weight:750}.action.green{color:var(--green);border-color:#bde3cf}.action.red{color:var(--red);border-color:#efc1c1}.action.full{grid-column:1/-1}.finance{background:#faf9fb;padding:12px;border-radius:9px;margin-top:14px;color:var(--muted);font-size:12px}.finance strong{color:var(--ink)}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line)}.nav{display:flex;overflow:auto}.nav a{white-space:nowrap}.sidebottom{display:none}.main{padding:20px}.summary{grid-template-columns:1fr}.top,.toolbar{align-items:flex-start;flex-direction:column}.tools{width:100%;flex-wrap:wrap}.tools>*{flex:1}.form{grid-template-columns:1fr}.field.full{grid-column:auto}.detailgrid{grid-template-columns:1fr 1fr}}@media(max-width:560px){.main{padding:16px 12px}.detail-actions{grid-template-columns:1fr}.action.full{grid-column:auto}}
 </style>
-</head>
+<style id="beautymove-approved-layout">
+:root{--bm-p:#5b20d8;--bm-line:#e7e2ec}
+body{background:#fbfafc!important}
+.app{grid-template-columns:225px 1fr!important}
+.sidebar{background:#fff!important}
+.nav a.active{background:var(--bm-p)!important;color:#fff!important}
+.main{padding:24px 28px 38px!important}
+.top{border-bottom:1px solid var(--bm-line)!important;padding-bottom:18px!important}
+.toolbar{padding:17px 0 12px!important}
+.grid thead th{text-align:center!important;height:78px!important}
+.specialty{font-size:13px!important;font-weight:900!important;color:#312c39!important;text-align:center!important}
+.professional{font-size:16px!important;font-weight:900!important;text-align:center!important}
+.specialty-band{height:6px!important;border-radius:6px!important;margin:8px 10px 6px!important}
+.soscol,.sos-cell{width:225px!important;min-width:225px!important}
+.sostitle,.sos-head{color:var(--bm-p)!important;font-weight:900!important}
+.sosbutton{border-color:var(--bm-p)!important;color:var(--bm-p)!important;background:#fff!important}
+.sosbutton:hover{background:#f2eaff!important}
+.summary{grid-template-columns:1fr 1fr!important}
+.sidebottom{display:none!important}
+</style></head>
 <body>
 <div class="app">
 <aside class="sidebar"><div class="brand"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove"></div><nav class="nav"><a href="#">Início</a><a class="active" href="salao.html">Agenda</a><a href="#">Clientes</a><a href="#">Profissionais</a><a href="#">Serviços</a><a href="#">S.O.S. Profissionais</a><a href="#">Relatórios</a><a href="#">Financeiro</a><a href="#">Configurações</a></nav><div class="sidebottom"><strong>Operação do salão</strong>Agenda e controle dos atendimentos.</div></aside>

@@ -1,4 +1,6 @@
-/* BeautyMove — agenda duration engine v2 */
+/* BeautyMove — agenda duration engine v2
+   Duration is a planning/visualization aid only. It never blocks an overlap.
+*/
 (function () {
   if (document.body?.dataset?.role !== 'salao') return;
 
@@ -77,27 +79,16 @@
       cell.classList.add('bm-duration-occupied');
       cell.style.background=isStart?'#f0e9ff':'#faf8ff';
       cell.style.borderLeft=isStart?'3px solid #7438ff':'3px solid #e4dcf7';
-      cell.style.cursor=isStart?'pointer':'not-allowed';
+      cell.style.cursor='pointer';
       if(isStart){
         cell.innerHTML=`<strong>${esc(a.client)}</strong><span>${esc(apptServices(a).map(s=>s.name).join(' + '))}</span><small style="display:block;margin-top:3px;color:#6f35e8;font-weight:700">${esc(a.time)} – ${esc(t.endTime)} · ${fmt(t.duration)}</small>`;
       }else{
-        cell.innerHTML=`<span style="font-size:12px;color:#7b6f8e;font-weight:600">Ocupado até ${esc(t.endTime)}</span>`;
-        cell.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();};
+        cell.innerHTML=`<span style="font-size:12px;color:#7b6f8e;font-weight:600">${esc(a.client)} · até ${esc(t.endTime)}</span>`;
       }
     });
   }
 
-  function protectOverlap(e){
-    const form=e.target; if(!(form instanceof HTMLFormElement)||form.id!=='appointmentForm')return;
-    const picker=document.querySelector('#servicePicker'), professional=document.querySelector('#professionalName')?.value, startText=document.querySelector('#appointmentTime')?.value;
-    const selection=picker?._getSelected?.(); if(!professional||!startText||!selection?.services?.length)return;
-    const start=mins(startText),end=start+selection.services.reduce((sum,s)=>sum+durationFor(s),0), state=read(STATE_KEY,{appointments:[]});
-    const conflict=(state.appointments||[]).some(a=>a.status!=='cancelado'&&a.date===dateIso()&&a.professional===professional&&start<timing(a).end&&end>timing(a).start);
-    if(conflict){e.preventDefault();e.stopImmediatePropagation();alert(`Esse profissional já possui um atendimento nesse período.\n\nHorário solicitado: ${startText} – ${time(end)}.`);}
-  }
-
   function init(){
-    document.addEventListener('submit',protectOverlap,true);
     const detail=document.querySelector('#appointmentDetailBody'); if(detail)new MutationObserver(decorateMenus).observe(detail,{childList:true,subtree:true});
     const agenda=document.querySelector('#agendaBody');
     if(agenda){

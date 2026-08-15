@@ -6,7 +6,7 @@
   <title>BeautyMove — Agenda</title>
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/agenda.css">
-  <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-3">
+  <link rel="stylesheet" href="assets/css/agenda-approved-layout.css?v=20260815-4">
 </head>
 <body data-role="salao">
   <div class="salon-app">
@@ -23,16 +23,21 @@
         <a href="#">Financeiro</a>
         <a href="#">Configurações</a>
       </nav>
-      <div class="salon-sidebar-bottom"><strong>S.O.S. PROFISSIONAIS</strong><span>Solicite um profissional quando precisar.</span></div>
     </aside>
     <main class="salon-main">
       <header class="salon-topbar">
         <div><div class="eyebrow">OPERAÇÃO DO SALÃO</div><h1>Agenda</h1><p>Visualize e gerencie os atendimentos do dia.</p></div>
-        <div class="salon-top-actions"><button class="secondary compact" type="button" id="newAppointmentBtn">Novo agendamento</button></div>
+        <div class="salon-top-actions">
+          <button class="top-today" type="button" id="todayBtn">Hoje</button>
+          <button class="top-notification" type="button" aria-label="Notificações"><span>3</span>♧</button>
+          <div class="top-profile"><div class="avatar">A</div><div><strong>Salão Exemplo</strong><small>Administrador</small></div><b>⌄</b></div>
+          <button class="secondary compact" type="button" id="newAppointmentBtn">Novo agendamento</button>
+        </div>
       </header>
       <section class="agenda-toolbar-v2" aria-label="Controles da agenda">
+        <div class="agenda-view-tabs" role="tablist" aria-label="Visualização"><button class="active" type="button">Dia</button><button type="button">Semana</button><button type="button">Mês</button></div>
         <div class="agenda-date-controls"><button class="icon-button" type="button" id="prevDay" aria-label="Dia anterior">‹</button><strong id="agendaDate">Hoje</strong><button class="icon-button" type="button" id="nextDay" aria-label="Próximo dia">›</button></div>
-        <div class="agenda-toolbar-right"><button class="secondary compact" type="button" id="todayBtn">Hoje</button><input id="agendaDatePicker" type="date" aria-label="Escolher data"><select id="agendaInterval" aria-label="Intervalo da agenda"><option value="30">30 em 30 minutos</option><option value="45">45 em 45 minutos</option><option value="60">1 em 1 hora</option></select></div>
+        <div class="agenda-toolbar-right"><select id="professionalFilter" aria-label="Profissionais"><option>Todos os profissionais</option><option>Ana</option><option>Bruna</option><option>Paula</option><option>Carla</option></select><button class="secondary compact add-professional" type="button" id="addProfessionalBtn">Adicionar profissionais</button><input id="agendaDatePicker" type="date" aria-label="Escolher data"><select id="agendaInterval" aria-label="Intervalo da agenda"><option value="30">30 em 30 minutos</option><option value="45">45 em 45 minutos</option><option value="60">1 em 1 hora</option></select></div>
       </section>
       <section class="agenda-shell-v2" id="agendaGrid" aria-label="Agenda principal"></section>
       <div class="agenda-legend" aria-label="Legenda de status"><span class="legend-item"><i class="legend-dot"></i>Livre</span><span class="legend-item"><i class="legend-dot gray"></i>Agendado</span><span class="legend-item"><i class="legend-dot green"></i>Cliente chegou / em andamento</span><span class="legend-item"><i class="legend-dot red"></i>Atendimento finalizado</span><span class="legend-item"><i class="legend-dot purple"></i>S.O.S.</span></div>
@@ -69,5 +74,8 @@
 
   <div class="modal" id="sosModal" aria-hidden="true"><div class="modal-backdrop" data-close-modal></div><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sosTitle"><button class="modal-close" type="button" aria-label="Fechar" data-close-modal>×</button><div class="eyebrow">S.O.S. PROFISSIONAIS</div><h2 id="sosTitle">Solicitar profissional</h2><p class="sos-intro">A solicitação ficará registrada na coluna S.O.S. da agenda e será identificada exclusivamente em roxo.</p><form id="sosForm" class="modal-form-grid"><div class="field"><label for="sosClient">Cliente</label><input id="sosClient" name="client" required placeholder="Nome da cliente"></div><div class="field"><label for="sosService">Serviço</label><input id="sosService" name="service" required placeholder="Ex.: Corte + Escova"></div><div class="field"><label for="sosSpecialty">Especialidade</label><select id="sosSpecialty" name="specialty"><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div><div class="field"><label for="sosProfessional">Profissional selecionado</label><input id="sosProfessional" name="professional" placeholder="Deixe em branco para buscar"></div><div class="field"><label for="sosTime">Horário</label><select id="sosTime" name="time"></select></div><div class="field"><label for="sosRadius">Raio de busca</label><select id="sosRadius" name="radius"><option>5 km</option><option>10 km</option><option>20 km</option><option>Sem limite</option></select></div><div class="modal-actions full"><button class="secondary" type="button" data-close-modal>Cancelar</button><button class="primary compact" type="submit">Enviar S.O.S.</button></div></form></section></div>
   <script src="assets/js/agenda.js?v=20260815-2"></script>
+  <script>
+    document.getElementById('addProfessionalBtn')?.addEventListener('click',()=>{const n=document.getElementById('agendaNotice');if(n){n.textContent='Adicionar profissionais: utilize o cadastro de Profissionais para incluir novos nomes na agenda.';n.hidden=false;setTimeout(()=>n.hidden=true,4000);}});
+  </script>
 </body>
 </html>

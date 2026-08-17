@@ -54,21 +54,13 @@
   <script src="assets/js/agenda-services-filter.js?v=20260815-1"></script>
   <script src="assets/js/agenda-clock.js?v=20260815-1"></script>
   <script src="assets/js/agenda-schedule.js?v=20260815-2"></script>
-  <script src="assets/js/agenda-professional-control.js?v=20260817-5"></script>
-  <script src="assets/js/agenda-affected-appointments.js?v=20260817-2"></script>
+  <script src="assets/js/agenda-professional-control-stable.js?v=20260817-1"></script>
+  <script src="assets/js/agenda-affected-appointments-stable.js?v=20260817-1"></script>
   <script>
     const settingsMenuBtn=document.getElementById('settingsMenuBtn');
     const settingsSubmenu=document.getElementById('settingsSubmenu');
-    settingsMenuBtn?.addEventListener('click',()=>{
-      const open=settingsSubmenu?.hasAttribute('hidden');
-      if(!settingsSubmenu)return;
-      settingsSubmenu.toggleAttribute('hidden',!open);
-      settingsMenuBtn.setAttribute('aria-expanded',String(open));
-    });
-    document.getElementById('addProfessionalBtn')?.addEventListener('click',()=>{
-      const n=document.getElementById('agendaNotice');
-      if(n){n.textContent='Adicionar profissionais: utilize o cadastro de Profissionais para incluir novos nomes na agenda.';n.hidden=false;setTimeout(()=>n.hidden=true,4000);}
-    });
+    settingsMenuBtn?.addEventListener('click',()=>{const open=settingsSubmenu?.hasAttribute('hidden');if(!settingsSubmenu)return;settingsSubmenu.toggleAttribute('hidden',!open);settingsMenuBtn.setAttribute('aria-expanded',String(open));});
+    document.getElementById('addProfessionalBtn')?.addEventListener('click',()=>{const n=document.getElementById('agendaNotice');if(n){n.textContent='Adicionar profissionais: utilize o cadastro de Profissionais para incluir novos nomes na agenda.';n.hidden=false;setTimeout(()=>n.hidden=true,4000);}});
   </script>
 </body>
 </html>

@@ -50,4 +50,7 @@
 .professional-control-popover .occurrence-summary strong{font-size:0!important}
 .professional-control-popover .occurrence-summary strong::after{content:'Ocorrência';font-size:12px!important;font-weight:700!important;color:#17131f!important}
 .professional-control-popover .occurrence-summary span{display:block!important;font-size:11px!important;line-height:1.35!important;color:#6f6878!important}
+/* Nova sinalização: a linha de status recebe um preenchimento suave quando há ocorrência. */
+.professional-control-popover .popover-status{padding:8px 10px!important;border-radius:8px!important;margin-bottom:11px!important;background:#fff5f4!important;border:1px solid #f2d6d3!important;color:#5f5968!important}
+.professional-control-popover .popover-status strong{color:#17131f!important}
 @media (max-width:700px){.professional-control-modal .professional-actions{grid-template-columns:1fr}}

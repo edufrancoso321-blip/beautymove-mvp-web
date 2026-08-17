@@ -9,39 +9,29 @@
     const s=document.createElement('style');
     s.id='agendaHeaderLayoutStyles';
     s.textContent=`
-      .agenda-grid thead tr.agenda-specialty-row th.agenda-specialty-group{
-        text-align:center!important;
-        vertical-align:middle!important;
-        height:34px;
-        padding:7px 10px 5px!important;
-        font-size:11px!important;
-        font-weight:800!important;
-        color:#6f6878!important;
-        background:#fff!important;
-        border-bottom:1px solid #eee8f2!important;
-      }
-      .agenda-grid thead tr.agenda-professional-row th.professional-header-control{
-        vertical-align:top!important;
-        padding:7px 8px 8px!important;
-      }
-      .agenda-grid thead tr.agenda-professional-row .professional-name{
-        display:block;
-        margin-top:0!important;
-      }
-      .agenda-grid thead tr.agenda-professional-row .professional-day-status{
-        margin-top:4px!important;
-      }
-      .agenda-grid thead th.sos-col.agenda-sos-header-clean{
-        vertical-align:middle!important;
-        text-align:center!important;
-      }
-      .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-title{
-        display:block;
-        margin:0!important;
-      }
+      .agenda-grid thead tr.agenda-specialty-row th.agenda-specialty-group{text-align:center!important;vertical-align:middle!important;height:34px;padding:7px 10px 5px!important;font-size:11px!important;font-weight:800!important;color:#6f6878!important;background:#fff!important;border-bottom:1px solid #eee8f2!important}
+      .agenda-grid thead tr.agenda-professional-row th.professional-header-control{vertical-align:top!important;padding:7px 8px 8px!important}
+      .agenda-grid thead tr.agenda-professional-row .professional-name{display:block;margin-top:0!important}
+      .agenda-grid thead tr.agenda-professional-row .professional-day-status{margin-top:4px!important}
+      .agenda-grid thead th.sos-col.agenda-sos-header-clean{vertical-align:middle!important;text-align:center!important}
+      .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-title{display:block;margin:0!important}
       .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-header-button{display:none!important}
+      .agenda-grid thead th.sos-col.agenda-sos-action{vertical-align:top!important;text-align:center!important;padding:7px 8px 8px!important;font-size:11px!important;font-weight:700!important;color:#6f6878!important;background:#fff!important;border-top:0!important}
+      .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{display:block!important;margin-top:4px!important;line-height:1.25!important;font-weight:700!important;color:#6f6878!important}
     `;
     document.head.appendChild(s);
+  }
+
+  function sosActionLabel(){
+    try{
+      const raw=localStorage.getItem('beautymove.mvp.state');
+      const data=raw?JSON.parse(raw):{};
+      const appointments=Array.isArray(data.appointments)?data.appointments:[];
+      const opportunities=Array.isArray(data.opportunities)?data.opportunities:[];
+      const activeAppointment=appointments.some(a=>a&&a.sosRequested&&a.status!=='cancelado');
+      const activeOpportunity=opportunities.some(o=>o&&['aberta','em_busca','buscando'].includes(String(o.status||'').toLowerCase()));
+      return activeAppointment||activeOpportunity?'Buscando profissionais':'Aguardando ação';
+    }catch{return 'Aguardando ação'}
   }
 
   function apply(){
@@ -62,7 +52,7 @@
     profThs.forEach(th=>{
       const specialty=th.querySelector('.specialty-label')?.textContent.trim()||'';
       let group=specialtyGroups.find(g=>g.specialty===specialty);
-      if(!group){group={specialty,items:[]};specialtyGroups.push(group);}
+      if(!group){group={specialty,items:[]};specialtyGroups.push(group)}
       group.items.push(th);
       th.querySelector('.specialty-label')?.remove();
     });
@@ -80,7 +70,7 @@
       specialtyRow.appendChild(th);
     });
     const newSos=sosTh.cloneNode(true);
-    newSos.rowSpan=2;
+    newSos.rowSpan=1;
     newSos.classList.add('agenda-sos-header-clean');
     const button=newSos.querySelector('.sos-header-button');
     if(button)button.remove();
@@ -89,6 +79,11 @@
     const professionalRow=document.createElement('tr');
     professionalRow.className='agenda-professional-row';
     profThs.forEach(th=>professionalRow.appendChild(th));
+
+    const sosAction=document.createElement('th');
+    sosAction.className='sos-col agenda-sos-action';
+    sosAction.innerHTML=`<span class="sos-action-label">${sosActionLabel()}</span>`;
+    professionalRow.appendChild(sosAction);
 
     thead.innerHTML='';
     thead.appendChild(specialtyRow);

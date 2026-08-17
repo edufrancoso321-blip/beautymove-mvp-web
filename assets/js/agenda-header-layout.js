@@ -64,6 +64,7 @@
       let group=specialtyGroups.find(g=>g.specialty===specialty);
       if(!group){group={specialty,items:[]};specialtyGroups.push(group);}
       group.items.push(th);
+      th.querySelector('.specialty-label')?.remove();
     });
 
     const specialtyRow=document.createElement('tr');

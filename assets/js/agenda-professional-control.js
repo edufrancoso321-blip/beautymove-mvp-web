@@ -25,6 +25,22 @@
   function now(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
   function esc(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
   function closePopover(){if(popover){popover.remove();popover=null;}}
+  function splitTime(value){const parts=String(value||now()).split(':');return {hour:parts[0]||'00',minute:parts[1]||'00'};}
+  function selectedTime(pop){
+    const h=pop.querySelector('#absenceHour')?.value||'00';
+    const m=pop.querySelector('#absenceMinute')?.value||'00';
+    return `${h}:${m}`;
+  }
+  function setTimeFields(pop,value){
+    const t=splitTime(value);
+    const h=pop.querySelector('#absenceHour');const m=pop.querySelector('#absenceMinute');
+    if(h)h.value=t.hour;if(m)m.value=t.minute;
+  }
+  function timeOptions(max,selected){
+    let html='';
+    for(let i=0;i<=max;i++){const v=String(i).padStart(2,'0');html+=`<option value="${v}"${v===selected?' selected':''}>${v}</option>`;}
+    return html;
+  }
 
   function styles(){
     if(document.getElementById('professionalControlPopoverStyles'))return;
@@ -38,6 +54,7 @@
       .professional-control-popover .action-success{border-color:#b9dfca}.professional-control-popover .action-success strong{color:#147a4d}.professional-control-popover .action-warning{border-color:#ecd49c}.professional-control-popover .action-warning strong{color:#a86a00}.professional-control-popover .action-danger{border-color:#efc2c2}.professional-control-popover .action-danger strong{color:#c62828}
       .professional-control-popover .absence-panel{margin-top:10px;padding-top:10px;border-top:1px solid #eee8f2}.professional-control-popover .absence-panel label{display:block;font-size:11px;font-weight:600;color:#5f5968;margin-bottom:5px}
       .professional-control-popover .absence-panel select,.professional-control-popover .absence-panel input,.professional-control-popover .absence-panel textarea{width:100%;box-sizing:border-box;border:1px solid #ddd6e6;border-radius:8px;padding:8px;font:inherit;font-size:12px;background:#fff;margin-bottom:8px}.professional-control-popover .absence-panel textarea{min-height:52px;resize:vertical}
+      .professional-control-popover .time-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:2px}.professional-control-popover .time-field label{margin-bottom:4px}.professional-control-popover .time-field select{margin-bottom:0}
       .professional-control-popover .absence-panel .confirm-absence{width:100%;background:#7139ef;color:#fff;border-color:#7139ef;text-align:center;margin-top:2px}.professional-control-popover .absence-panel .cancel-absence{width:100%;text-align:center;margin-top:6px}
       .professional-control-popover .occurrence-summary{margin-top:9px;padding:8px 9px;border-radius:8px;background:#fff7f5;border:1px solid #f3d2cd;font-size:10px;color:#6f6878}.professional-control-popover .occurrence-summary strong{display:block;color:#b42318;font-size:11px}.professional-control-popover .edit-occurrence{width:100%;text-align:center;margin-top:7px}
       .professional-day-status{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:11px;font-weight:600;color:#667085}.professional-day-status .status-dot{width:7px;height:7px;border-radius:50%;background:#98a2b3}.professional-day-status.is-working .status-dot{background:#159957}.professional-day-status.is-late .status-dot{background:#d97706}.professional-day-status.is-absent .status-dot{background:#d92d20}
@@ -70,8 +87,9 @@
     styles();closePopover();
     const rec=record(name);const st=STATUS[rec.status]||STATUS.unregistered;const date=dateKey().split('-').reverse().join('/');
     const summary=rec.absenceType?`<div class="occurrence-summary"><strong>${rec.absenceType==='during_day'?'Interrupção do expediente':'Ausência registrada'}</strong><span>${esc(rec.absenceReason||'Sem motivo informado')}${rec.absenceStart?` · a partir de ${esc(rec.absenceStart)}`:''}</span></div><button type="button" class="edit-occurrence" data-edit-occurrence>Alterar ocorrência</button>`:'';
+    const currentTime=splitTime(rec.absenceStart||now());
     const p=document.createElement('div');popover=p;p.className='professional-control-popover';p.setAttribute('role','dialog');
-    p.innerHTML=`<div class="popover-title">${esc(name)}</div><div class="popover-date">Controle do dia · ${date}</div><div class="popover-status">Status: <strong>${st.label}</strong></div><div class="popover-actions"><button type="button" class="action-success" data-prof-action="working"><strong>Marcar presença</strong><small>Registra a entrada da profissional.</small></button><button type="button" class="action-warning" data-prof-action="late"><strong>Registrar atraso</strong><small>Registra chegada fora do horário.</small></button><button type="button" class="action-danger" data-prof-action="absent"><strong>Registrar ausência</strong><small>Não compareceu ou interrompeu o expediente.</small></button></div>${summary}<div class="absence-panel" id="absencePanel" hidden><label for="absenceType">Tipo de ausência</label><select id="absenceType"><option value="full_no_show">Não compareceu</option><option value="full_notice">Ausência com aviso prévio</option><option value="during_day">Interrupção do expediente</option></select><div id="interruptionFields" hidden><label for="absenceStart">Horário de saída</label><input id="absenceStart" type="time" value="${esc(rec.absenceStart||now())}"><label for="absenceReason">Motivo</label><select id="absenceReason"><option>Emergência médica</option><option>Mal-estar</option><option>Imprevisto pessoal</option><option>Outro motivo</option></select><div id="otherReasonField" hidden><label for="otherReason">Justificativa</label><textarea id="otherReason" placeholder="Descreva o motivo."></textarea></div></div><button type="button" class="confirm-absence" data-confirm-absence>Salvar</button><button type="button" class="cancel-absence" data-cancel-absence>Cancelar</button></div>`;
+    p.innerHTML=`<div class="popover-title">${esc(name)}</div><div class="popover-date">Controle do dia · ${date}</div><div class="popover-status">Status: <strong>${st.label}</strong></div><div class="popover-actions"><button type="button" class="action-success" data-prof-action="working"><strong>Marcar presença</strong><small>Registra a entrada da profissional.</small></button><button type="button" class="action-warning" data-prof-action="late"><strong>Registrar atraso</strong><small>Registra chegada fora do horário.</small></button><button type="button" class="action-danger" data-prof-action="absent"><strong>Registrar ausência</strong><small>Não compareceu ou interrompeu o expediente.</small></button></div>${summary}<div class="absence-panel" id="absencePanel" hidden><label for="absenceType">Tipo de ausência</label><select id="absenceType"><option value="full_no_show">Não compareceu</option><option value="full_notice">Ausência com aviso prévio</option><option value="during_day">Interrupção do expediente</option></select><div id="interruptionFields" hidden><label>Horário de saída</label><div class="time-fields"><div class="time-field"><label for="absenceHour">Hora</label><select id="absenceHour" aria-label="Hora da saída">${timeOptions(23,currentTime.hour)}</select></div><div class="time-field"><label for="absenceMinute">Minutos</label><select id="absenceMinute" aria-label="Minutos da saída">${timeOptions(59,currentTime.minute)}</select></div></div><label for="absenceReason">Motivo</label><select id="absenceReason"><option>Emergência médica</option><option>Mal-estar</option><option>Imprevisto pessoal</option><option>Outro motivo</option></select><div id="otherReasonField" hidden><label for="otherReason">Justificativa</label><textarea id="otherReason" placeholder="Descreva o motivo."></textarea></div></div><button type="button" class="confirm-absence" data-confirm-absence>Salvar</button><button type="button" class="cancel-absence" data-cancel-absence>Cancelar</button></div>`;
     document.body.appendChild(p);place(p,anchor);
 
     p.querySelectorAll('[data-prof-action]').forEach(b=>b.addEventListener('click',()=>{
@@ -85,12 +103,12 @@
     p.querySelector('[data-confirm-absence]')?.addEventListener('click',()=>{
       const type=p.querySelector('#absenceType').value,current=record(name);
       if(type==='during_day'){
-        const start=p.querySelector('#absenceStart').value||now();const reason=p.querySelector('#absenceReason').value;const other=p.querySelector('#otherReason')?.value.trim()||'';
+        const start=selectedTime(p);const reason=p.querySelector('#absenceReason').value;const other=p.querySelector('#otherReason')?.value.trim()||'';
         saveRecord(name,{status:'absent',absenceType:type,absenceStart:start,absenceReason:reason==='Outro motivo'?(other||'Outro motivo'):reason,presenceStart:current.presenceStart||'09:00',presenceEnd:start});
       }else saveRecord(name,{status:'absent',absenceType:type,absenceStart:null,absenceReason:type==='full_notice'?'Ausência com aviso prévio':'Não compareceu',presenceEnd:null});
     });
     p.querySelector('[data-cancel-absence]')?.addEventListener('click',()=>p.querySelector('#absencePanel').hidden=true);
-    p.querySelector('[data-edit-occurrence]')?.addEventListener('click',()=>{const cur=record(name);p.querySelector('#absenceType').value=cur.absenceType||'full_no_show';renderAbsenceForm(p,cur);if(cur.absenceType==='during_day')p.querySelector('#absenceStart').value=cur.absenceStart||now();});
+    p.querySelector('[data-edit-occurrence]')?.addEventListener('click',()=>{const cur=record(name);p.querySelector('#absenceType').value=cur.absenceType||'full_no_show';renderAbsenceForm(p,cur);if(cur.absenceType==='during_day')setTimeFields(p,cur.absenceStart||now());});
   }
 
   function saveRecord(name,patch){

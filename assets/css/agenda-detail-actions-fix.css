@@ -1,0 +1,13 @@
+/* BeautyMove — refinamento das ações do atendimento e estabilidade da Central S.O.S. */
+#detailsActions .action-button[data-detail-action="professional"],
+#detailsActions .action-button[data-detail-action="finance"]{display:none!important}
+#detailsActions .action-button[data-detail-action="arrived"]{background:#fff;border-color:#b9dfca;color:#147a4d;font-weight:800}
+#detailsActions .action-button[data-detail-action="finish"]{background:#fff;border-color:#e7b9b9;color:#b42318;font-weight:900}
+#detailsActions .action-button[data-detail-action="sos"]{background:#7438F5;color:#fff;border-color:#7438F5;font-weight:900;grid-column:1 / -1;box-shadow:0 4px 10px rgba(116,56,245,.14)}
+#detailsActions .action-button[data-detail-action="sos"]:hover{background:#6330d4;border-color:#6330d4}
+#agendaImpactBanner{display:none!important}
+#agendaWorkspace{display:grid!important;grid-template-columns:minmax(0,1fr) 300px!important;gap:12px!important;width:100%!important;min-width:0!important;align-items:stretch!important}
+#agendaWorkspace #agendaGrid{min-width:0!important;width:auto!important;margin:0!important}
+#sosOpportunityPanel{min-width:0!important;width:auto!important}
+@media(max-width:900px){#agendaWorkspace{grid-template-columns:minmax(0,1fr) 280px!important;gap:10px!important}}
+@media(max-width:760px){#agendaWorkspace{display:flex!important;flex-direction:column!important}.agenda-shell-v2{height:60vh!important}.sos-op-body{max-height:420px}}

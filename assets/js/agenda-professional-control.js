@@ -11,6 +11,8 @@
   };
   let activeModal=null;
   let renderingHeaders=false;
+  let gridObserver=null;
+  let renderQueued=false;
 
   function read(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}}
   function save(data){localStorage.setItem(KEY,JSON.stringify(data));}
@@ -154,16 +156,36 @@
     });
   }
 
+  function queueHeaderRender(){
+    if(renderQueued)return;
+    renderQueued=true;
+    requestAnimationFrame(()=>{
+      renderQueued=false;
+      renderHeaderStatuses();
+    });
+  }
+
+  function mutationNeedsHeaderRender(mutations){
+    return mutations.some(m=>{
+      if(m.type!=='childList')return false;
+      return [...m.addedNodes,...m.removedNodes].some(node=>{
+        if(node.nodeType!==1)return false;
+        const el=node;
+        return el.matches('table,thead,tbody,tr') || !!el.querySelector?.('.professional-name');
+      });
+    });
+  }
+
   function observeGrid(){
     const grid=document.querySelector('#agendaGrid');
-    if(grid){
-      renderHeaderStatuses();
-      const observer=new MutationObserver(mutations=>{
-        if(renderingHeaders)return;
-        if(mutations.some(m=>m.addedNodes.length||m.removedNodes.length))setTimeout(renderHeaderStatuses,0);
-      });
-      observer.observe(grid,{childList:true,subtree:true});
-    }
+    if(!grid)return;
+    renderHeaderStatuses();
+    if(gridObserver)gridObserver.disconnect();
+    gridObserver=new MutationObserver(mutations=>{
+      if(renderingHeaders)return;
+      if(mutationNeedsHeaderRender(mutations))queueHeaderRender();
+    });
+    gridObserver.observe(grid,{childList:true,subtree:true});
     bindProfessionalFilter();
   }
 

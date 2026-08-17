@@ -15,7 +15,7 @@
       .agenda-shell-v2 > .agenda-empty-bar,
       .agenda-shell-v2 > .agenda-alert-bar{display:none!important;height:0!important;margin:0!important;padding:0!important;border:0!important}
 
-      /* Linha 1: especialidades — maior e proporcional ao restante da Agenda. */
+      /* Linha 1: especialidades — mesmo padrão visual em toda a Agenda. */
       .agenda-grid thead tr.agenda-specialty-row th.agenda-specialty-group{
         text-align:center!important;
         vertical-align:middle!important;
@@ -47,7 +47,7 @@
         line-height:1.15!important;
       }
 
-      /* S.O.S.: mesma estrutura visual da linha de especialidades. */
+      /* S.O.S.: título segue a linha das especialidades, mas SEM barra superior. */
       .agenda-grid thead th.sos-col.agenda-sos-header-clean{
         vertical-align:middle!important;
         text-align:center!important;
@@ -67,22 +67,14 @@
         font-weight:900!important;
       }
       .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-header-button{display:none!important}
-      .agenda-grid thead th.sos-col.agenda-sos-header-clean::after{
-        content:''!important;
-        position:absolute!important;
-        left:12px!important;
-        right:12px!important;
-        bottom:0!important;
-        height:6px!important;
-        border-radius:6px 6px 0 0!important;
-        background:var(--purple)!important;
-      }
+      .agenda-grid thead th.sos-col.agenda-sos-header-clean::after{display:none!important}
 
-      /* Ação/status do S.O.S. fica na segunda linha, sem uma segunda barra. */
+      /* S.O.S.: status fica exatamente na segunda linha e a barra roxa fica ABAIXO dele,
+         alinhada ao limite inferior dos status dos profissionais à esquerda. */
       .agenda-grid thead th.sos-col.agenda-sos-action{
-        vertical-align:middle!important;
+        vertical-align:top!important;
         text-align:center!important;
-        padding:6px 8px 8px!important;
+        padding:6px 8px 10px!important;
         font-size:12px!important;
         font-weight:800!important;
         color:var(--purple)!important;
@@ -90,6 +82,7 @@
         border-top:0!important;
         border-bottom:0!important;
         position:relative!important;
+        height:0!important;
       }
       .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{
         display:block!important;
@@ -99,7 +92,16 @@
         font-weight:850!important;
         color:var(--purple)!important;
       }
-      .agenda-grid thead th.sos-col.agenda-sos-action::after{display:none!important}
+      .agenda-grid thead th.sos-col.agenda-sos-action::after{
+        content:''!important;
+        position:absolute!important;
+        left:12px!important;
+        right:12px!important;
+        bottom:0!important;
+        height:6px!important;
+        border-radius:6px 6px 0 0!important;
+        background:var(--purple)!important;
+      }
     `;
     document.head.appendChild(s);
   }

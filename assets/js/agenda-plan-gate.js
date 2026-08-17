@@ -1,48 +1,15 @@
-/* BeautyMove — Gate visual da Agenda por plano
- * O plano atual é controlado pelo módulo central plan-access.js.
- * Esta camada controla a interface; a autorização definitiva deverá existir no backend.
+/* BeautyMove — compatibilidade do controle de plano.
+ * O MVP não oculta mais a Agenda/S.O.S. por plano.
+ * Ocorrências continuam visíveis para todos; a camada premium protege apenas a resolução de oportunidades.
  */
 (function(){
-  const FEATURE='sos_opportunities';
-  const STYLE_ID='beautymove-plan-gate-style';
-
-  function ensureStyle(){
-    if(document.getElementById(STYLE_ID))return;
-    const style=document.createElement('style');
-    style.id=STYLE_ID;
-    style.textContent=`
-      html[data-beautymove-sos="locked"] .sos-col,
-      html[data-beautymove-sos="locked"] [data-sos-cell],
-      html[data-beautymove-sos="locked"] [data-sos-id],
-      html[data-beautymove-sos="locked"] .sos-metric,
-      html[data-beautymove-sos="locked"] .legend-item:has(.purple),
-      html[data-beautymove-sos="locked"] [data-feature="sos-opportunities"],
-      html[data-beautymove-sos="locked"] .opportunities-panel,
-      html[data-beautymove-sos="locked"] .salon-nav a[href="sos.html"] { display:none !important; }
-    `;
-    document.head.appendChild(style);
+  function apply(){
+    const plan=window.BeautyMovePlan?.getPlan?.()||'pago';
+    document.documentElement.dataset.beautymoveSos='enabled';
+    document.body.dataset.plan=plan;
+    document.body.dataset.sosEnabled='true';
   }
-
-  function applyGate(){
-    const enabled=window.BeautyMovePlan?.has(FEATURE)===true;
-    document.documentElement.dataset.beautymoveSos=enabled?'enabled':'locked';
-    if(enabled){
-      document.querySelectorAll('[data-feature="sos-opportunities"], .opportunities-panel').forEach(el=>el.hidden=false);
-      return;
-    }
-    document.querySelectorAll('#sosModal, .sos-header-button').forEach(el=>el.remove());
-    document.querySelectorAll('[data-feature="sos-opportunities"], .opportunities-panel').forEach(el=>el.hidden=true);
-  }
-
-  function init(){
-    if(!window.BeautyMovePlan)return;
-    ensureStyle();
-    applyGate();
-    const grid=document.getElementById('agendaGrid');
-    if(grid)new MutationObserver(applyGate).observe(grid,{childList:true,subtree:true});
-    document.addEventListener('beautymove:planchange',applyGate);
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-  else init();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});
+  else apply();
+  document.addEventListener('beautymove:planchange',apply);
 })();

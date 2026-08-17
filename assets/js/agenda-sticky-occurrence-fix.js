@@ -15,52 +15,42 @@
     s.id='agendaStickyOccurrenceStyles';
     s.textContent=`
       .agenda-grid{border-collapse:separate!important;border-spacing:0!important}
-      .agenda-grid thead{position:relative;z-index:20}
+      .agenda-grid thead{position:relative!important;z-index:50!important}
       .agenda-grid thead tr.agenda-specialty-row th{
         position:sticky!important;
         top:0!important;
-        z-index:22!important;
-        height:32px!important;
-        min-height:32px!important;
+        z-index:52!important;
+        height:36px!important;
+        min-height:36px!important;
         padding:5px 10px 4px!important;
         background:#fff!important;
-        font-size:13px!important;
-        line-height:1.15!important;
-        font-weight:800!important;
       }
       .agenda-grid thead tr.agenda-professional-row th{
         position:sticky!important;
-        top:var(--agenda-specialty-height,32px)!important;
-        z-index:21!important;
-        height:48px!important;
+        top:36px!important;
+        z-index:51!important;
         min-height:48px!important;
         padding:5px 8px 6px!important;
         background:#fff!important;
       }
-      .agenda-grid thead tr.agenda-professional-row .professional-name{
-        font-size:15px!important;
-        line-height:1.15!important;
-        font-weight:800!important;
+      .agenda-grid thead tr.agenda-specialty-row th.sos-col.agenda-sos-header-clean{
+        position:sticky!important;
+        top:0!important;
+        z-index:56!important;
+        background:#fff!important;
       }
-      .agenda-grid thead tr.agenda-professional-row .professional-day-status{
-        margin-top:3px!important;
-        font-size:11px!important;
-        line-height:1.15!important;
+      .agenda-grid thead tr.agenda-professional-row th.sos-col.agenda-sos-action{
+        position:sticky!important;
+        top:36px!important;
+        z-index:55!important;
+        background:#fff!important;
       }
-      .agenda-grid thead tr.agenda-specialty-row th.time-col,
-      .agenda-grid thead tr.agenda-professional-row th.time-col{z-index:24!important}
-      .agenda-grid thead th.sos-col{z-index:24!important}
-      .agenda-grid thead th.sos-col .sos-title{font-size:15px!important;line-height:1.15!important}
-      .agenda-grid thead th.sos-col.agenda-sos-action{font-size:11px!important}
-      .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{font-size:11px!important;line-height:1.2!important}
+      .agenda-grid thead tr.agenda-specialty-row th.time-col{z-index:58!important}
+      .agenda-grid thead tr.agenda-professional-row th.time-col{z-index:57!important}
+      .agenda-grid thead th.sos-col .sos-title{font-size:16px!important;line-height:1.15!important}
+      .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{font-size:12px!important;line-height:1.2!important}
       .agenda-grid tbody th.time-col,
-      .agenda-grid tbody td{
-        height:48px!important;
-        min-height:48px!important;
-        padding:6px 10px!important;
-        font-size:12px!important;
-      }
-      .agenda-grid tbody th.time-col{font-size:12px!important}
+      .agenda-grid tbody td{height:48px!important;min-height:48px!important;padding:6px 10px!important;font-size:12px!important}
       .agenda-grid .professional-absent-period{background:#fff7f5!important}
       .agenda-grid .professional-absence-marker{
         display:block!important;
@@ -70,7 +60,6 @@
         line-height:1.2!important;
         color:#b42318!important;
       }
-      .agenda-grid .professional-absence-marker + *{margin-top:0}
     `;
     document.head.appendChild(s);
   }
@@ -88,9 +77,13 @@
     const table=document.querySelector('#agendaGrid table.agenda-grid');
     if(!table)return;
     const first=table.querySelector('thead tr.agenda-specialty-row');
-    if(!first)return;
-    const h=Math.ceil(first.getBoundingClientRect().height||32);
+    const second=table.querySelector('thead tr.agenda-professional-row');
+    if(!first||!second)return;
+    const h=Math.ceil(first.getBoundingClientRect().height||36);
     table.style.setProperty('--agenda-specialty-height',h+'px');
+    second.querySelectorAll('th').forEach(th=>th.style.setProperty('top',h+'px'));
+    table.querySelectorAll('thead tr.agenda-specialty-row th.sos-col.agenda-sos-header-clean').forEach(th=>th.style.setProperty('top','0px'));
+    table.querySelectorAll('thead tr.agenda-professional-row th.sos-col.agenda-sos-action').forEach(th=>th.style.setProperty('top',h+'px'));
   }
 
   function occurrenceFor(name){
@@ -106,12 +99,7 @@
     const rows=[...table.querySelectorAll('tbody tr')];
     if(!rows.length)return;
     const professionalHeads=[...table.querySelectorAll('thead tr.agenda-professional-row th')];
-    const columnMap=new Map();
-    professionalHeads.forEach(th=>{
-      const name=th.querySelector('.professional-name')?.textContent.trim();
-      if(PEOPLE.includes(name))columnMap.set(name,th.cellIndex+1);
-    });
-    if(!columnMap.size)return;
+    if(!professionalHeads.length)return;
 
     const signature=JSON.stringify([dateKey(),localStorage.getItem(KEY),rows.length,professionalHeads.length]);
     if(signature===lastSignature){fixSticky();return;}
@@ -120,16 +108,31 @@
     table.querySelectorAll('.professional-absence-marker').forEach(e=>e.remove());
     table.querySelectorAll('.professional-absent-period').forEach(e=>e.classList.remove('professional-absent-period'));
 
+    const headsByName=new Map();
+    professionalHeads.forEach(th=>{
+      const name=th.querySelector('.professional-name')?.textContent.trim();
+      if(PEOPLE.includes(name))headsByName.set(name,th);
+    });
+
     const times=rows.map(row=>row.querySelector('th.time-col')?.textContent.trim()||'');
-    rows.forEach((row,rowIndex)=>{
-      const time=times[rowIndex];
-      if(!time)return;
-      const current=mins(time);
-      PEOPLE.forEach(name=>{
-        const occ=occurrenceFor(name);
-        if(!occ)return;
+    PEOPLE.forEach(name=>{
+      const occ=occurrenceFor(name);
+      const head=headsByName.get(name);
+      if(!head||!occ)return;
+
+      /* O cabeçalho já é a fonte visual oficial do status. Se a profissional está ausente,
+         a grade também recebe a ocorrência, independentemente da posição das colunas. */
+      const headerStatus=head.querySelector('.professional-day-status');
+      const isAbsent=headerStatus?.classList.contains('is-absent');
+      if(!isAbsent)return;
+
+      const col=head.cellIndex;
+      if(col<0)return;
+      rows.forEach((row,rowIndex)=>{
+        const time=times[rowIndex];
+        if(!time)return;
+        const current=mins(time);
         if(occ.type==='during_day'&&current<mins(occ.start))return;
-        const col=columnMap.get(name);
         const cell=row.children[col];
         if(!cell)return;
         cell.classList.add('professional-absent-period');
@@ -159,11 +162,11 @@
       new MutationObserver(()=>{
         if(queued)return;
         queued=true;
-        requestAnimationFrame(()=>{queued=false;run();});
+        requestAnimationFrame(()=>{queued=false;lastSignature='';run();});
       }).observe(grid,{childList:true,subtree:true});
     }
     document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{lastSignature='';run();});
-    window.addEventListener('resize',fixSticky);
+    window.addEventListener('resize',()=>{lastSignature='';fixSticky();renderOccurrences();});
     window.addEventListener('storage',()=>{lastSignature='';run();});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,450),{once:true});

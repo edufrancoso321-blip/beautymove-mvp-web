@@ -2,7 +2,6 @@
 #agendaWorkspace{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;flex:1;min-height:0;width:100%;align-items:stretch}
 #agendaWorkspace #agendaGrid{min-width:0!important;width:auto!important;margin-right:0!important;height:100%!important}
 #sosOpportunityPanel{position:relative!important;top:auto!important;right:auto!important;width:auto!important;max-width:none!important;height:100%!important;max-height:none!important;overflow:hidden!important;background:#fff;border:1px solid #ddd2f1;border-radius:14px;box-shadow:0 6px 18px rgba(66,38,104,.08);z-index:5!important;display:block!important;visibility:visible!important;opacity:1!important}
-
 .sos-op-shell{height:100%;min-height:0;display:flex;flex-direction:column;background:#fff}
 .sos-op-header{position:relative;padding:16px 15px 13px;border-bottom:1px solid #eee8f4;background:#fff;flex-shrink:0}
 .sos-op-header:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#7438F5;border-radius:14px 0 0 14px}
@@ -14,41 +13,20 @@
 .sos-op-state.active{background:#f0e9ff;color:#6330d4}
 .sos-op-state>span{width:6px;height:6px;border-radius:50%;background:#a7a0af}
 .sos-op-state.active>span{background:#7438F5;box-shadow:0 0 0 3px #e8ddff}
-
 .sos-op-body{padding:10px;overflow:auto;min-height:0;flex:1}
 .sos-op-empty{padding:22px 9px 14px;text-align:center;color:#6f6878;font-size:9px;line-height:1.45}
 .sos-op-empty-icon{width:30px;height:30px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;background:#f0eaff;color:#7438F5;font-weight:900;font-size:14px}
-.sos-op-empty strong{display:block;color:#32283d;font-size:12px;margin-bottom:4px}
-.sos-op-empty span{display:block}
-.sos-op-principle{margin:8px 0 2px;padding:10px;border:1px solid #ebe4f3;border-radius:9px;background:#fcfbfe}
-.sos-op-principle strong{display:block;font-size:9px;color:#43394d}
-.sos-op-principle span{display:block;margin-top:3px;font-size:8px;color:#777080;line-height:1.4}
-
+.sos-op-empty strong{display:block;color:#32283d;font-size:12px;margin-bottom:4px}.sos-op-empty span{display:block}
+.sos-op-queue{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:9px}
+.sos-op-queue-item{min-width:0;text-align:left;border:1px solid #e8e0f2;background:#fff;border-radius:8px;padding:7px 8px;cursor:pointer;color:#5c5268}
+.sos-op-queue-item.is-active{border-color:#cdbaf6;background:#f7f2ff;box-shadow:inset 3px 0 #7438F5}
+.sos-op-queue-item strong{display:block;font-size:10px;color:#7438F5}.sos-op-queue-item span{display:block;margin-top:2px;font-size:9px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sos-op-queue-item small{display:block;margin-top:2px;font-size:7.5px;color:#7b7186;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sos-op-alert{position:relative;border:1px solid #e1d7ef;border-left:4px solid #7438F5;border-radius:9px;padding:10px 10px 9px;margin-bottom:9px;background:#fff}
-.sos-op-alert-label{font-size:8px;font-weight:900;letter-spacing:.55px;color:#7438F5;margin-bottom:4px}
-.sos-op-alert strong{font-size:12px;font-weight:900;color:#30263a;display:block;line-height:1.3}
-.sos-op-alert div{margin-top:5px;font-size:9px;color:#6f6878}
-.sos-op-alert small{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:5px;background:#fff2f1;font-size:8px;color:#c23b32;font-weight:800}
-
-.sos-op-search-state{display:grid;grid-template-columns:9px 1fr;column-gap:7px;align-items:center;padding:8px 9px;margin-bottom:8px;border-radius:8px;background:#f5f0ff;border:1px solid #e7dcfa;color:#6330d4}
-.sos-op-search-dot{width:7px;height:7px;border-radius:50%;background:#7438F5;grid-row:1 / span 2;box-shadow:0 0 0 3px #e6dcff}
-.sos-op-search-state strong{font-size:9px;font-weight:900}
-.sos-op-search-state small{font-size:8px;color:#7a6b91;margin-top:1px}
-
-.sos-op-candidates-title{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:900;color:#51475c;margin:9px 1px 2px}
-.sos-op-candidates-title:before{content:"";width:3px;height:12px;border-radius:3px;background:#7438F5}
-.sos-op-candidate{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:7px;align-items:center;padding:9px 1px;border-top:1px solid #f0ebf3}
-.sos-op-avatar-placeholder{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#f0ebf7;color:#7438F5;font-weight:900;font-size:11px}
-.sos-op-candidate-main{min-width:0}
-.sos-op-candidate-name{font-size:9px;font-weight:800;color:#30263a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sos-op-candidate-name span{font-size:8px;color:#5f5667;margin-left:2px}
-.sos-op-candidate-data{margin-top:3px;font-size:8px;color:#6f6878}
-.sos-op-available{display:block;margin-top:2px;font-size:8px;color:#159447;font-weight:800}
-.sos-op-select{border:1px solid #7438F5;border-radius:7px;background:#fff;color:#7438F5;padding:6px 7px;font-size:8px;font-weight:900;cursor:pointer;white-space:nowrap;transition:.15s ease}
-.sos-op-select:hover{background:#7438F5;color:#fff;box-shadow:0 3px 8px rgba(116,56,245,.18)}
-.sos-op-footer{border-top:1px solid #eee8f4;padding:10px 10px;font-size:8px;color:#777080;text-align:center;background:#fcfbfe;flex-shrink:0}
-
+.sos-op-alert-label{font-size:8px;font-weight:900;letter-spacing:.55px;color:#7438F5;margin-bottom:4px}.sos-op-alert strong{font-size:12px;font-weight:900;color:#30263a;display:block;line-height:1.3}.sos-op-alert div{margin-top:5px;font-size:9px;color:#6f6878}.sos-op-alert small{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:5px;background:#f1eaff;font-size:8px;color:#6330d4;font-weight:800}
+.sos-op-search-state{display:grid;grid-template-columns:9px 1fr;column-gap:7px;align-items:center;padding:8px 9px;margin-bottom:8px;border-radius:8px;background:#f5f0ff;border:1px solid #e7dcfa;color:#6330d4}.sos-op-search-dot{width:7px;height:7px;border-radius:50%;background:#7438F5;grid-row:1 / span 2;box-shadow:0 0 0 3px #e6dcff}.sos-op-search-state strong{font-size:9px;font-weight:900}.sos-op-search-state small{font-size:8px;color:#7a6b91;margin-top:1px}
+.sos-op-candidates-title{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:900;color:#51475c;margin:9px 1px 2px}.sos-op-candidates-title:before{content:"";width:3px;height:12px;border-radius:3px;background:#7438F5}
+#sosCandidates{max-height:184px;overflow-y:auto;padding-right:2px}.sos-op-candidate{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:7px;align-items:center;padding:9px 1px;border-top:1px solid #f0ebf3}.sos-op-avatar-placeholder{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#f0ebf7;color:#7438F5;font-weight:900;font-size:11px}.sos-op-candidate-main{min-width:0}.sos-op-candidate-name{font-size:9px;font-weight:800;color:#30263a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sos-op-candidate-name span{font-size:8px;color:#5f5667;margin-left:2px}.sos-op-candidate-data{margin-top:3px;font-size:8px;color:#6f6878}.sos-op-available{display:block;margin-top:2px;font-size:8px;color:#159447;font-weight:800}.sos-op-select{border:1px solid #7438F5;border-radius:7px;background:#fff;color:#7438F5;padding:6px 7px;font-size:8px;font-weight:900;cursor:pointer;white-space:nowrap;transition:.15s ease}.sos-op-select:hover{background:#7438F5;color:#fff;box-shadow:0 3px 8px rgba(116,56,245,.18)}
+.sos-op-footer{border-top:1px solid #eee8f4;padding:10px;font-size:8px;color:#777080;text-align:center;background:#fcfbfe;flex-shrink:0}
 #agendaWorkspace #agendaGrid .agenda-shell-v2{height:100%!important}
-@media(max-width:1200px){#agendaWorkspace{grid-template-columns:minmax(0,1fr) 280px;gap:10px}#sosOpportunityPanel{height:100%!important}}
-@media(max-width:1050px){#agendaWorkspace{display:flex;flex-direction:column;gap:10px;overflow:visible}#agendaWorkspace #agendaGrid{height:58vh!important;flex:none!important}#sosOpportunityPanel{height:auto!important;max-height:520px!important}.sos-op-shell{height:auto!important}}
-@media(max-width:780px){#agendaWorkspace{display:flex;flex-direction:column}.agenda-shell-v2{height:60vh!important}.sos-op-body{max-height:420px}}
+@media(max-width:900px){#agendaWorkspace{grid-template-columns:minmax(0,1fr) 280px;gap:10px}#sosOpportunityPanel{height:100%!important}}
+@media(max-width:760px){#agendaWorkspace{display:flex;flex-direction:column}.agenda-shell-v2{height:60vh!important}.sos-op-body{max-height:520px}}

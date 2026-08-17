@@ -1,7 +1,8 @@
-/* BeautyMove — cabeçalho fixo, ocorrências e densidade visual da Agenda. */
+/* BeautyMove — cabeçalho fixo, ocorrências e controle correto do intervalo da Agenda. */
 (function(){
   'use strict';
   const KEY='beautymove.mvp.professional.daily-status';
+  const HOURS_KEY='beautymove.mvp.agenda.hours';
   const PEOPLE=['Ana','Bruna','Paula','Carla'];
   let lastSignature='';
 
@@ -35,10 +36,47 @@
     document.head.appendChild(s);
   }
 
-  function setDefaultInterval(){
+  function readHoursForDate(){
+    const fallback={open:'08:00',close:'18:00'};
+    try{
+      const week=JSON.parse(localStorage.getItem(HOURS_KEY)||'null');
+      const date=new Date(`${dateKey()}T12:00:00`);
+      if(Array.isArray(week)&&week.length===7)return week[date.getDay()]||fallback;
+    }catch{}
+    return fallback;
+  }
+
+  function syncTimeOptions(){
+    const intervalSelect=document.getElementById('agendaInterval');
+    const timeField=document.getElementById('appointmentTime');
+    const sosTime=document.getElementById('sosTime');
+    if(!intervalSelect||!timeField||!sosTime)return;
+    const interval=Number(intervalSelect.value)||60;
+    const hours=readHoursForDate();
+    const start=mins(hours.open),end=mins(hours.close);
+    const options=[];
+    for(let value=start;value<=end;value+=interval){
+      const h=String(Math.floor(value/60)).padStart(2,'0');
+      const m=String(value%60).padStart(2,'0');
+      options.push(`${h}:${m}`);
+    }
+    const current=timeField.value;
+    const sosCurrent=sosTime.value;
+    const html=options.map(t=>`<option value="${t}">${t}</option>`).join('');
+    timeField.innerHTML=html;
+    sosTime.innerHTML=html;
+    if(current && !options.includes(current))timeField.insertAdjacentHTML('beforeend',`<option value="${current}">${current}</option>`);
+    if(sosCurrent && !options.includes(sosCurrent))sosTime.insertAdjacentHTML('beforeend',`<option value="${sosCurrent}">${sosCurrent}</option>`);
+    if(current)timeField.value=current;
+    if(sosCurrent)sosTime.value=sosCurrent;
+  }
+
+  function setInitialDefaultInterval(){
     const select=document.getElementById('agendaInterval');
-    if(!select)return;
-    if(select.value!=='60'){select.value='60';select.dispatchEvent(new Event('change',{bubbles:true}));}
+    if(!select||window.__beautymoveAgendaIntervalInitialized)return;
+    window.__beautymoveAgendaIntervalInitialized=true;
+    select.value='60';
+    select.dispatchEvent(new Event('change',{bubbles:true}));
   }
 
   function fixSticky(){
@@ -74,9 +112,6 @@
     table.querySelectorAll('.professional-absence-marker').forEach(e=>e.remove());
     table.querySelectorAll('.professional-absent-period').forEach(e=>e.classList.remove('professional-absent-period'));
 
-    /* O cabeçalho pode conter colunas com rowspan/colspan. Não usamos cellIndex
-       para localizar a coluna da ocorrência, pois isso pode deslocar o status.
-       A coluna do corpo é definida pela ordem real dos profissionais. */
     const professionalHeadList=professionalHeads.filter(th=>PEOPLE.includes(th.querySelector('.professional-name')?.textContent.trim()||''));
     const headsByName=new Map();
     professionalHeadList.forEach((th,index)=>{
@@ -93,8 +128,6 @@
       const head=entry.head;
       const headerStatus=head.querySelector('.professional-day-status');
       if(!headerStatus?.classList.contains('is-absent'))return;
-
-      /* tbody: coluna 0 = Horário; profissionais começam na coluna 1. */
       const col=entry.index+1;
       rows.forEach((row,rowIndex)=>{
         const time=times[rowIndex]; if(!time)return;
@@ -114,12 +147,15 @@
     fixSticky();
   }
 
-  function run(){styles();setDefaultInterval();renderOccurrences();fixSticky();}
+  function run(){styles();setInitialDefaultInterval();syncTimeOptions();renderOccurrences();fixSticky();}
+
   function boot(){
     run();
+    const interval=document.getElementById('agendaInterval');
+    interval?.addEventListener('change',()=>{setTimeout(syncTimeOptions,0);});
     const grid=document.getElementById('agendaGrid');
     if(grid){let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;lastSignature='';run();});}).observe(grid,{childList:true,subtree:true});}
-    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{lastSignature='';run();});
+    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{lastSignature='';setTimeout(()=>{syncTimeOptions();run();},0);});
     window.addEventListener('resize',()=>{lastSignature='';fixSticky();renderOccurrences();});
     window.addEventListener('storage',()=>{lastSignature='';run();});
   }

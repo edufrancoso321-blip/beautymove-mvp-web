@@ -1,4 +1,7 @@
-/* BeautyMove — Gate visual da Agenda por plano */
+/* BeautyMove — Gate visual da Agenda por plano
+ * O plano atual é controlado pelo módulo central plan-access.js.
+ * Esta camada controla a interface; a autorização definitiva deverá existir no backend.
+ */
 (function(){
   const FEATURE='sos_opportunities';
   const STYLE_ID='beautymove-plan-gate-style';
@@ -10,10 +13,12 @@
     style.textContent=`
       html[data-beautymove-sos="locked"] .sos-col,
       html[data-beautymove-sos="locked"] [data-sos-cell],
+      html[data-beautymove-sos="locked"] [data-sos-id],
       html[data-beautymove-sos="locked"] .sos-metric,
       html[data-beautymove-sos="locked"] .legend-item:has(.purple),
       html[data-beautymove-sos="locked"] [data-feature="sos-opportunities"],
-      html[data-beautymove-sos="locked"] .opportunities-panel { display:none !important; }
+      html[data-beautymove-sos="locked"] .opportunities-panel,
+      html[data-beautymove-sos="locked"] .salon-nav a[href="sos.html"] { display:none !important; }
     `;
     document.head.appendChild(style);
   }
@@ -34,9 +39,7 @@
     ensureStyle();
     applyGate();
     const grid=document.getElementById('agendaGrid');
-    if(grid){
-      new MutationObserver(applyGate).observe(grid,{childList:true,subtree:true});
-    }
+    if(grid)new MutationObserver(applyGate).observe(grid,{childList:true,subtree:true});
     document.addEventListener('beautymove:planchange',applyGate);
   }
 

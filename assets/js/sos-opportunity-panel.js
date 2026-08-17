@@ -45,6 +45,17 @@ function render(){
  const sort=p.querySelector('#sosSort');sort?.addEventListener('change',()=>{const mode=sort.value;const sorted=[...candidates].sort((x,y)=>mode==='rating'?Number(y.rating.replace(',','.'))-Number(x.rating.replace(',','.')):mode==='distance'?parseFloat(x.distance)-parseFloat(y.distance):x.time-y.time;const box=p.querySelector('#sosCandidates');if(box)box.innerHTML=sorted.map(candidateMarkup).join('');bindSelect()});bindSelect();syncAgendaSos(list);
  function bindSelect(){p.querySelectorAll('.sos-op-select').forEach(btn=>btn.onclick=()=>{const n=document.getElementById('agendaNotice');if(n){n.textContent=`${btn.dataset.name} selecionada para avaliação da oportunidade.`;n.hidden=false;setTimeout(()=>n.hidden=true,4000)}})}
 }
-function boot(){render();let last='';const tick=()=>{const sig=JSON.stringify([dateKey(),localStorage.getItem(STATUS_KEY),localStorage.getItem(STATE_KEY)]);if(sig!==last){last=sig;render()}};setInterval(tick,1000);document.addEventListener('beautymove:planchange',render);document.getElementById('agendaDatePicker')?.addEventListener('change',render);const grid=document.getElementById('agendaGrid');if(grid)new MutationObserver(()=>setTimeout(()=>{render()},0)).observe(grid,{childList:true,subtree:true});}
+function boot(){
+ render();
+ let last='';
+ const tick=()=>{const sig=JSON.stringify([dateKey(),localStorage.getItem(STATUS_KEY),localStorage.getItem(STATE_KEY)]);if(sig!==last){last=sig;render()}};
+ setInterval(tick,1000);
+ document.addEventListener('beautymove:planchange',render);
+ document.getElementById('agendaDatePicker')?.addEventListener('change',render);
+ document.getElementById('agendaInterval')?.addEventListener('change',()=>setTimeout(render,80));
+ document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(render,80));
+ document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(render,80));
+ document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(render,80));
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,500),{once:true});else setTimeout(boot,500);
 })();

@@ -4,14 +4,13 @@
   const PROFESSIONALS=['Ana','Bruna','Paula','Carla'];
   const statusMap={
     unregistered:{label:'Sem registro',className:'unregistered'},
-    working:{label:'Trabalhando',className:'working'},
-    late:{label:'Atrasada',className:'late'},
-    absent:{label:'Ausente',className:'absent'},
-    unavailable:{label:'Indisponível',className:'unavailable'}
+    working:{label:'Presença registrada',className:'working'},
+    late:{label:'Atraso registrado',className:'late'},
+    absent:{label:'Ausência registrada',className:'absent'}
   };
-  let activeModal=null;
-  let renderingHeaders=false;
+  let activePopover=null;
   let gridObserver=null;
+  let renderingHeaders=false;
   let renderQueued=false;
 
   function read(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}}
@@ -25,98 +24,111 @@
   function keyFor(name){return `${dateKey()}::${name}`;}
   function getStatus(name){return read()[keyFor(name)]||'unregistered';}
   function escapeHtml(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
-  function getAppointments(name){
-    try{
-      const state=JSON.parse(localStorage.getItem('beautymove.mvp.state')||'null')||{};
-      return (state.appointments||[]).filter(a=>a.date===dateKey()&&a.professional===name&&a.status!=='cancelado').sort((a,b)=>String(a.time).localeCompare(String(b.time)));
-    }catch{return [];}
+
+  function removePopover(){
+    if(activePopover){activePopover.remove();activePopover=null;}
   }
 
-  function ensureModal(){
-    let modal=document.getElementById('professionalControlModal');
-    if(modal)return modal;
-    modal=document.createElement('div');
-    modal.className='modal professional-control-modal';
-    modal.id='professionalControlModal';
-    modal.setAttribute('aria-hidden','true');
-    modal.innerHTML=`<div class="modal-backdrop" data-prof-close></div>
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="professionalControlTitle">
-        <button class="modal-close" type="button" aria-label="Fechar" data-prof-close>×</button>
-        <div class="eyebrow">CONTROLE DA PROFISSIONAL</div>
-        <h2 id="professionalControlTitle">Profissional</h2>
-        <p class="modal-intro" id="professionalControlIntro">Controle operacional da profissional no dia.</p>
-        <div id="professionalControlBody"></div>
-      </section>`;
-    document.body.appendChild(modal);
-    modal.querySelectorAll('[data-prof-close]').forEach(el=>el.addEventListener('click',closeModal));
-    return modal;
+  function positionPopover(popover,anchor){
+    const r=anchor.getBoundingClientRect();
+    const gap=8;
+    const width=Math.min(360,Math.max(300,window.innerWidth-r.left-16));
+    popover.style.width=`${width}px`;
+    popover.style.left=`${Math.max(8,Math.min(r.left,window.innerWidth-width-8))}px`;
+    popover.style.top=`${r.bottom+gap}px`;
   }
 
-  function closeModal(){
-    const modal=document.getElementById('professionalControlModal');
-    if(!modal)return;
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden','true');
-    activeModal=null;
+  function ensurePopoverStyles(){
+    if(document.getElementById('professionalControlPopoverStyles'))return;
+    const style=document.createElement('style');
+    style.id='professionalControlPopoverStyles';
+    style.textContent=`
+      .professional-control-popover{position:fixed;z-index:10050;background:#fff;border:1px solid #e5def4;border-radius:12px;box-shadow:0 14px 34px rgba(32,18,65,.16);padding:16px;color:#17131f;font-family:inherit;}
+      .professional-control-popover .popover-title{font-size:17px;font-weight:800;margin:0 0 3px;}
+      .professional-control-popover .popover-date{font-size:12px;color:#6f6878;margin-bottom:12px;}
+      .professional-control-popover .popover-status{font-size:12px;padding:8px 10px;border-radius:8px;background:#faf9fc;margin-bottom:12px;color:#5f5968;}
+      .professional-control-popover .popover-actions{display:grid;gap:8px;}
+      .professional-control-popover button{font:inherit;text-align:left;cursor:pointer;background:#fff;border:1px solid #e4dfeb;border-radius:9px;padding:10px 12px;}
+      .professional-control-popover button:hover{background:#faf8ff;border-color:#7b3ff2;}
+      .professional-control-popover button strong{display:block;font-size:14px;}
+      .professional-control-popover button small{display:block;font-size:11px;color:#746d7d;margin-top:2px;}
+      .professional-control-popover .action-success{border-color:#b9dfca;}.professional-control-popover .action-success strong{color:#147a4d;}
+      .professional-control-popover .action-warning{border-color:#ecd49c;}.professional-control-popover .action-warning strong{color:#a86a00;}
+      .professional-control-popover .action-danger{border-color:#efc2c2;}.professional-control-popover .action-danger strong{color:#c62828;}
+      .professional-control-popover .absence-options{margin-top:10px;padding-top:10px;border-top:1px solid #eee8f2;}
+      .professional-control-popover .absence-options h4{font-size:12px;margin:0 0 8px;color:#4d4657;}
+      .professional-control-popover .absence-choice{display:flex;align-items:center;gap:8px;padding:7px 4px;font-size:12px;cursor:pointer;}
+      .professional-control-popover .absence-choice input{accent-color:#7139ef;}
+      .professional-control-popover textarea{width:100%;box-sizing:border-box;min-height:58px;resize:vertical;border:1px solid #ddd6e6;border-radius:8px;padding:8px;font:inherit;font-size:12px;margin-top:7px;}
+      .professional-control-popover .confirm-absence{width:100%;margin-top:8px;background:#7139ef;color:#fff;border-color:#7139ef;text-align:center;}
+      .professional-control-popover .confirm-absence:hover{background:#6330dc;color:#fff;}
+    `;
+    document.head.appendChild(style);
   }
 
-  function openModal(name){
+  function openControl(name,anchor){
     if(!PROFESSIONALS.includes(name))return;
-    const modal=ensureModal();
-    const body=modal.querySelector('#professionalControlBody');
-    const title=modal.querySelector('#professionalControlTitle');
-    const intro=modal.querySelector('#professionalControlIntro');
+    ensurePopoverStyles();
+    removePopover();
+    const pop=document.createElement('div');
+    pop.className='professional-control-popover';
+    pop.setAttribute('role','dialog');
+    pop.setAttribute('aria-label',`Controle de ${name}`);
     const status=statusMap[getStatus(name)]||statusMap.unregistered;
-    const appointments=getAppointments(name);
-    title.textContent=name;
-    intro.textContent='Controle a situação da profissional e veja os atendimentos afetados no dia.';
-    body.innerHTML=`
-      <div class="professional-status-card">
-        <div class="status-main ${status.className}"><i class="status-dot" aria-hidden="true"></i><div><div class="status-label">${status.label}</div><div class="status-date">${dateKey().split('-').reverse().join('/')}</div></div></div>
+    const date=dateKey().split('-').reverse().join('/');
+    pop.innerHTML=`
+      <div class="popover-title">${escapeHtml(name)}</div>
+      <div class="popover-date">Controle de hoje · ${date}</div>
+      <div class="popover-status">Status: <strong>${status.label}</strong></div>
+      <div class="popover-actions">
+        <button type="button" class="action-success" data-prof-action="working"><strong>Marcar presença</strong><small>Confirma que veio trabalhar normalmente.</small></button>
+        <button type="button" class="action-warning" data-prof-action="late"><strong>Registrar atraso</strong><small>Registra que veio, mas chegou atrasada.</small></button>
+        <button type="button" class="action-danger" data-prof-action="absent"><strong>Registrar ausência</strong><small>Registra a ausência no dia selecionado.</small></button>
       </div>
-      <div class="professional-actions">
-        <button class="professional-action action-success" data-prof-action="working">Marcar presença<small>Confirma que a profissional veio trabalhar.</small></button>
-        <button class="professional-action action-warning" data-prof-action="late">Registrar atraso<small>Indica que chegou ou chegará atrasada.</small></button>
-        <button class="professional-action action-danger" data-prof-action="absent">Registrar ausência<small>Marca a profissional como ausente no dia selecionado.</small></button>
-        <button class="professional-action" data-prof-action="unavailable">Marcar indisponível<small>Bloqueia a disponibilidade operacional no dia selecionado.</small></button>
-        <button class="professional-action action-primary" data-prof-action="appointments">Ver atendimentos do dia<small>${appointments.length} atendimento(s) encontrado(s).</small></button>
-        ${status.className==='absent'&&appointments.length?'<button class="professional-action action-primary" data-prof-action="replacement">Buscar substituto<small>Encaminha os atendimentos afetados para o fluxo S.O.S. Profissionais.</small></button>':''}
-      </div>
-      ${status.className==='absent'&&appointments.length?'<div class="absence-warning">Esta ausência afeta atendimentos programados para o dia selecionado.</div>':''}
-      <div class="professional-day-list" id="professionalDayList" hidden></div>`;
-    body.querySelectorAll('[data-prof-action]').forEach(btn=>btn.addEventListener('click',()=>handleAction(name,btn.dataset.profAction)));
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden','false');
-    activeModal=modal;
-  }
+      <div class="absence-options" id="absenceOptions" hidden>
+        <h4>Motivo da ausência</h4>
+        <label class="absence-choice"><input type="radio" name="absenceReason" value="aviso_previo" checked> Ausência com aviso prévio</label>
+        <label class="absence-choice"><input type="radio" name="absenceReason" value="nao_compareceu"> Não compareceu</label>
+        <label class="absence-choice"><input type="radio" name="absenceReason" value="outro"> Outro motivo</label>
+        <textarea id="absenceJustification" placeholder="Justificativa / observação (opcional)"></textarea>
+        <button type="button" class="confirm-absence" data-confirm-absence>Registrar ausência</button>
+      </div>`;
+    document.body.appendChild(pop);
+    positionPopover(pop,anchor||document.getElementById('professionalFilter'));
+    activePopover=pop;
 
-  function handleAction(name,action){
-    if(['working','late','absent','unavailable'].includes(action)){
+    pop.querySelectorAll('[data-prof-action]').forEach(btn=>btn.addEventListener('click',()=>{
+      const action=btn.dataset.profAction;
+      if(action==='absent'){
+        pop.querySelector('#absenceOptions').hidden=false;
+        pop.querySelector('#absenceOptions').scrollIntoView({block:'nearest'});
+        return;
+      }
+      setStatus(name,action);
+    }));
+    pop.querySelector('[data-confirm-absence]')?.addEventListener('click',()=>{
+      const reason=pop.querySelector('input[name="absenceReason"]:checked')?.value||'aviso_previo';
+      const justification=pop.querySelector('#absenceJustification')?.value.trim()||'';
       const data=read();
-      data[keyFor(name)]=action;
+      data[keyFor(name)]={status:'absent',reason,justification,updatedAt:new Date().toISOString()};
       save(data);
       renderHeaderStatuses();
-      openModal(name);
-      return;
-    }
-    if(action==='appointments'){
-      const list=document.getElementById('professionalDayList');
-      if(!list)return;
-      const appointments=getAppointments(name);
-      list.hidden=false;
-      list.innerHTML=`<h3>Atendimentos do dia</h3>${appointments.length?appointments.map(a=>`<div class="professional-appointment-row"><div><strong>${escapeHtml(a.client||'Cliente')}</strong><span>${escapeHtml(a.service||'Serviço')}</span></div><span>${escapeHtml(a.time||'')} ${typeof agendaAppointmentEnd==='function'?'– '+escapeHtml(agendaAppointmentEnd(a)):''}</span></div>`).join(''):'<div class="professional-appointment-row"><span>Nenhum atendimento programado.</span></div>'}`;
-      return;
-    }
-    if(action==='replacement'){
-      closeModal();
-      const sos=document.querySelector('.sos-header-button');
-      if(sos)sos.click();
-      else if(typeof window.openSosModal==='function')window.openSosModal();
-      else{
-        const notice=document.getElementById('agendaNotice');
-        if(notice){notice.textContent='Ausência registrada. Abra o S.O.S. Profissionais para buscar um substituto.';notice.hidden=false;setTimeout(()=>notice.hidden=true,4500);}
-      }
-    }
+      removePopover();
+    });
+  }
+
+  function setStatus(name,action){
+    const data=read();
+    data[keyFor(name)]={status:action,updatedAt:new Date().toISOString()};
+    save(data);
+    renderHeaderStatuses();
+    removePopover();
+  }
+
+  function getStoredStatus(name){
+    const raw=getStatus(name);
+    if(typeof raw==='string')return raw;
+    return raw?.status||'unregistered';
   }
 
   function renderHeaderStatuses(){
@@ -132,15 +144,15 @@
       th.setAttribute('tabindex','0');
       th.setAttribute('role','button');
       th.setAttribute('aria-label',`Abrir controle de ${name}`);
-      const s=statusMap[getStatus(name)]||statusMap.unregistered;
+      const s=statusMap[getStoredStatus(name)]||statusMap.unregistered;
       let statusEl=th.querySelector('.professional-day-status');
       if(!statusEl){statusEl=document.createElement('span');statusEl.className='professional-day-status';th.appendChild(statusEl);}
       statusEl.className=`professional-day-status is-${s.className}`;
       statusEl.innerHTML=`<i class="status-dot" aria-hidden="true"></i>${s.label}`;
       if(!th.dataset.profControlBound){
         th.dataset.profControlBound='1';
-        th.addEventListener('click',e=>{if(e.target.closest('button,a'))return;openModal(name);});
-        th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(name);}});
+        th.addEventListener('click',e=>{if(e.target.closest('button,a'))return;openControl(name,document.getElementById('professionalFilter'));});
+        th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openControl(name,document.getElementById('professionalFilter'));}});
       }
     });
     renderingHeaders=false;
@@ -152,28 +164,21 @@
     filter.dataset.controlBound='1';
     filter.addEventListener('change',()=>{
       const name=filter.value.trim();
-      if(PROFESSIONALS.includes(name))openModal(name);
+      if(PROFESSIONALS.includes(name))openControl(name,filter);
     });
   }
 
   function queueHeaderRender(){
     if(renderQueued)return;
     renderQueued=true;
-    requestAnimationFrame(()=>{
-      renderQueued=false;
-      renderHeaderStatuses();
-    });
+    requestAnimationFrame(()=>{renderQueued=false;renderHeaderStatuses();});
   }
 
   function mutationNeedsHeaderRender(mutations){
-    return mutations.some(m=>{
-      if(m.type!=='childList')return false;
-      return [...m.addedNodes,...m.removedNodes].some(node=>{
-        if(node.nodeType!==1)return false;
-        const el=node;
-        return el.matches('table,thead,tbody,tr') || !!el.querySelector?.('.professional-name');
-      });
-    });
+    return mutations.some(m=>m.type==='childList'&&[...m.addedNodes,...m.removedNodes].some(node=>{
+      if(node.nodeType!==1)return false;
+      return node.matches('table,thead,tbody,tr')||!!node.querySelector?.('.professional-name');
+    }));
   }
 
   function observeGrid(){
@@ -181,13 +186,15 @@
     if(!grid)return;
     renderHeaderStatuses();
     if(gridObserver)gridObserver.disconnect();
-    gridObserver=new MutationObserver(mutations=>{
-      if(renderingHeaders)return;
-      if(mutationNeedsHeaderRender(mutations))queueHeaderRender();
-    });
+    gridObserver=new MutationObserver(mutations=>{if(!renderingHeaders&&mutationNeedsHeaderRender(mutations))queueHeaderRender();});
     gridObserver.observe(grid,{childList:true,subtree:true});
     bindProfessionalFilter();
   }
 
+  document.addEventListener('click',e=>{
+    if(activePopover&&!activePopover.contains(e.target)&&!e.target.closest('#professionalFilter'))removePopover();
+  });
+  window.addEventListener('resize',()=>{if(activePopover)positionPopover(activePopover,document.getElementById('professionalFilter'));});
+  window.addEventListener('scroll',()=>{if(activePopover)positionPopover(activePopover,document.getElementById('professionalFilter'));},true);
   document.addEventListener('DOMContentLoaded',()=>setTimeout(observeGrid,250));
 })();

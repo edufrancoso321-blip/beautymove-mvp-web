@@ -1,4 +1,4 @@
-/* Controle operacional da profissional na Agenda */
+/* Controle operacional da profissional na Agenda — versão corrigida */
 .professional-header-control{cursor:pointer;position:relative;transition:background .15s ease}
 .professional-header-control:hover{background:#faf8ff}
 .professional-header-control:focus-visible{outline:2px solid #6f35ff;outline-offset:-2px}
@@ -9,6 +9,13 @@
 .professional-day-status.is-late .status-dot{background:#d97706}
 .professional-day-status.is-absent .status-dot{background:#d92d20}
 .professional-day-status.is-unavailable .status-dot{background:#667085}
+.professional-control-modal{display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;padding:20px;background:transparent}
+.professional-control-modal.is-open{display:flex!important}
+.professional-control-modal .modal-backdrop{position:absolute;inset:0;background:rgba(23,19,31,.35)!important;z-index:0}
+.professional-control-modal .modal-card{position:relative;z-index:1;width:min(680px,calc(100vw - 40px));max-height:calc(100vh - 40px);overflow:auto;background:#fff!important;color:#17131f!important;border:1px solid #e8e3ee;border-radius:16px;padding:28px;box-shadow:0 24px 80px rgba(20,10,30,.22)!important}
+.professional-control-modal h2,.professional-control-modal h3,.professional-control-modal strong{color:#17131f}
+.professional-control-modal .modal-intro{color:#6d6875!important}
+.professional-control-modal .modal-close{color:#6d6875!important;background:transparent!important;z-index:2}
 .professional-control-modal .professional-status-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid #ece8f5;border-radius:12px;background:#faf9fc;margin:16px 0}
 .professional-control-modal .status-main{display:flex;align-items:center;gap:10px}
 .professional-control-modal .status-main .status-dot{width:10px;height:10px;border-radius:50%;background:#98a2b3}
@@ -16,21 +23,21 @@
 .professional-control-modal .status-main.late .status-dot{background:#d97706}
 .professional-control-modal .status-main.absent .status-dot{background:#d92d20}
 .professional-control-modal .status-main.unavailable .status-dot{background:#667085}
-.professional-control-modal .status-label{font-weight:700;color:#171717}
-.professional-control-modal .status-date{font-size:12px;color:#667085}
+.professional-control-modal .status-label{font-weight:700;color:#17131f!important}
+.professional-control-modal .status-date{font-size:12px;color:#667085!important}
 .professional-control-modal .professional-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
-.professional-control-modal .professional-action{min-height:46px;border:1px solid #e5e1ee;border-radius:10px;background:#fff;color:#171717;font-weight:600;cursor:pointer;padding:10px 12px;text-align:left}
-.professional-control-modal .professional-action:hover{border-color:#cfc2f4;background:#fbf9ff}
-.professional-control-modal .professional-action.action-success{border-color:#b7dfc8}
-.professional-control-modal .professional-action.action-danger{border-color:#f1b8b5}
-.professional-control-modal .professional-action.action-warning{border-color:#efd6a3}
-.professional-control-modal .professional-action.action-primary{border-color:#d8c8ff;color:#5b22d6}
-.professional-control-modal .professional-action small{display:block;margin-top:3px;font-size:11px;font-weight:400;color:#667085}
+.professional-control-modal .professional-action{min-height:58px;border:1px solid #e5e1ee;border-radius:10px;background:#fff!important;color:#17131f!important;font-weight:600;cursor:pointer;padding:10px 12px;text-align:left}
+.professional-control-modal .professional-action:hover{border-color:#cfc2f4;background:#fbf9ff!important}
+.professional-control-modal .professional-action.action-success{border-color:#b7dfc8;color:#13734b!important}
+.professional-control-modal .professional-action.action-danger{border-color:#f1b8b5;color:#b42318!important}
+.professional-control-modal .professional-action.action-warning{border-color:#efd6a3;color:#8a5a00!important}
+.professional-control-modal .professional-action.action-primary{border-color:#d8c8ff;color:#5b22d6!important}
+.professional-control-modal .professional-action small{display:block;margin-top:3px;font-size:11px;font-weight:400;color:#667085!important}
 .professional-control-modal .professional-day-list{border-top:1px solid #eeeaf4;margin-top:18px;padding-top:14px}
 .professional-control-modal .professional-day-list h3{font-size:14px;margin:0 0 10px}
 .professional-control-modal .professional-appointment-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f0edf5;font-size:13px}
 .professional-control-modal .professional-appointment-row:last-child{border-bottom:0}
 .professional-control-modal .professional-appointment-row strong{display:block}
-.professional-control-modal .professional-appointment-row span{color:#667085}
-.professional-control-modal .absence-warning{padding:11px 12px;border-radius:9px;background:#fff5f4;color:#b42318;font-size:12px;margin-top:12px}
+.professional-control-modal .professional-appointment-row span{color:#667085!important}
+.professional-control-modal .absence-warning{padding:11px 12px;border-radius:9px;background:#fff5f4!important;color:#b42318!important;font-size:12px;margin-top:12px}
 @media (max-width:700px){.professional-control-modal .professional-actions{grid-template-columns:1fr}}

@@ -1,4 +1,4 @@
-/* BeautyMove — correção do cabeçalho fixo e das ocorrências após a reorganização do thead. */
+/* BeautyMove — cabeçalho fixo, ocorrências e densidade visual da Agenda. */
 (function(){
   'use strict';
   const KEY='beautymove.mvp.professional.daily-status';
@@ -8,7 +8,6 @@
   const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}};
   const dateKey=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
   const mins=v=>{const [h,m]=String(v||'00:00').split(':').map(Number);return (Number(h)||0)*60+(Number(m)||0);};
-  const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
 
   function styles(){
     if(document.getElementById('agendaStickyOccurrenceStyles'))return;
@@ -21,19 +20,47 @@
         position:sticky!important;
         top:0!important;
         z-index:22!important;
+        height:32px!important;
+        min-height:32px!important;
+        padding:5px 10px 4px!important;
         background:#fff!important;
+        font-size:13px!important;
+        line-height:1.15!important;
+        font-weight:800!important;
       }
       .agenda-grid thead tr.agenda-professional-row th{
         position:sticky!important;
-        top:var(--agenda-specialty-height,34px)!important;
+        top:var(--agenda-specialty-height,32px)!important;
         z-index:21!important;
+        height:48px!important;
+        min-height:48px!important;
+        padding:5px 8px 6px!important;
         background:#fff!important;
       }
-      .agenda-grid thead tr.agenda-specialty-row th.time-col,
-      .agenda-grid thead tr.agenda-professional-row th.time-col{
-        z-index:24!important;
+      .agenda-grid thead tr.agenda-professional-row .professional-name{
+        font-size:15px!important;
+        line-height:1.15!important;
+        font-weight:800!important;
       }
+      .agenda-grid thead tr.agenda-professional-row .professional-day-status{
+        margin-top:3px!important;
+        font-size:11px!important;
+        line-height:1.15!important;
+      }
+      .agenda-grid thead tr.agenda-specialty-row th.time-col,
+      .agenda-grid thead tr.agenda-professional-row th.time-col{z-index:24!important}
       .agenda-grid thead th.sos-col{z-index:24!important}
+      .agenda-grid thead th.sos-col .sos-title{font-size:15px!important;line-height:1.15!important}
+      .agenda-grid thead th.sos-col.agenda-sos-action{font-size:11px!important}
+      .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{font-size:11px!important;line-height:1.2!important}
+      .agenda-grid tbody th.time-col,
+      .agenda-grid tbody td{
+        height:48px!important;
+        min-height:48px!important;
+        padding:6px 10px!important;
+        font-size:12px!important;
+      }
+      .agenda-grid tbody th.time-col{font-size:12px!important}
       .agenda-grid .professional-absent-period{background:#fff7f5!important}
       .agenda-grid .professional-absence-marker{
         display:block!important;
@@ -48,12 +75,21 @@
     document.head.appendChild(s);
   }
 
+  function setDefaultInterval(){
+    const select=document.getElementById('agendaInterval');
+    if(!select)return;
+    if(select.value!=='60'){
+      select.value='60';
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+  }
+
   function fixSticky(){
     const table=document.querySelector('#agendaGrid table.agenda-grid');
     if(!table)return;
     const first=table.querySelector('thead tr.agenda-specialty-row');
     if(!first)return;
-    const h=Math.ceil(first.getBoundingClientRect().height||34);
+    const h=Math.ceil(first.getBoundingClientRect().height||32);
     table.style.setProperty('--agenda-specialty-height',h+'px');
   }
 
@@ -73,7 +109,7 @@
     const columnMap=new Map();
     professionalHeads.forEach(th=>{
       const name=th.querySelector('.professional-name')?.textContent.trim();
-      if(PEOPLE.includes(name))columnMap.set(name,th.cellIndex);
+      if(PEOPLE.includes(name))columnMap.set(name,th.cellIndex+1);
     });
     if(!columnMap.size)return;
 
@@ -114,7 +150,7 @@
     fixSticky();
   }
 
-  function run(){styles();renderOccurrences();fixSticky();}
+  function run(){styles();setDefaultInterval();renderOccurrences();fixSticky();}
   function boot(){
     run();
     const grid=document.getElementById('agendaGrid');

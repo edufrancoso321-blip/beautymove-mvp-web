@@ -46,6 +46,12 @@
     </main>
     <footer class="footer">BeautyMove © 2026</footer>
   </div>
+  <script src="assets/js/plan-access.js?v=20260817-1"></script>
+  <script>
+    if(!window.BeautyMovePlan?.has('sos_opportunities')){
+      window.location.replace('salao.html?feature=sos-locked');
+    }
+  </script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/sos-operations.js"></script>
 </body>

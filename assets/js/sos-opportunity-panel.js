@@ -1,61 +1,206 @@
-/* BeautyMove — Central de Oportunidades S.O.S. — vínculo real entre ocorrência, atendimento e solução. */
-(function(){'use strict';
-const STATUS_KEY='beautymove.mvp.professional.daily-status';
-const STATE_KEY='beautymove.mvp.state';
-const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f}catch{return f}};
-const dateKey=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
-const mins=v=>{const p=String(v||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0)};
-const endMins=a=>mins(a.time)+Math.max(30,Number(a.duration)||60);
-const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
-const candidates=[{name:'Juliana Costa',rating:'4,9',time:15,distance:'2,3 km',photo:'https://i.pravatar.cc/80?img=47'},{name:'Lucas Ferreira',rating:'4,8',time:18,distance:'3,1 km',photo:'https://i.pravatar.cc/80?img=12'},{name:'Bianca Rodrigues',rating:'4,7',time:22,distance:'4,2 km',photo:'https://i.pravatar.cc/80?img=32'},{name:'Carla Menezes',rating:'4,6',time:25,distance:'4,8 km',photo:'https://i.pravatar.cc/80?img=44'},{name:'Rafael Santos',rating:'4,5',time:28,distance:'5,0 km',photo:'https://i.pravatar.cc/80?img=11'}];
-function opportunityForAppointment(a,r){
- if(!r||!a||a.status==='cancelado')return false;
- if(r.status==='absent'){
-   if(r.absenceType==='during_day'&&r.absenceStart)return endMins(a)>mins(r.absenceStart);
-   return r.absenceType==='full_no_show'||r.absenceType==='full_notice'||!r.absenceType;
- }
- if(r.status==='late'&&r.lateStart)return mins(a.time)<mins(r.lateStart);
- return false;
-}
-function opportunities(){
- const d=dateKey(),st=read(STATUS_KEY,{}),s=read(STATE_KEY,{appointments:[]}),apps=Array.isArray(s.appointments)?s.appointments:[],out=[];
- Object.entries(st).forEach(([key,r])=>{
-   if(!key.startsWith(d+'::')||!r||!['absent','late'].includes(r.status))return;
-   const professional=key.slice(d.length+2);
-   apps.filter(a=>a.date===d&&a.professional===professional&&opportunityForAppointment(a,r)).forEach(a=>out.push({...a,professional,reason:r.absenceReason||'Ocorrência registrada',occurrence:r,kind:r.status}));
- });
- return out.sort((a,b)=>mins(a.time)-mins(b.time));
-}
-function ensure(){let p=document.getElementById('sosOpportunityPanel');if(p)return p;p=document.createElement('aside');p.id='sosOpportunityPanel';p.setAttribute('aria-label','Central de Oportunidades S.O.S.');document.body.appendChild(p);return p}
-function candidateMarkup(c){return `<div class="sos-op-candidate"><img class="sos-op-avatar" src="${c.photo}" alt=""><div class="sos-op-candidate-main"><div class="sos-op-candidate-name">${esc(c.name)} <span class="sos-op-candidate-rating">★ ${c.rating}</span></div><div class="sos-op-candidate-data"><span>◷ ${c.time} min</span><span>⌖ ${c.distance}</span></div><span class="sos-op-available">● Disponível</span></div><button type="button" class="sos-op-select" data-name="${esc(c.name)}">Selecionar</button></div>`}
-function syncAgendaSos(list){
- document.querySelectorAll('#agendaGrid td[data-sos-cell="true"]').forEach(cell=>{cell.classList.remove('sos-opportunity-active');cell.innerHTML='Livre';});
- list.forEach(item=>{
-   const cell=[...document.querySelectorAll('#agendaGrid td[data-sos-cell="true"]')].find(x=>mins(item.time)<=mins(x.dataset.time)&&endMins(item)>mins(x.dataset.time));
-   if(!cell)return;
-   cell.classList.add('sos-opportunity-active');
-   cell.innerHTML=`<strong>${esc(item.client||'Atendimento afetado')}</strong><span>${esc(item.service||'Atendimento')}</span><small>${esc(item.kind==='late'?'Atraso':'Ausência')} · ${esc(item.professional)} · ${esc(item.time)}</small>`;
- });
-}
-function render(){
- const p=ensure(),list=opportunities();
- if(!list.length){p.innerHTML=`<div class="sos-op-shell"><header class="sos-op-header"><div class="sos-op-kicker"><span class="sos-op-bolt">⚡</span><span>S.O.S. EM AÇÃO</span></div><div class="sos-op-subtitle">Central de Oportunidades</div><div class="sos-op-state"><span class="sos-op-state-dot"></span>Central pronta</div></header><div class="sos-op-body"><div class="sos-op-empty"><div class="sos-op-empty-icon">✓</div><strong>Tudo sob controle</strong><span>Quando um atendimento for afetado, a Central S.O.S. abrirá aqui a busca por profissionais.</span></div><div class="sos-op-principle"><strong>Resolver, não duplicar.</strong><span>A Agenda identifica o problema. O S.O.S. encontra a solução.</span></div></div></div>`;syncAgendaSos([]);return;}
- const a=list[0],service=a.service||'Atendimento afetado',kindLabel=a.kind==='late'?'Atraso':'Ausência';
- p.innerHTML=`<div class="sos-op-shell"><header class="sos-op-header active"><div class="sos-op-kicker"><span class="sos-op-bolt">⚡</span><span>S.O.S. EM AÇÃO</span></div><div class="sos-op-subtitle">Central de Oportunidades</div><div class="sos-op-state active"><span class="sos-op-state-dot"></span>${list.length} atendimento${list.length>1?'s':''} em risco</div></header><div class="sos-op-body"><section class="sos-op-alert"><div class="sos-op-alert-label">ATENDIMENTO EM RISCO</div><div class="sos-op-request-title">${esc(service)}</div><div class="sos-op-request-meta">${kindLabel} · ${esc(a.professional)} · ${esc(a.time)}</div><div class="sos-op-request-grid"><div class="sos-op-request-box"><span>Cliente</span><strong>${esc(a.client||'—')}</strong></div><div class="sos-op-request-box"><span>Raio de busca</span><strong>Até 5 km</strong></div></div></section><div class="sos-op-search-state"><span class="sos-op-search-dot"></span><strong>Buscando profissionais</strong><span>Resposta rápida para este atendimento</span></div><div class="sos-op-sort"><span>Ordenar por:</span><select id="sosSort"><option value="time">Tempo de chegada</option><option value="distance">Distância</option><option value="rating">Avaliação</option></select></div><div class="sos-op-candidates-title">Profissionais disponíveis</div><div id="sosCandidates">${candidates.map(candidateMarkup).join('')}</div></div><footer class="sos-op-footer"><span class="sos-op-footer-mark">✓</span><strong>Profissionais verificados pela plataforma</strong></footer></div>`;
- const sort=p.querySelector('#sosSort');sort?.addEventListener('change',()=>{const mode=sort.value;const sorted=[...candidates].sort((x,y)=>mode==='rating'?Number(y.rating.replace(',','.'))-Number(x.rating.replace(',','.')):mode==='distance'?parseFloat(x.distance)-parseFloat(y.distance):x.time-y.time;const box=p.querySelector('#sosCandidates');if(box)box.innerHTML=sorted.map(candidateMarkup).join('');bindSelect()});bindSelect();syncAgendaSos(list);
- function bindSelect(){p.querySelectorAll('.sos-op-select').forEach(btn=>btn.onclick=()=>{const n=document.getElementById('agendaNotice');if(n){n.textContent=`${btn.dataset.name} selecionada para avaliação da oportunidade.`;n.hidden=false;setTimeout(()=>n.hidden=true,4000)}})}
-}
-function boot(){
- render();
- let last='';
- const tick=()=>{const sig=JSON.stringify([dateKey(),localStorage.getItem(STATUS_KEY),localStorage.getItem(STATE_KEY)]);if(sig!==last){last=sig;render()}};
- setInterval(tick,1000);
- document.addEventListener('beautymove:planchange',render);
- document.getElementById('agendaDatePicker')?.addEventListener('change',render);
- document.getElementById('agendaInterval')?.addEventListener('change',()=>setTimeout(render,80));
- document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(render,80));
- document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(render,80));
- document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(render,80));
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,500),{once:true});else setTimeout(boot,500);
+/* BeautyMove — Central de Oportunidades S.O.S. */
+(function () {
+  'use strict';
+
+  const STATUS_KEY = 'beautymove.mvp.professional.daily-status';
+  const STATE_KEY = 'beautymove.mvp.state';
+  const PURPLE = '#7438F5';
+
+  const read = (key, fallback) => {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || 'null');
+      return value || fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+
+  const minutes = (value) => {
+    const parts = String(value || '00:00').split(':').map(Number);
+    return (parts[0] || 0) * 60 + (parts[1] || 0);
+  };
+
+  const today = () => {
+    const picker = document.getElementById('agendaDatePicker');
+    return picker && picker.value
+      ? picker.value
+      : new Date().toISOString().slice(0, 10);
+  };
+
+  const escapeHtml = (value) => String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  const appointmentEnd = (appointment) =>
+    minutes(appointment.time) + Math.max(30, Number(appointment.duration) || 60);
+
+  function getAffectedAppointments() {
+    const date = today();
+    const statuses = read(STATUS_KEY, {});
+    const state = read(STATE_KEY, { appointments: [] });
+    const appointments = Array.isArray(state.appointments) ? state.appointments : [];
+    const result = [];
+
+    appointments.forEach((appointment) => {
+      if (!appointment || appointment.date !== date || appointment.status === 'cancelado') return;
+
+      const record = statuses[date + '::' + appointment.professional];
+      if (!record || !['absent', 'late'].includes(record.status)) return;
+
+      let affected = false;
+      if (record.status === 'late') {
+        affected = minutes(appointment.time) < minutes(record.lateStart || '00:00');
+      } else if (record.absenceType === 'during_day') {
+        affected = appointmentEnd(appointment) > minutes(record.absenceStart || '23:59');
+      } else {
+        affected = true;
+      }
+
+      if (affected) {
+        result.push({
+          ...appointment,
+          occurrence: record,
+          kind: record.status === 'late' ? 'Atraso' : 'Ausência'
+        });
+      }
+    });
+
+    return result.sort((a, b) => minutes(a.time) - minutes(b.time));
+  }
+
+  function ensurePanel() {
+    let panel = document.getElementById('sosOpportunityPanel');
+    if (!panel) {
+      panel = document.createElement('aside');
+      panel.id = 'sosOpportunityPanel';
+      panel.setAttribute('aria-label', 'Central de Oportunidades S.O.S.');
+      document.body.appendChild(panel);
+    }
+    return panel;
+  }
+
+  const candidates = [
+    ['Juliana Costa', '4,9', '15 min', '2,3 km'],
+    ['Lucas Ferreira', '4,8', '18 min', '3,1 km'],
+    ['Bianca Rodrigues', '4,7', '22 min', '4,2 km'],
+    ['Carla Menezes', '4,6', '25 min', '4,8 km'],
+    ['Rafael Santos', '4,5', '28 min', '5,0 km']
+  ];
+
+  function candidateList() {
+    return candidates.map((candidate) => `
+      <div class="sos-op-candidate">
+        <div class="sos-op-avatar-placeholder">${escapeHtml(candidate[0].charAt(0))}</div>
+        <div class="sos-op-candidate-main">
+          <div class="sos-op-candidate-name">${escapeHtml(candidate[0])} <span>★ ${candidate[1]}</span></div>
+          <div class="sos-op-candidate-data">◷ ${candidate[2]} &nbsp; · &nbsp; ⌖ ${candidate[3]}</div>
+          <div class="sos-op-available">● Disponível</div>
+        </div>
+        <button type="button" class="sos-op-select" data-professional="${escapeHtml(candidate[0])}">Selecionar</button>
+      </div>
+    `).join('');
+  }
+
+  function render() {
+    const panel = ensurePanel();
+    const affected = getAffectedAppointments();
+
+    if (!affected.length) {
+      panel.innerHTML = `
+        <div class="sos-op-shell">
+          <header class="sos-op-header">
+            <div class="sos-op-kicker"><span class="sos-op-bolt">⚡</span> S.O.S. EM AÇÃO</div>
+            <div class="sos-op-subtitle">Central de Oportunidades</div>
+            <div class="sos-op-state"><span></span>Central pronta</div>
+          </header>
+          <div class="sos-op-body">
+            <div class="sos-op-empty">
+              <div class="sos-op-empty-icon">✓</div>
+              <strong>Tudo sob controle</strong>
+              <span>Nenhum atendimento afetado neste momento.</span>
+            </div>
+            <div class="sos-op-principle">
+              <strong>A Agenda identifica. O S.O.S. resolve.</strong>
+              <span>Quando uma ocorrência comprometer um atendimento, a oportunidade aparecerá automaticamente aqui.</span>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const first = affected[0];
+    const service = first.service || 'Atendimento afetado';
+    const reason = first.kind + (first.occurrence.absenceReason ? ' · ' + first.occurrence.absenceReason : '');
+
+    panel.innerHTML = `
+      <div class="sos-op-shell active">
+        <header class="sos-op-header active">
+          <div class="sos-op-kicker"><span class="sos-op-bolt">⚡</span> S.O.S. EM AÇÃO</div>
+          <div class="sos-op-subtitle">Central de Oportunidades</div>
+          <div class="sos-op-state active"><span></span>${affected.length} atendimento${affected.length > 1 ? 's' : ''} afetado${affected.length > 1 ? 's' : ''}</div>
+        </header>
+        <div class="sos-op-body">
+          <section class="sos-op-alert">
+            <div class="sos-op-alert-label">AÇÃO NECESSÁRIA</div>
+            <strong>${escapeHtml(service)}</strong>
+            <div>${escapeHtml(first.client || 'Cliente')} · ${escapeHtml(first.time)} · ${escapeHtml(first.professional)}</div>
+            <small>${escapeHtml(reason)}</small>
+          </section>
+
+          <div class="sos-op-search-state">
+            <span class="sos-op-search-dot"></span>
+            <strong>Buscando profissionais</strong>
+            <small>Central S.O.S. em operação</small>
+          </div>
+
+          <div class="sos-op-candidates-title">Profissionais disponíveis</div>
+          <div id="sosCandidates">${candidateList()}</div>
+        </div>
+        <footer class="sos-op-footer">✓ Profissionais verificados pela plataforma</footer>
+      </div>
+    `;
+
+    panel.querySelectorAll('.sos-op-select').forEach((button) => {
+      button.addEventListener('click', () => {
+        const notice = document.getElementById('agendaNotice');
+        if (!notice) return;
+        notice.textContent = button.dataset.professional + ' selecionada para esta oportunidade S.O.S.';
+        notice.hidden = false;
+        clearTimeout(window.__bmSosNotice);
+        window.__bmSosNotice = setTimeout(() => { notice.hidden = true; }, 4000);
+      });
+    });
+  }
+
+  function boot() {
+    render();
+
+    let signature = '';
+    setInterval(() => {
+      const current = JSON.stringify([
+        today(),
+        localStorage.getItem(STATUS_KEY),
+        localStorage.getItem(STATE_KEY)
+      ]);
+      if (current !== signature) {
+        signature = current;
+        render();
+      }
+    }, 700);
+
+    document.getElementById('agendaDatePicker')?.addEventListener('change', render);
+    document.getElementById('prevDay')?.addEventListener('click', () => setTimeout(render, 150));
+    document.getElementById('nextDay')?.addEventListener('click', () => setTimeout(render, 150));
+    document.getElementById('todayBtn')?.addEventListener('click', () => setTimeout(render, 150));
+    document.addEventListener('beautymove:planchange', render);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 250), { once: true });
+  } else {
+    setTimeout(boot, 250);
+  }
 })();

@@ -9,15 +9,101 @@
     const s=document.createElement('style');
     s.id='agendaHeaderLayoutStyles';
     s.textContent=`
-      .agenda-grid thead tr.agenda-specialty-row th.agenda-specialty-group{text-align:center!important;vertical-align:middle!important;height:34px;padding:7px 10px 5px!important;font-size:11px!important;font-weight:800!important;color:#6f6878!important;background:#fff!important;border-bottom:1px solid #eee8f2!important}
-      .agenda-grid thead tr.agenda-professional-row th.professional-header-control{vertical-align:top!important;padding:7px 8px 8px!important}
-      .agenda-grid thead tr.agenda-professional-row .professional-name{display:block;margin-top:0!important}
-      .agenda-grid thead tr.agenda-professional-row .professional-day-status{margin-top:4px!important}
-      .agenda-grid thead th.sos-col.agenda-sos-header-clean{vertical-align:middle!important;text-align:center!important}
-      .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-title{display:block;margin:0!important}
+      /* Remove qualquer faixa/aviso vazio que esteja ocupando espaço antes da grade. */
+      #agendaNotice{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important}
+      .agenda-shell-v2 > .agenda-header-spacer,
+      .agenda-shell-v2 > .agenda-empty-bar,
+      .agenda-shell-v2 > .agenda-alert-bar{display:none!important;height:0!important;margin:0!important;padding:0!important;border:0!important}
+
+      /* Linha 1: especialidades — maior e proporcional ao restante da Agenda. */
+      .agenda-grid thead tr.agenda-specialty-row th.agenda-specialty-group{
+        text-align:center!important;
+        vertical-align:middle!important;
+        height:36px!important;
+        padding:6px 10px 5px!important;
+        font-size:16px!important;
+        line-height:1.15!important;
+        font-weight:850!important;
+        color:#625b6c!important;
+        background:#fff!important;
+        border-bottom:0!important;
+      }
+
+      /* Linha 2: profissionais + status. */
+      .agenda-grid thead tr.agenda-professional-row th.professional-header-control{
+        vertical-align:top!important;
+        padding:6px 8px 8px!important;
+      }
+      .agenda-grid thead tr.agenda-professional-row .professional-name{
+        display:block!important;
+        margin-top:0!important;
+        font-size:16px!important;
+        line-height:1.15!important;
+        font-weight:900!important;
+      }
+      .agenda-grid thead tr.agenda-professional-row .professional-day-status{
+        margin-top:4px!important;
+        font-size:11px!important;
+        line-height:1.15!important;
+      }
+
+      /* S.O.S.: somente título na primeira linha; ação/status na segunda. */
+      .agenda-grid thead th.sos-col.agenda-sos-header-clean{
+        vertical-align:middle!important;
+        text-align:center!important;
+        position:relative!important;
+        padding:6px 8px 10px!important;
+        border-top:6px solid var(--purple)!important;
+        border-bottom:0!important;
+      }
+      .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-title{
+        display:block!important;
+        margin:0!important;
+        font-size:16px!important;
+        line-height:1.15!important;
+        color:var(--purple)!important;
+        font-weight:900!important;
+      }
       .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-header-button{display:none!important}
-      .agenda-grid thead th.sos-col.agenda-sos-action{vertical-align:top!important;text-align:center!important;padding:7px 8px 8px!important;font-size:11px!important;font-weight:700!important;color:#6f6878!important;background:#fff!important;border-top:0!important}
-      .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{display:block!important;margin-top:4px!important;line-height:1.25!important;font-weight:700!important;color:#6f6878!important}
+      .agenda-grid thead th.sos-col.agenda-sos-header-clean::after{
+        content:''!important;
+        position:absolute!important;
+        left:12px!important;
+        right:12px!important;
+        bottom:0!important;
+        height:6px!important;
+        border-radius:6px 6px 0 0!important;
+        background:var(--purple)!important;
+      }
+      .agenda-grid thead th.sos-col.agenda-sos-action{
+        vertical-align:middle!important;
+        text-align:center!important;
+        padding:7px 8px 9px!important;
+        font-size:12px!important;
+        font-weight:800!important;
+        color:var(--purple)!important;
+        background:#fff!important;
+        border-top:0!important;
+        position:relative!important;
+      }
+      .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{
+        display:block!important;
+        margin:0!important;
+        line-height:1.2!important;
+        font-size:12px!important;
+        font-weight:850!important;
+        color:var(--purple)!important;
+      }
+      .agenda-grid thead th.sos-col.agenda-sos-action::after{
+        content:''!important;
+        position:absolute!important;
+        left:12px!important;
+        right:12px!important;
+        bottom:0!important;
+        height:6px!important;
+        border-radius:6px 6px 0 0!important;
+        background:var(--purple)!important;
+      }
     `;
     document.head.appendChild(s);
   }
@@ -55,6 +141,7 @@
       if(!group){group={specialty,items:[]};specialtyGroups.push(group)}
       group.items.push(th);
       th.querySelector('.specialty-label')?.remove();
+      th.classList.add('professional-header-control');
     });
 
     const specialtyRow=document.createElement('tr');

@@ -1,4 +1,4 @@
-/* Controle operacional da profissional na Agenda — versão corrigida */
+/* Controle operacional das profissionais dentro da Agenda */
 .professional-header-control{cursor:pointer;position:relative;transition:background .15s ease}
 .professional-header-control:hover{background:#faf8ff}
 .professional-header-control:focus-visible{outline:2px solid #6f35ff;outline-offset:-2px}
@@ -40,4 +40,6 @@
 .professional-control-modal .professional-appointment-row strong{display:block}
 .professional-control-modal .professional-appointment-row span{color:#667085!important}
 .professional-control-modal .absence-warning{padding:11px 12px;border-radius:9px;background:#fff5f4!important;color:#b42318!important;font-size:12px;margin-top:12px}
+#professionalFilter{color:#17131f;background:#fff;color-scheme:light}
+#professionalFilter option{background:#fff;color:#17131f}
 @media (max-width:700px){.professional-control-modal .professional-actions{grid-template-columns:1fr}}

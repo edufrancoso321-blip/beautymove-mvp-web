@@ -47,14 +47,16 @@
         line-height:1.15!important;
       }
 
-      /* S.O.S.: somente título na primeira linha; ação/status na segunda. */
+      /* S.O.S.: mesma estrutura visual da linha de especialidades. */
       .agenda-grid thead th.sos-col.agenda-sos-header-clean{
         vertical-align:middle!important;
         text-align:center!important;
-        position:relative!important;
-        padding:6px 8px 10px!important;
-        border-top:6px solid var(--purple)!important;
+        height:36px!important;
+        padding:6px 8px 5px!important;
+        border-top:0!important;
         border-bottom:0!important;
+        position:relative!important;
+        background:#fff!important;
       }
       .agenda-grid thead th.sos-col.agenda-sos-header-clean .sos-title{
         display:block!important;
@@ -75,15 +77,18 @@
         border-radius:6px 6px 0 0!important;
         background:var(--purple)!important;
       }
+
+      /* Ação/status do S.O.S. fica na segunda linha, sem uma segunda barra. */
       .agenda-grid thead th.sos-col.agenda-sos-action{
         vertical-align:middle!important;
         text-align:center!important;
-        padding:7px 8px 9px!important;
+        padding:6px 8px 8px!important;
         font-size:12px!important;
         font-weight:800!important;
         color:var(--purple)!important;
         background:#fff!important;
         border-top:0!important;
+        border-bottom:0!important;
         position:relative!important;
       }
       .agenda-grid thead th.sos-col.agenda-sos-action .sos-action-label{
@@ -94,16 +99,7 @@
         font-weight:850!important;
         color:var(--purple)!important;
       }
-      .agenda-grid thead th.sos-col.agenda-sos-action::after{
-        content:''!important;
-        position:absolute!important;
-        left:12px!important;
-        right:12px!important;
-        bottom:0!important;
-        height:6px!important;
-        border-radius:6px 6px 0 0!important;
-        background:var(--purple)!important;
-      }
+      .agenda-grid thead th.sos-col.agenda-sos-action::after{display:none!important}
     `;
     document.head.appendChild(s);
   }

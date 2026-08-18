@@ -20,3 +20,20 @@ html,body{height:100%!important;overflow:hidden!important}.salon-app{height:100v
 
 /* 2026-08-18 — métricas inferiores removidas: espaço integral destinado à Agenda */
 .agenda-metrics{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+
+/* 2026-08-18 — correção isolada: cabeçalho de profissionais fixo dentro da rolagem da Agenda */
+.agenda-scroll-v2{overflow:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}
+.agenda-grid{border-collapse:separate!important;border-spacing:0!important}
+.agenda-grid thead th{position:sticky!important;top:0!important;z-index:20!important;background:#fff!important}
+.agenda-grid thead .time-col{left:0!important;z-index:23!important}
+.agenda-grid thead th:not(.time-col){z-index:21!important}
+.agenda-grid tbody .time-col{position:sticky!important;left:0!important;z-index:10!important;background:#fff!important}
+
+/* 2026-08-18 — garante rolagem interna da grade também em notebook/mobile sem deslocar o cabeçalho */
+@media(max-width:780px){
+  .salon-main{display:flex!important;flex-direction:column!important}
+  .agenda-shell-v2{overflow:hidden!important;height:60vh!important;min-height:320px!important}
+  .agenda-scroll-v2{height:100%!important;max-height:100%!important;overflow:auto!important}
+  .agenda-grid thead th{position:sticky!important;top:0!important;z-index:30!important}
+  .agenda-grid thead .time-col{z-index:33!important}
+}

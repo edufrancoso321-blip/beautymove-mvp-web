@@ -28,15 +28,15 @@ window.BeautyMoveData = (() => {
 
   function normalizeState(value) {
     const source = value && typeof value === 'object' ? value : {};
-    return {
-      appointments: Array.isArray(source.appointments) ? source.appointments : [],
-      opportunities: Array.isArray(source.opportunities) ? source.opportunities : [],
-      transactions: Array.isArray(source.transactions) ? source.transactions : [],
-      professionals: Array.isArray(source.professionals) ? source.professionals : [],
-      salons: Array.isArray(source.salons) ? source.salons : [],
-      clients: Array.isArray(source.clients) ? source.clients : [],
-      users: Array.isArray(source.users) ? source.users : []
-    };
+    const state = { ...source };
+    state.appointments = Array.isArray(source.appointments) ? source.appointments : [];
+    state.opportunities = Array.isArray(source.opportunities) ? source.opportunities : [];
+    state.transactions = Array.isArray(source.transactions) ? source.transactions : [];
+    state.professionals = Array.isArray(source.professionals) ? source.professionals : [];
+    state.salons = Array.isArray(source.salons) ? source.salons : [];
+    state.clients = Array.isArray(source.clients) ? source.clients : [];
+    state.users = Array.isArray(source.users) ? source.users : [];
+    return state;
   }
 
   function getState() {

@@ -40,7 +40,7 @@
   function queuePush() {
     if (syncing) return;
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(pushLocalState, 120);
+    pushTimer = setTimeout(pushLocalState, 180);
   }
 
   Storage.prototype.setItem = function (key, value) {
@@ -107,7 +107,15 @@
     const remoteIds = new Set(docs.map(item => String(item.id)));
     const existing = Array.isArray(state[collectionName]) ? state[collectionName] : [];
     const retained = existing.filter(item => !matcher(item) || !remoteIds.has(String(item.id)));
-    state[collectionName] = retained.concat(docs);
+    const next = retained.concat(docs);
+
+    const currentIds = existing.map(item => String(item.id)).sort().join('|');
+    const nextIds = next.map(item => String(item.id)).sort().join('|');
+    if (currentIds === nextIds && existing.length === next.length) {
+      return;
+    }
+
+    state[collectionName] = next;
     writeState(state);
   }
 
@@ -115,6 +123,18 @@
     try {
       const stop = query.onSnapshot(snapshot => {
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), _remote: true }));
+        const local = readState();
+        const localItems = Array.isArray(local[name]) ? local[name] : [];
+
+        // Never let an initial empty server snapshot erase locally created data.
+        // The local records are pushed first; subsequent snapshots become the source of truth.
+        if (snapshot.empty && localItems.length) {
+          pushCollection(name, localItems, currentUser()?.uid, currentRole()).catch(error => {
+            console.error(`[BeautyMove] Firestore initial ${name} reconciliation failed:`, error);
+          });
+          return;
+        }
+
         upsertRemote(name, docs, matcher);
       }, error => console.error(`[BeautyMove] Firestore ${name} subscription failed:`, error));
       unsubscribe.push(stop);
@@ -149,7 +169,7 @@
       subscribeCollection('appointments', firestore.collection('appointments').where('clientOwnerId', '==', user.uid), item => item.clientOwnerId === user.uid);
     }
 
-    setTimeout(pushLocalState, 300);
+    setTimeout(pushLocalState, 800);
     window.dispatchEvent(new CustomEvent('beautymove:data-ready', { detail: readState() }));
   }
 

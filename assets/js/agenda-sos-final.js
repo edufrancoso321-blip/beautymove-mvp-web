@@ -1,4 +1,4 @@
-/* BeautyMove — correção final da Agenda + célula S.O.S. */
+/* BeautyMove — sincronização final da célula S.O.S., sem observer recursivo */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
@@ -8,50 +8,41 @@
   const date=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
 
   function accepted(){
-    const s=read(), appointments=Array.isArray(s.appointments)?s.appointments:[], opportunities=Array.isArray(s.opportunities)?s.opportunities:[];
+    const s=read(),appointments=Array.isArray(s.appointments)?s.appointments:[],opportunities=Array.isArray(s.opportunities)?s.opportunities:[];
     return opportunities.filter(o=>o&&o.date===date()&&o.source==='sos'&&o.status==='resolved'&&o.acceptedBy&&!o.cancelled)
-      .map(o=>{
-        const a=o.appointmentId?appointments.find(x=>x&&x.id===o.appointmentId):null;
-        return {...o, appointment:a||null, client:o.client||a?.client||'Cliente', service:o.service||a?.service||'Atendimento', time:o.time||a?.time||'08:00', acceptedBy:o.acceptedBy};
-      })
+      .map(o=>{const a=o.appointmentId?appointments.find(x=>x&&x.id===o.appointmentId):null;return {...o,appointment:a||null,client:o.client||a?.client||'Cliente',service:o.service||a?.service||'Atendimento',time:o.time||a?.time||'08:00',acceptedBy:o.acceptedBy};})
       .filter(o=>o.time);
   }
 
   function restoreAppointments(){
-    /* A profissional encontrada pelo S.O.S. não substitui a profissional original
-       na grade. A recepção continua vendo o atendimento no lugar de origem. */
-    const s=read(); let changed=false;
-    (s.appointments||[]).forEach(a=>{
-      if(a?.sosAcceptedBy && a?.sosOriginalProfessional && a.professional!==a.sosOriginalProfessional){
-        a.professional=a.sosOriginalProfessional; changed=true;
-      }
-    });
-    if(changed) localStorage.setItem(STATE_KEY,JSON.stringify(s));
+    const s=read();let changed=false;
+    (s.appointments||[]).forEach(a=>{if(a?.sosAcceptedBy&&a?.sosOriginalProfessional&&a.professional!==a.sosOriginalProfessional){a.professional=a.sosOriginalProfessional;changed=true;}});
+    if(changed)localStorage.setItem(STATE_KEY,JSON.stringify(s));
   }
 
   function sync(){
-    const grid=document.getElementById('agendaGrid'); if(!grid)return;
+    const grid=document.getElementById('agendaGrid');if(!grid)return;
     const items=accepted();
-    grid.querySelectorAll('td.sos-cell-found').forEach(cell=>cell.classList.remove('sos-cell-found'));
+    grid.querySelectorAll('td.sos-cell-found').forEach(cell=>{cell.className='sos-free-cell';cell.innerHTML='Livre';cell.removeAttribute('data-sos-id');cell.removeAttribute('data-appointment-id');});
     grid.querySelectorAll('td[data-sos-cell="true"]').forEach(cell=>{
-      const t=cell.dataset.time;
-      const item=items.find(x=>mins(x.time)===mins(t));
+      const item=items.find(x=>mins(x.time)===mins(cell.dataset.time));
       if(!item)return;
       cell.className='sos-cell sos-cell-found';
       cell.dataset.sosId=item.id||'';
       cell.dataset.appointmentId=item.appointment?.id||'';
-      cell.innerHTML=`<strong>${esc(item.client)}</strong><span>${esc(item.service)}</span><small>Profissional: ${esc(item.acceptedBy)}</small><div class="sos-found-status">✓ Profissional encontrada</div>`;
+      cell.innerHTML=`<strong>${esc(item.client)}</strong><span>${esc(item.service)}</span><small>Profissional: ${esc(item.acceptedBy)}</small><div class="sos-found-status">✓ Profissional encontrada · Atendimento em acompanhamento</div>`;
     });
   }
 
   function boot(){
     restoreAppointments();
-    sync();
-    const grid=document.getElementById('agendaGrid');
-    if(grid)new MutationObserver(()=>requestAnimationFrame(sync)).observe(grid,{childList:true,subtree:true});
-    window.addEventListener('beautymove:sos-accepted',()=>setTimeout(sync,80));
-    ['prevDay','nextDay','todayBtn','agendaDatePicker'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>setTimeout(sync,250)));
-    setInterval(()=>{restoreAppointments();sync();},800);
+    let signature='';
+    const tick=()=>{const s=JSON.stringify([date(),localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0]);if(s!==signature){signature=s;sync();}};
+    setTimeout(tick,700);
+    setInterval(()=>{restoreAppointments();tick();},800);
+    window.addEventListener('beautymove:sos-accepted',()=>{signature='';setTimeout(tick,100);});
+    ['prevDay','nextDay','todayBtn','agendaDatePicker'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>{signature='';setTimeout(tick,250);}));
+    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{signature='';setTimeout(tick,150);});
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,700),{once:true});else setTimeout(boot,700);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

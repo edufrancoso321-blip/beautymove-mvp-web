@@ -1,6 +1,42 @@
+/* BeautyMove Agenda — data-bound compatibility layer.
+ * Keeps the legacy renderer intact while moving Agenda state access to BeautyMoveData.
+ */
+(function(){
+  'use strict';
+  const fallbackState={appointments:[],opportunities:[],transactions:[],professionals:[],salons:[],clients:[],users:[]};
+  const data=()=>window.BeautyMoveData||null;
+  window.agendaReadState=function(){
+    const api=data();
+    if(api?.getState)return api.getState();
+    try{return JSON.parse(localStorage.getItem('beautymove.mvp.state')||'null')||fallbackState;}catch{return {...fallbackState};}
+  };
+  window.agendaSaveState=function(state){
+    const api=data();
+    if(api?.saveState)return api.saveState(state,'agenda-legacy-bridge');
+    localStorage.setItem('beautymove.mvp.state',JSON.stringify(state));
+    return state;
+  };
+  window.agendaReadHours=function(){
+    const api=data();
+    if(api?.getAgendaHours)return api.getAgendaHours();
+    const fallback={open:'08:00',close:'18:00'};
+    try{const value=JSON.parse(localStorage.getItem('beautymove.mvp.agenda.hours')||'null');return Array.isArray(value)&&value.length===7?value.map(x=>({open:x?.open||fallback.open,close:x?.close||fallback.close})):Array.from({length:7},()=>({...fallback}));}catch{return Array.from({length:7},()=>({...fallback}));}
+  };
+  window.agendaId=function(prefix){
+    const api=data();
+    if(api?.id)return api.id(prefix);
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  };
+})();
+
 (function(){
   const STATE_KEY='beautymove.mvp.state';
-  function readState(){try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{"appointments":[]}');}catch{return {appointments:[]};}}
+  function readState(){
+    try{
+      if(window.BeautyMoveData?.getState)return window.BeautyMoveData.getState();
+      return JSON.parse(localStorage.getItem(STATE_KEY)||'{"appointments":[]}');
+    }catch{return {appointments:[]};}
+  }
   function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
   function durationLabel(minutes){const m=Number(minutes||0),h=Math.floor(m/60),r=m%60;if(!h)return `${r}min`;return r?`${h}h ${r}min`:`${h}h`;}
   function minutes(time){const[h,m]=String(time||'00:00').split(':').map(Number);return h*60+m;}

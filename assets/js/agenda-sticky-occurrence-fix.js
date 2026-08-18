@@ -147,7 +147,29 @@
     fixSticky();
   }
 
-  function run(){styles();setInitialDefaultInterval();syncTimeOptions();renderOccurrences();fixSticky();}
+  function syncSosStatus(){
+    const grid=document.getElementById('agendaGrid');if(!grid)return;
+    const date=dateKey();
+    let state={appointments:[],opportunities:[]};
+    try{state=JSON.parse(localStorage.getItem('beautymove.mvp.state')||'null')||state;}catch{}
+    const appointments=Array.isArray(state.appointments)?state.appointments:[];
+    const accepted=(Array.isArray(state.opportunities)?state.opportunities:[]).filter(o=>o&&o.date===date&&o.source==='sos'&&o.status==='resolved'&&o.acceptedBy);
+    const cells=[...grid.querySelectorAll('[data-sos-cell="true"]')];
+    cells.forEach(cell=>{cell.classList.remove('sos-cell','sos-cell-found');cell.removeAttribute('data-sos-id');cell.innerHTML='Livre';});
+    accepted.forEach(item=>{
+      const start=mins(item.time),cell=cells.find(c=>{const t=mins(c.dataset.time);return t>=start&&t<start+120;});
+      if(!cell)return;
+      const appointment=item.appointmentId?appointments.find(a=>a&&a.id===item.appointmentId):null;
+      const client=item.client||appointment?.client||'Cliente';
+      const service=item.service||appointment?.service||'Atendimento';
+      const professional=item.acceptedBy||'Profissional selecionada';
+      cell.dataset.sosId=item.id;
+      cell.classList.add('sos-cell','sos-cell-found');
+      cell.innerHTML=`<strong>${String(client).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}</strong><span>${String(service).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}</span><small class="sos-found-status">✓ Profissional encontrada</small><small>Profissional: ${String(professional).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}</small>`;
+    });
+  }
+
+  function run(){styles();setInitialDefaultInterval();syncTimeOptions();renderOccurrences();fixSticky();syncSosStatus();}
 
   function boot(){
     run();
@@ -156,8 +178,9 @@
     const grid=document.getElementById('agendaGrid');
     if(grid){let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;lastSignature='';run();});}).observe(grid,{childList:true,subtree:true});}
     document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{lastSignature='';setTimeout(()=>{syncTimeOptions();run();},0);});
-    window.addEventListener('resize',()=>{lastSignature='';fixSticky();renderOccurrences();});
+    window.addEventListener('resize',()=>{lastSignature='';fixSticky();renderOccurrences();syncSosStatus();});
     window.addEventListener('storage',()=>{lastSignature='';run();});
+    window.addEventListener('beautymove:sos-accepted',()=>setTimeout(syncSosStatus,120));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,450),{once:true});else setTimeout(boot,450);
 })();

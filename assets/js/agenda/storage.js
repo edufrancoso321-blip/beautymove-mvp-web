@@ -4,38 +4,26 @@
 window.BeautyMoveAgendaStorage = (() => {
   'use strict';
 
-  const fallbackKey = 'beautymove.mvp.state';
-
   function data() {
     return window.BeautyMoveData || null;
   }
 
   function readState() {
     const api = data();
-    if (api?.getState) return api.getState();
-    try {
-      return JSON.parse(localStorage.getItem(fallbackKey) || 'null') || {
-        appointments: [], opportunities: [], transactions: [],
-        professionals: [], salons: [], clients: [], users: []
-      };
-    } catch {
-      return { appointments: [], opportunities: [], transactions: [] };
-    }
+    if (!api?.getState) throw new Error('BeautyMoveData is not available.');
+    return api.getState();
   }
 
   function saveState(state, reason) {
     const api = data();
-    if (api?.saveState) return api.saveState(state, reason || 'agenda');
-    localStorage.setItem(fallbackKey, JSON.stringify(state));
-    return state;
+    if (!api?.saveState) throw new Error('BeautyMoveData is not available.');
+    return api.saveState(state, reason || 'agenda');
   }
 
   function update(mutator, reason) {
     const api = data();
-    if (api?.updateState) return api.updateState(mutator, reason || 'agenda');
-    const state = readState();
-    mutator(state);
-    return saveState(state, reason);
+    if (!api?.updateState) throw new Error('BeautyMoveData is not available.');
+    return api.updateState(mutator, reason || 'agenda');
   }
 
   return Object.freeze({ readState, saveState, update });

@@ -23,3 +23,10 @@
 @media (max-width: 1050px) { .salon-app { grid-template-columns: 180px minmax(0,1fr); } .salon-main { padding: 24px 20px 40px; } .agenda-metrics { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 780px) { .salon-app { grid-template-columns: 1fr; } .salon-sidebar { border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 14px; } .salon-brand { border-bottom: 0; margin: 0; padding: 4px 6px 10px; } .salon-nav { display: flex; overflow-x: auto; } .salon-nav a { white-space: nowrap; } .salon-sidebar-bottom { display: none; } .salon-topbar,.agenda-toolbar-v2 { align-items: flex-start; flex-direction: column; } .agenda-toolbar-right { width: 100%; flex-wrap: wrap; } .agenda-toolbar-right > * { flex: 1; } .detail-meta-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 560px) { .salon-main { padding: 18px 12px 30px; } .salon-topbar h1 { font-size: 25px; } .detail-topline,.modal-form-grid { grid-template-columns: 1fr; } .detail-actions { grid-template-columns: 1fr; } .action-button.action-finance { grid-column: auto; } }
+
+/* BeautyMove — Agenda: remoção das métricas inferiores e aproveitamento do espaço recuperado — 2026-08-18 */
+.agenda-metrics { display: none !important; }
+.agenda-shell-v2 { min-height: 0; }
+.agenda-scroll-v2 { max-height: none; height: calc(100vh - 235px); min-height: 420px; }
+@media (max-height: 850px) and (min-width: 781px) { .agenda-scroll-v2 { height: calc(100vh - 220px); min-height: 380px; } }
+@media (max-width: 780px) { .agenda-scroll-v2 { height: 60vh; min-height: 320px; } }

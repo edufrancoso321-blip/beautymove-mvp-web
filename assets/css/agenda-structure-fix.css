@@ -1,0 +1,27 @@
+/* BeautyMove — Agenda structural cleanup 2026-08-18 */
+
+/* The Agenda header is one row: specialty + professional. Keep it together. */
+.agenda-grid thead th:not(.time-col){
+  height:82px!important;
+  box-sizing:border-box!important;
+  vertical-align:middle!important;
+  overflow:hidden!important;
+}
+.agenda-grid .specialty-label{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:28px!important;
+  margin-bottom:2px!important;
+  line-height:1.1!important;
+}
+.agenda-grid .professional-name{
+  line-height:1.1!important;
+}
+
+/* S.O.S. is a separate operational panel, never a grid column. */
+.agenda-grid th.sos-col,
+.agenda-grid td.sos-cell,
+.agenda-grid td.sos-free-cell{
+  display:none!important;
+}

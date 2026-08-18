@@ -66,7 +66,48 @@
     if(add)add.hidden=true;
   }
 
+  function seedDemoAgenda(){
+    const key='beautymove.mvp.state';
+    const marker='beautymove.mvp.demo-seeded-v1';
+    try{
+      if(localStorage.getItem(marker)==='1') return;
+      const current=JSON.parse(localStorage.getItem(key)||'null');
+      if(current && ((Array.isArray(current.appointments)&&current.appointments.length) || (Array.isArray(current.opportunities)&&current.opportunities.length))) {
+        localStorage.setItem(marker,'1');
+        return;
+      }
+      const date=new Date();
+      const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');
+      const dateKey=`${y}-${m}-${d}`;
+      const appointments=[{
+        id:'demo-marta-0800',
+        date:dateKey,
+        time:'08:00',
+        professional:'Ana',
+        client:'MARTA',
+        service:'Coloração + Luzes + Corte feminino',
+        services:[
+          {name:'Coloração',duration:120,value:150},
+          {name:'Luzes',duration:180,value:250},
+          {name:'Corte feminino',duration:60,value:80}
+        ],
+        duration:360,
+        value:480,
+        status:'em_andamento',
+        source:'agenda-demo'
+      }];
+      const opportunities=[
+        {id:'demo-sos-marta',date:dateKey,time:'09:00',client:'MARTA',service:'CORTE E ESCOVA',specialty:'Cabelos',acceptedBy:'Juliana Costa',source:'sos',status:'accepted'},
+        {id:'demo-sos-gertrudes',date:dateKey,time:'10:00',client:'GERTRUDES',service:'Atendimento',specialty:'Cabelos',acceptedBy:'Lucas Ferreira',source:'sos',status:'accepted'},
+        {id:'demo-sos-solange',date:dateKey,time:'11:00',client:'SOLANGE',service:'CORTE E ESCOVA',specialty:'Cabelos',acceptedBy:'Juliana Costa',source:'sos',status:'accepted'}
+      ];
+      localStorage.setItem(key,JSON.stringify({appointments,opportunities,transactions:[]}));
+      localStorage.setItem(marker,'1');
+    }catch(_){}
+  }
+
   function boot(){
+    seedDemoAgenda();
     fixAppointmentServices();
     fixSosPricing();
     removeConfirmationButtons();

@@ -1,0 +1,18 @@
+/* BeautyMove — manter a coluna S.O.S. visível na Agenda em notebooks */
+@media (max-width: 1400px) and (min-width: 781px){
+  .agenda-grid{min-width:0!important;width:100%!important;table-layout:fixed!important}
+  .agenda-grid th,.agenda-grid td{min-width:0!important}
+  .agenda-grid .time-col{width:68px!important;min-width:68px!important}
+  .agenda-grid thead th:not(.time-col){padding-left:7px!important;padding-right:7px!important}
+  .agenda-grid tbody td{padding-left:8px!important;padding-right:8px!important}
+  .agenda-grid .sos-col,.agenda-grid .sos-cell,.agenda-grid .sos-free-cell{width:175px!important;min-width:175px!important}
+  .specialty-label{font-size:11px!important;line-height:1.1!important}
+  .professional-name{font-size:14px!important}
+}
+@media (max-width: 1050px) and (min-width: 781px){
+  .agenda-grid .time-col{width:64px!important;min-width:64px!important}
+  .agenda-grid .sos-col,.agenda-grid .sos-cell,.agenda-grid .sos-free-cell{width:155px!important;min-width:155px!important}
+  .agenda-grid tbody td{padding-left:6px!important;padding-right:6px!important}
+  .agenda-grid .sos-cell strong{font-size:12px!important}
+  .agenda-grid .sos-cell span,.agenda-grid .sos-cell small{font-size:10px!important}
+}

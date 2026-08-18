@@ -1,4 +1,4 @@
-/* BeautyMove — S.O.S. selector stable */
+/* BeautyMove — S.O.S. selector stable + multi-service */
 (function(){
 'use strict';
 const STATE_KEY='beautymove.mvp.state',SERVICES_KEY='beautymove.mvp.services';
@@ -27,21 +27,57 @@ function sync(){const grid=document.getElementById('agendaGrid');if(!grid)return
 function setupServiceSelector(){
  const specialty=document.getElementById('sosSpecialty'),current=document.getElementById('sosService'),form=document.getElementById('sosForm');
  if(!specialty||!current||!form)return;
- if(current.tagName==='SELECT'&&current.dataset.catalogReady==='true')return;
+ if(current.dataset.catalogReady==='multi')return;
  const wrap=current.closest('.field');
- const select=document.createElement('select');select.id='sosService';select.name='service';select.required=true;select.dataset.catalogReady='true';select.className=current.className||'';
- current.replaceWith(select);
+ const trigger=document.createElement('button');trigger.type='button';trigger.id='sosService';trigger.className='sos-service-multi-trigger';trigger.innerHTML='<span id="sosServiceLabel">Selecionar serviços</span><span aria-hidden="true">▾</span>';
+ const menu=document.createElement('div');menu.className='sos-service-multi-menu';menu.id='sosServiceMenu';
+ const hidden=document.createElement('input');hidden.type='hidden';hidden.id='sosServiceValue';hidden.name='service';hidden.required=true;hidden.dataset.catalogReady='multi';
+ current.replaceWith(trigger);wrap.appendChild(hidden);wrap.appendChild(menu);
  let info=wrap.querySelector('.sos-service-pricing');
  if(!info){info=document.createElement('div');info.className='sos-service-pricing';info.innerHTML='<div><span>Valor para cliente</span><strong id="sosClientPrice">—</strong></div><div><span>Oferta ao profissional</span><strong id="sosProfessionalOffer">—</strong></div><div><span>Tempo estimado</span><strong id="sosServiceDuration">—</strong></div>';wrap.appendChild(info);}
- const clientPrice=info.querySelector('#sosClientPrice'),offer=info.querySelector('#sosProfessionalOffer'),duration=info.querySelector('#sosServiceDuration');
- function populate(){const list=services().filter(s=>s.active&&s.specialty===specialty.value);select.innerHTML=list.length?'<option value="">Selecione o serviço</option>'+list.map(s=>`<option value="${esc(s.name)}" data-price="${s.clientPrice}" data-offer="${s.professionalOffer}" data-duration="${s.duration}" data-specialty="${esc(s.specialty)}">${esc(s.name)}</option>`).join(''):'<option value="">Nenhum serviço ativo cadastrado</option>';select.disabled=!list.length;clientPrice.textContent='—';offer.textContent='—';duration.textContent='—';}
- select.addEventListener('change',()=>{const o=select.selectedOptions[0];if(!o||!o.value){clientPrice.textContent='—';offer.textContent='—';duration.textContent='—';return;}clientPrice.textContent=money(o.dataset.price);offer.textContent=money(o.dataset.offer);duration.textContent=`${o.dataset.duration} min`;});
+ const clientPrice=info.querySelector('#sosClientPrice'),offer=info.querySelector('#sosProfessionalOffer'),duration=info.querySelector('#sosServiceDuration'),label=document.getElementById('sosServiceLabel');
+ const styleId='beautymoveSosMultiServiceStyle';
+ if(!document.getElementById(styleId)){const style=document.createElement('style');style.id=styleId;style.textContent=`
+.sos-service-multi-trigger{width:100%;height:44px;border:1px solid #d9d3e2;border-radius:9px;background:#fff;padding:0 12px;display:flex;align-items:center;justify-content:space-between;text-align:left;font-weight:700;color:#17131f;cursor:pointer}
+.sos-service-multi-trigger:focus{outline:none;border-color:#7138ff;box-shadow:0 0 0 3px #f1eaff}
+.sos-service-multi-menu{display:none;position:absolute;left:0;right:0;top:49px;z-index:20;background:#fff;border:1px solid #d9d3e2;border-radius:10px;padding:7px;box-shadow:0 15px 35px rgba(20,10,30,.14);max-height:260px;overflow:auto}
+.sos-service-multi-menu.open{display:block}
+.sos-service-multi-option{display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;cursor:pointer}
+.sos-service-multi-option:hover{background:#faf8ff}
+.sos-service-multi-option input{margin-top:2px;accent-color:#7138ff;width:16px;height:16px}
+.sos-service-multi-option span{display:flex;flex-direction:column;gap:3px;font-size:12px}
+.sos-service-multi-option small{color:#716c78;font-size:10px}
+.sos-service-selected{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sos-service-chip{padding:5px 8px;background:#f1eaff;border:1px solid #e1d4f5;border-radius:7px;color:#573487;font-size:10px;font-weight:700}
+.sos-service-multi-menu-empty{padding:12px;color:#716c78;font-size:12px}
+`;document.head.appendChild(style);}
+ if(getComputedStyle(wrap).position==='static')wrap.style.position='relative';
+ let selected=[];
+ function update(){
+   const totalClient=selected.reduce((sum,s)=>sum+Number(s.clientPrice||0),0),totalOffer=selected.reduce((sum,s)=>sum+Number(s.professionalOffer||0),0),totalDuration=selected.reduce((sum,s)=>sum+Number(s.duration||0),0);
+   hidden.value=selected.map(s=>s.name).join(' + ');
+   label.textContent=selected.length?`${selected.length} serviço${selected.length>1?'s':''} selecionado${selected.length>1?'s':''}`:'Selecionar serviços';
+   clientPrice.textContent=selected.length?money(totalClient):'—';offer.textContent=selected.length?money(totalOffer):'—';duration.textContent=selected.length?`${totalDuration} min`:'—';
+   let chips=wrap.querySelector('.sos-service-selected');if(!chips){chips=document.createElement('div');chips.className='sos-service-selected';wrap.appendChild(chips);}chips.innerHTML=selected.map(s=>`<span class="sos-service-chip">${esc(s.name)}</span>`).join('');
+   form.dataset.sosSelectedServices=JSON.stringify(selected);
+ }
+ function populate(){
+   selected=[];update();const list=services().filter(s=>s.active&&s.specialty===specialty.value);
+   menu.innerHTML=list.length?list.map((s,i)=>`<label class="sos-service-multi-option"><input type="checkbox" value="${esc(s.id||s.name)}" data-index="${i}"><span><strong>${esc(s.name)}</strong><small>${money(s.clientPrice)} para cliente · ${money(s.professionalOffer)} oferta · ${s.duration} min</small></span></label>`).join(''):'<div class="sos-service-multi-menu-empty">Nenhum serviço ativo cadastrado para esta especialidade.</div>';
+   menu.querySelectorAll('input').forEach(input=>input.addEventListener('change',()=>{const listNow=services().filter(s=>s.active&&s.specialty===specialty.value);const item=listNow[Number(input.dataset.index)];if(!item)return;if(input.checked)selected=[...selected.filter(s=>s.id!==item.id),item];else selected=selected.filter(s=>s.id!==item.id);update();}));
+ }
+ trigger.addEventListener('click',e=>{e.stopPropagation();menu.classList.toggle('open');});
+ document.addEventListener('click',e=>{if(!wrap.contains(e.target))menu.classList.remove('open');});
  specialty.addEventListener('change',populate);populate();
  if(form.dataset.sosSnapshotReady==='true')return;
  form.dataset.sosSnapshotReady='true';
- form.addEventListener('submit',()=>{const o=select.selectedOptions[0];if(!o||!o.value)return;const hidden=(id,name,value)=>{let h=document.getElementById(id);if(!h){h=document.createElement('input');h.type='hidden';h.id=id;h.name=name;form.appendChild(h);}h.value=value;};hidden('sosClientPriceSnapshot','clientPriceSnapshot',o.dataset.price);hidden('sosProfessionalOfferSnapshot','professionalOfferSnapshot',o.dataset.offer);hidden('sosDurationSnapshot','durationSnapshot',o.dataset.duration);hidden('sosSpecialtySnapshot','specialtySnapshot',o.dataset.specialty||specialty.value);setTimeout(()=>freezeLatestOpportunity({clientPrice:Number(o.dataset.price),professionalOffer:Number(o.dataset.offer),duration:Number(o.dataset.duration),specialty:o.dataset.specialty||specialty.value,service:select.value}),450);},true);
+ form.addEventListener('submit',()=>{const chosen=selected.slice();if(!chosen.length)return;const snapshot={clientPrice:chosen.reduce((sum,s)=>sum+Number(s.clientPrice||0),0),professionalOffer:chosen.reduce((sum,s)=>sum+Number(s.professionalOffer||0),0),duration:chosen.reduce((sum,s)=>sum+Number(s.duration||0),0),specialty:specialty.value,service:chosen.map(s=>s.name).join(' + '),services:chosen.map(s=>({id:s.id,name:s.name,clientPrice:Number(s.clientPrice||0),professionalOffer:Number(s.professionalOffer||0),duration:Number(s.duration||0)}))};
+   const hiddenSnapshot=(id,name,value)=>{let h=document.getElementById(id);if(!h){h=document.createElement('input');h.type='hidden';h.id=id;h.name=name;form.appendChild(h);}h.value=value;};
+   hiddenSnapshot('sosClientPriceSnapshot','clientPriceSnapshot',snapshot.clientPrice);hiddenSnapshot('sosProfessionalOfferSnapshot','professionalOfferSnapshot',snapshot.professionalOffer);hiddenSnapshot('sosDurationSnapshot','durationSnapshot',snapshot.duration);hiddenSnapshot('sosSpecialtySnapshot','specialtySnapshot',snapshot.specialty);hiddenSnapshot('sosServicesSnapshot','servicesSnapshot',JSON.stringify(snapshot.services));
+   setTimeout(()=>freezeLatestOpportunity(snapshot),450);
+ },true);
 }
-function freezeLatestOpportunity(snapshot){const s=read(),items=Array.isArray(s.opportunities)?s.opportunities:[];const matches=items.filter(o=>o&&o.source==='sos'&&o.date===date()&&o.service===snapshot.service);const o=matches[matches.length-1];if(!o)return;o.clientPriceSnapshot=snapshot.clientPrice;o.professionalOfferSnapshot=snapshot.professionalOffer;o.durationSnapshot=snapshot.duration;o.specialtySnapshot=snapshot.specialty;o.offerFrozenAt=new Date().toISOString();localStorage.setItem(STATE_KEY,JSON.stringify(s));}
+function freezeLatestOpportunity(snapshot){const s=read(),items=Array.isArray(s.opportunities)?s.opportunities:[];const matches=items.filter(o=>o&&o.source==='sos'&&o.date===date()&&o.service===snapshot.service);const o=matches[matches.length-1];if(!o)return;o.clientPriceSnapshot=snapshot.clientPrice;o.professionalOfferSnapshot=snapshot.professionalOffer;o.durationSnapshot=snapshot.duration;o.specialtySnapshot=snapshot.specialty;o.servicesSnapshot=snapshot.services;o.offerFrozenAt=new Date().toISOString();localStorage.setItem(STATE_KEY,JSON.stringify(s));}
 function linkServicesNav(){document.querySelectorAll('.salon-nav a').forEach(a=>{if(a.textContent.trim()==='Serviços')a.href='servicos.html';});}
 function boot(){loadColumnIdentity();services();restoreAppointments();linkServicesNav();setupServiceSelector();let signature='';const tick=()=>{const s=JSON.stringify([date(),localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0]);if(s!==signature){signature=s;sync();}};setTimeout(tick,700);setInterval(()=>{restoreAppointments();tick();setupServiceSelector();},800);window.addEventListener('beautymove:sos-accepted',()=>{signature='';setTimeout(tick,100);});['prevDay','nextDay','todayBtn','agendaDatePicker'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>{signature='';setTimeout(tick,250);}));document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{signature='';setTimeout(tick,150);});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

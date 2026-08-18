@@ -50,6 +50,19 @@
     metric.textContent=String(active.length||fallbackCount);
   }
 
+  function loadBridge(){
+    if(window.BeautyMoveFirebaseBootstrap)return window.BeautyMoveFirebaseBootstrap().catch(()=>{});
+    return new Promise(resolve=>{
+      const existing=document.querySelector('script[src="assets/js/mvp-firebase-bootstrap.js"]');
+      if(existing){existing.addEventListener('load',()=>window.BeautyMoveFirebaseBootstrap?.().catch(()=>{}),{once:true});return resolve();}
+      const script=document.createElement('script');
+      script.src='assets/js/mvp-firebase-bootstrap.js';
+      script.onload=()=>{window.BeautyMoveFirebaseBootstrap?.().catch(()=>{});resolve();};
+      script.onerror=()=>resolve();
+      document.head.appendChild(script);
+    });
+  }
+
   function boot(){
     ensureMetricTargets();
     sync();
@@ -59,13 +72,11 @@
     window.addEventListener('beautymove:sos-accepted',()=>setTimeout(sync,100));
     window.addEventListener('beautymove:data-ready',()=>setTimeout(sync,100));
     setInterval(sync,300);
-    window.BeautyMoveFirebaseBootstrap?.().catch(()=>{});
+    loadBridge();
   }
 
   if(document.readyState==='loading'){
     ensureMetricTargets();
     document.addEventListener('DOMContentLoaded',boot,{once:true});
-  }else{
-    boot();
-  }
+  }else boot();
 })();

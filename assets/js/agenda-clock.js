@@ -1,62 +1,4 @@
 (function(){
-  const RECOVERY_KEY='beautymove.mvp.recovery.v1';
-  const STATE_KEY='beautymove.mvp.state';
-
-  // Recuperação controlada dos dados demonstrativos que estavam visíveis na Agenda.
-  // Só executa uma vez e nunca sobrescreve atendimentos já existentes.
-  try{
-    if(localStorage.getItem(RECOVERY_KEY)!=='1'){
-      const today=new Date();
-      const y=today.getFullYear(),m=String(today.getMonth()+1).padStart(2,'0'),d=String(today.getDate()).padStart(2,'0');
-      const date=`${y}-${m}-${d}`;
-      const state=JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[],transactions:[]};
-      state.appointments=Array.isArray(state.appointments)?state.appointments:[];
-      state.opportunities=Array.isArray(state.opportunities)?state.opportunities:[];
-      state.transactions=Array.isArray(state.transactions)?state.transactions:[];
-
-      if(!state.appointments.some(a=>a.date===date)){
-        state.appointments.push({
-          id:`recovery-${date}-marta-ana`,
-          date,
-          time:'08:00',
-          professional:'Ana',
-          client:'MARTA',
-          service:'Coloração + Luzes + Corte feminino',
-          services:[
-            {name:'Coloração',duration:120,value:150},
-            {name:'Luzes',duration:180,value:250},
-            {name:'Corte feminino',duration:60,value:80}
-          ],
-          duration:360,
-          value:480,
-          status:'agendado',
-          source:'agenda-recovery'
-        });
-      }
-
-      if(!state.opportunities.some(o=>o.date===date&&o.source==='sos'&&o.time==='10:00')){
-        state.opportunities.push({
-          id:`recovery-sos-${date}-10`,
-          date,
-          time:'10:00',
-          client:'KLJLKJLK',
-          service:'Corte feminino + Escova',
-          specialty:'Cabelos',
-          radius:'5 km',
-          status:'aberta',
-          source:'sos'
-        });
-      }
-
-      localStorage.setItem(STATE_KEY,JSON.stringify(state));
-      localStorage.setItem(RECOVERY_KEY,'1');
-      window.location.reload();
-      return;
-    }
-  }catch(_){
-    // A Agenda segue funcionando mesmo se o armazenamento estiver indisponível.
-  }
-
   const clockEl=document.querySelector('.current-clock');
   const grid=document.querySelector('#agendaGrid');
   if(!clockEl||!grid)return;
@@ -122,4 +64,12 @@
   window.addEventListener('resize',updateTimeLine);
   setInterval(updateClock,1000);
   updateClock();
+
+  // Mantém o indicador S.O.S. da Agenda sincronizado com a Central de Oportunidades.
+  if(!document.getElementById('agendaSosMetricSync')){
+    const script=document.createElement('script');
+    script.id='agendaSosMetricSync';
+    script.src='assets/js/agenda-sos-metric-sync.js?v=20260818-1';
+    document.head.appendChild(script);
+  }
 })();

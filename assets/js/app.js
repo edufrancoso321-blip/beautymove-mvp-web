@@ -6,15 +6,38 @@ function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; }
   catch { return fallback; }
 }
-function getProfile() { return readJson(PROFILE_KEY, null); }
-function saveProfile(profile) { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
-function getState() { return { ...EMPTY_STATE, ...readJson(STATE_KEY, EMPTY_STATE) }; }
-function saveState(state) { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
-function updateState(mutator) { const state = getState(); mutator(state); saveState(state); return state; }
-function makeId(prefix) { return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
+function getProfile() {
+  if (window.BeautyMoveData?.getProfile) return window.BeautyMoveData.getProfile();
+  return readJson(PROFILE_KEY, null);
+}
+function saveProfile(profile) {
+  if (window.BeautyMoveData?.saveProfile) return window.BeautyMoveData.saveProfile(profile);
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  return profile;
+}
+function getState() {
+  if (window.BeautyMoveData?.getState) return window.BeautyMoveData.getState();
+  return { ...EMPTY_STATE, ...readJson(STATE_KEY, EMPTY_STATE) };
+}
+function saveState(state, reason = 'legacy-app-update') {
+  if (window.BeautyMoveData?.saveState) return window.BeautyMoveData.saveState(state, reason);
+  localStorage.setItem(STATE_KEY, JSON.stringify(state));
+  return state;
+}
+function updateState(mutator, reason = 'legacy-app-update') {
+  if (window.BeautyMoveData?.updateState) return window.BeautyMoveData.updateState(mutator, reason);
+  const state = getState();
+  mutator(state);
+  saveState(state, reason);
+  return state;
+}
+function makeId(prefix) {
+  if (window.BeautyMoveData?.id) return window.BeautyMoveData.id(prefix);
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
 function localDateKey(date = new Date()) { const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, '0'); const d = String(date.getDate()).padStart(2, '0'); return `${y}-${m}-${d}`; }
 function formatCurrency(value) { return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-function escapeHtml(value) { return String(value ?? '').replace(/[&<>'\"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char])); }
+function escapeHtml(value) { return String(value ?? '').replace(/[&<>'\"]+/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char])); }
 function roleLabel(role) { return ({ salao:'Salão', profissional:'Profissional', cliente:'Cliente' })[role] || ''; }
 function roleFromQuery() { const value = new URLSearchParams(window.location.search).get('perfil') || ''; const v = value.toLowerCase(); if (v.includes('sala')) return 'salao'; if (v.includes('prof')) return 'profissional'; if (v.includes('clien')) return 'cliente'; return null; }
 
@@ -41,10 +64,10 @@ function setupDashboard() {
 function setupSos() {
   const form = document.querySelector('#sosForm'); if (!form || form.dataset.appBound === 'true') return; form.dataset.appBound = 'true';
   const results = document.querySelector('#results'); const notice = document.querySelector('#sosNotice');
-  form.addEventListener('submit', event => { event.preventDefault(); const opportunity = Object.fromEntries(new FormData(form).entries()); opportunity.id = makeId('opp'); opportunity.status = 'aberta'; opportunity.createdAt = new Date().toISOString(); updateState(state => state.opportunities.push(opportunity)); if (results) { results.hidden = false; results.scrollIntoView({ behavior:'smooth', block:'start' }); } if (notice) { notice.hidden = false; notice.textContent = 'Busca criada. O salão pode enviar a oportunidade aos profissionais compatíveis.'; } });
+  form.addEventListener('submit', event => { event.preventDefault(); const opportunity = Object.fromEntries(new FormData(form).entries()); opportunity.id = makeId('opp'); opportunity.status = 'aberta'; opportunity.createdAt = new Date().toISOString(); updateState(state => state.opportunities.push(opportunity), 'legacy-sos-created'); if (results) { results.hidden = false; results.scrollIntoView({ behavior:'smooth', block:'start' }); } if (notice) { notice.hidden = false; notice.textContent = 'Busca criada. O salão pode enviar a oportunidade aos profissionais compatíveis.'; } });
   document.querySelectorAll('.select-professional').forEach(button => button.addEventListener('click', () => {
     const professional = button.closest('.card')?.querySelector('h2')?.textContent?.trim() || 'Profissional'; const latest = getState().opportunities.at(-1);
-    if (latest) updateState(state => { const item = state.opportunities.find(entry => entry.id === latest.id); if (item) item.invited = [...new Set([...(item.invited || []), professional])]; });
+    if (latest) updateState(state => { const item = state.opportunities.find(entry => entry.id === latest.id); if (item) item.invited = [...new Set([...(item.invited || []), professional])]; }, 'legacy-sos-invited');
     button.disabled = true; button.textContent = 'Oportunidade enviada'; if (notice) { notice.hidden = false; notice.textContent = `Oportunidade enviada para ${professional}. Aguarde a aceitação.`; }
   }));
   document.querySelector('#mapButton')?.addEventListener('click', () => { if (notice) { notice.hidden = false; notice.textContent = 'A visualização no mapa será conectada à geolocalização real na próxima camada técnica.'; } });
@@ -63,7 +86,7 @@ function setupProfessional() {
     const amount = mine.reduce((sum, item) => sum + (Number(item.value) || 0), 0); if (total) total.textContent = formatCurrency(amount); if (detail) detail.textContent = formatCurrency(amount);
     opportunities.querySelectorAll('[data-accept-opportunity]').forEach(button => button.addEventListener('click', () => {
       const id = button.dataset.acceptOpportunity;
-      updateState(next => { const opportunity = next.opportunities.find(item => item.id === id); if (!opportunity || opportunity.status !== 'aberta') return; opportunity.status = 'aceita'; opportunity.acceptedBy = name; const appointment = { id:makeId('apt'), date:opportunity.date, time:opportunity.time, professional:name, salao:'Salão BeautyMove', client:opportunity.client || 'Cliente', service:opportunity.service, value:Number(String(opportunity.value || '').replace(',', '.')) || 0, status:'confirmado', source:'sos' }; next.appointments.push(appointment); next.transactions.push({ id:makeId('txn'), appointmentId:appointment.id, type:'receita', value:appointment.value, status:'previsto' }); });
+      updateState(next => { const opportunity = next.opportunities.find(item => item.id === id); if (!opportunity || opportunity.status !== 'aberta') return; opportunity.status = 'aceita'; opportunity.acceptedBy = name; const appointment = { id:makeId('apt'), date:opportunity.date, time:opportunity.time, professional:name, salao:'Salão BeautyMove', client:opportunity.client || 'Cliente', service:opportunity.service, value:Number(String(opportunity.value || '').replace(',', '.')) || 0, status:'confirmado', source:'sos' }; next.appointments.push(appointment); next.transactions.push({ id:makeId('txn'), appointmentId:appointment.id, type:'receita', value:appointment.value, status:'previsto' }); }, 'professional-opportunity-accepted');
       render();
     }));
   }; render();
@@ -93,7 +116,7 @@ function setupClient() {
     if (appointments) appointments.innerHTML = mine.length ? mine.map(item => `<tr><td>${escapeHtml(item.date)}</td><td>${escapeHtml(item.time)}</td><td>${escapeHtml(item.professional)}</td><td>${escapeHtml(item.service)}</td><td>${formatCurrency(item.value)}</td><td><span class="status">${escapeHtml(item.status || 'Agendado')}</span></td></tr>`).join('') : '<tr><td colspan="6">Nenhum agendamento.</td></tr>';
   }
   searchForm?.addEventListener('submit', event => { event.preventDefault(); const data = Object.fromEntries(new FormData(searchForm).entries()); const list = professionals.filter(item => (!data.specialty || item.specialty === data.specialty) && (!data.service || item.service.toLowerCase().includes(String(data.service).toLowerCase()) || item.specialty.toLowerCase().includes(String(data.service).toLowerCase()))); renderResults(list); });
-  bookingForm?.addEventListener('submit', event => { event.preventDefault(); if (!selectedProfessional) return; const data = Object.fromEntries(new FormData(bookingForm).entries()); updateState(next => next.appointments.push({ id:makeId('apt'), date:data.date, time:data.time, professional:data.professional, client:profile?.nome || 'Cliente', service:data.service, value:Number(data.value) || 0, status:'solicitado', notes:data.notes || '', salao:selectedProfessional.salon, source:'cliente' })); closeModal(); bookingForm.reset(); renderAppointments(); });
+  bookingForm?.addEventListener('submit', event => { event.preventDefault(); if (!selectedProfessional) return; const data = Object.fromEntries(new FormData(bookingForm).entries()); updateState(next => next.appointments.push({ id:makeId('apt'), date:data.date, time:data.time, professional:data.professional, client:profile?.nome || 'Cliente', service:data.service, value:Number(data.value) || 0, status:'solicitado', notes:data.notes || '', salao:selectedProfessional.salon, source:'cliente' }), 'client-booking-created'); closeModal(); bookingForm.reset(); renderAppointments(); });
   renderResults(); renderAppointments();
 }
 

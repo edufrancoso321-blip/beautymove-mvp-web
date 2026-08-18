@@ -7,7 +7,7 @@
   const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(_){return false;}};
   const minutes=v=>{const p=String(v||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);};
   const today=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
-  const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
   const specialty={Ana:'Cabelos',Bruna:'Cabelos',Paula:'Mãos e Pés',Carla:'Estética'};
   const candidates=[['Juliana Costa','4,9','15 min','2,3 km'],['Lucas Ferreira','4,8','18 min','3,1 km'],['Bianca Rodrigues','4,7','22 min','4,2 km'],['Carla Menezes','4,6','25 min','4,8 km'],['Rafael Santos','4,5','28 min','5,0 km']];
   function ensureWorkspace(){const grid=document.getElementById('agendaGrid');if(!grid)return null;let ws=document.getElementById('agendaWorkspace');if(!ws){ws=document.createElement('div');ws.id='agendaWorkspace';ws.className='agenda-workspace';grid.parentNode.insertBefore(ws,grid);ws.appendChild(grid);}return ws;}
@@ -43,19 +43,23 @@
       const opportunity=state.opportunities.find(o=>o&&o.id===active.id);
       if(opportunity){opportunity.status='resolved';opportunity.acceptedBy=professional;opportunity.acceptedAt=now;}
     }
-    if(write(STATE_KEY,state)){
-      const n=document.getElementById('agendaNotice');
-      if(n){n.textContent=`${professional} selecionada. A oportunidade S.O.S. foi encaminhada e os demais profissionais retornaram à busca.`;n.hidden=false;clearTimeout(window.__bmSosNotice);window.__bmSosNotice=setTimeout(()=>n.hidden=true,4000);}
-      render();
-      window.dispatchEvent(new CustomEvent('beautymove:sos-accepted',{detail:{professional,opportunity:active}}));
+    if(!write(STATE_KEY,state))return;
+    const n=document.getElementById('agendaNotice');
+    if(n){n.textContent=`${professional} selecionada para a oportunidade S.O.S.`;n.hidden=false;clearTimeout(window.__bmSosNotice);window.__bmSosNotice=setTimeout(()=>n.hidden=true,4500);}
+    const panel=document.getElementById('sosOpportunityPanel');
+    if(panel){
+      const body=panel.querySelector('.sos-op-body');
+      if(body)body.innerHTML=`<div style="padding:28px 14px;text-align:center"><div style="font-size:28px;color:#7438F5;font-weight:900">✓</div><strong style="display:block;margin-top:8px;font-size:13px;color:#30263a">Profissional selecionada</strong><span style="display:block;margin-top:5px;font-size:10px;color:#6f6878">${esc(professional)} foi encaminhada para ${esc(active.client)}.</span><span style="display:block;margin-top:3px;font-size:9px;color:#7a6b91">A oportunidade S.O.S. foi encerrada.</span></div>`;
     }
+    window.dispatchEvent(new CustomEvent('beautymove:sos-accepted',{detail:{professional,opportunity:active}}));
+    setTimeout(render,1200);
   }
   function render(){
     const panel=ensurePanel();if(!panel)return;const items=opportunities();
     if(!items.length){panel.innerHTML=`<div class="sos-op-shell"><header class="sos-op-header"><div class="sos-op-kicker"><span class="sos-op-bolt">⚡</span><span>S.O.S.</span></div><div class="sos-op-subtitle">Central de Oportunidades</div><div class="sos-op-state"><span></span>Pronto para agir</div></header><div class="sos-op-body"><div class="sos-op-empty"><div class="sos-op-empty-icon">✓</div><strong>Tudo sob controle</strong><span>Nenhuma oportunidade ativa.</span></div></div></div>`;return;}
     const active=items[0];
     panel.innerHTML=`<div class="sos-op-shell active"><header class="sos-op-header active"><div class="sos-op-kicker"><span class="sos-op-bolt">⚡</span><span>S.O.S.</span></div><div class="sos-op-subtitle">Central de Oportunidades</div><div class="sos-op-state active"><span></span>${items.length} oportunidade${items.length>1?'s':''} ativa${items.length>1?'s':''}</div></header><div class="sos-op-body"><div class="sos-op-queue">${items.map((item,i)=>`<button type="button" class="sos-op-queue-item ${i===0?'is-active':''}" data-op-index="${i}"><strong>${esc(item.time)}</strong><span>${esc(item.client)}</span><small>${esc(item.kind==='manual'?'Nova solicitação':item.reason||'Atendimento afetado')}</small></button>`).join('')}</div><section class="sos-op-alert"><div class="sos-op-alert-label">${active.kind==='manual'?'NOVA OPORTUNIDADE':'AÇÃO NECESSÁRIA'}</div><strong>${esc(active.service)}</strong><div>${esc(active.client)} · ${esc(active.time)}</div><small>${esc(active.kind==='manual'?'Solicitação S.O.S.':'Profissional indisponível')}</small></section><div class="sos-op-search-state"><span class="sos-op-search-dot"></span><strong>Buscando profissionais</strong><small>${esc(active.specialty||'Especialidade')}</small></div><div class="sos-op-candidates-title">Profissionais disponíveis</div><div id="sosCandidates">${candidateList()}</div></div><footer class="sos-op-footer">✓ Verificados pela plataforma</footer></div>`;
-    panel.querySelectorAll('.sos-op-select').forEach(b=>b.addEventListener('click',()=>selectCandidate(b.dataset.professional)));
+    panel.onclick=(event)=>{const button=event.target.closest('.sos-op-select');if(!button||!panel.contains(button))return;event.preventDefault();event.stopPropagation();selectCandidate(button.dataset.professional);};
     panel.querySelectorAll('.sos-op-queue-item').forEach(b=>b.addEventListener('click',()=>{const idx=Number(b.dataset.opIndex),selected=items[idx];if(!selected)return;panel.querySelectorAll('.sos-op-queue-item').forEach(x=>x.classList.remove('is-active'));b.classList.add('is-active');const alert=panel.querySelector('.sos-op-alert');alert.querySelector('.sos-op-alert-label').textContent=selected.kind==='manual'?'NOVA OPORTUNIDADE':'AÇÃO NECESSÁRIA';alert.querySelector('strong').textContent=selected.service;alert.querySelector('div').textContent=`${selected.client} · ${selected.time}`;alert.querySelector('small').textContent=selected.kind==='manual'?'Solicitação S.O.S.':'Profissional indisponível';}));
   }
   function boot(){ensureWorkspace();render();let signature='';setInterval(()=>{const s=JSON.stringify([today(),localStorage.getItem(STATUS_KEY),localStorage.getItem(STATE_KEY)]);if(s!==signature){signature=s;render();}},700);document.getElementById('agendaDatePicker')?.addEventListener('change',render);document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(render,150));document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(render,150));document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(render,150));}

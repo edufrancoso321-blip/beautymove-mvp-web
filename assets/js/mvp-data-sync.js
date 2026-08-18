@@ -51,6 +51,7 @@
   function addCommon(item, uid, role) {
     const copy = { ...(item || {}) };
     delete copy._localOnly;
+    delete copy._remote;
     copy.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
     if (role === 'salao') copy.salonOwnerId = uid;
     if (role === 'profissional') copy.professionalOwnerId = uid;

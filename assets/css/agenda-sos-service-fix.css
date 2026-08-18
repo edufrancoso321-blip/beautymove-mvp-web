@@ -1,6 +1,0 @@
-/* BeautyMove — S.O.S. service picker final layout */
-.bm-sos-service-menu-shell{display:flex!important;flex-direction:column!important;max-height:235px!important;overflow:hidden!important}
-.bm-sos-service-list{overflow-y:auto!important;flex:1 1 auto!important;min-height:0!important}
-.bm-sos-service-footer{flex:0 0 auto!important;position:relative!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;padding:8px 0 0!important;margin-top:6px!important;border-top:1px solid #e7e2ec!important;background:#fff!important;z-index:3!important}
-.bm-sos-service-footer button{position:static!important;margin:0!important}
-.bm-sos-service-menu-shell > .bm-sos-service-footer{position:sticky!important;bottom:0!important}

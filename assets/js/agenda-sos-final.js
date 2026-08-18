@@ -1,4 +1,4 @@
-/* BeautyMove — sincronização final da célula S.O.S., sem observer recursivo */
+/* BeautyMove — sincronização final da célula S.O.S. */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
@@ -6,6 +6,8 @@
   const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
   const mins=v=>{const p=String(v||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);};
   const date=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
+  const professionalGender={'Juliana Costa':'feminino','Bianca Rodrigues':'feminino','Carla Menezes':'feminino','Lucas Ferreira':'masculino','Rafael Santos':'masculino'};
+  const confirmationLabel=professional=>professionalGender[professional]==='masculino'?'Profissional confirmado':'Profissional confirmada';
 
   function accepted(){
     const s=read(),appointments=Array.isArray(s.appointments)?s.appointments:[],opportunities=Array.isArray(s.opportunities)?s.opportunities:[];
@@ -30,7 +32,7 @@
       cell.className='sos-cell sos-cell-found';
       cell.dataset.sosId=item.id||'';
       cell.dataset.appointmentId=item.appointment?.id||'';
-      cell.innerHTML=`<strong>${esc(item.client)}</strong><span>${esc(item.service)}</span><small>Profissional: ${esc(item.acceptedBy)}</small><div class="sos-found-status">✓ Profissional encontrada · Atendimento em acompanhamento</div>`;
+      cell.innerHTML=`<strong>${esc(item.client)}</strong><span>${esc(item.service)}</span><small>${esc(item.acceptedBy)}</small><div class="sos-found-status">✓ ${confirmationLabel(item.acceptedBy)}</div>`;
     });
   }
 

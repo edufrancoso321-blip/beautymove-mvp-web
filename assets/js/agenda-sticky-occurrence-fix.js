@@ -5,6 +5,7 @@
   const HOURS_KEY='beautymove.mvp.agenda.hours';
   const PEOPLE=['Ana','Bruna','Paula','Carla'];
   let lastSignature='';
+  let syncingSos=false;
 
   const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}};
   const dateKey=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
@@ -147,6 +148,8 @@
     fixSticky();
   }
 
+  function escapeHtml(value){return String(value??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
+
   function syncSosStatus(){
     const grid=document.getElementById('agendaGrid');if(!grid)return;
     const date=dateKey();
@@ -155,7 +158,6 @@
     const appointments=Array.isArray(state.appointments)?state.appointments:[];
     const accepted=(Array.isArray(state.opportunities)?state.opportunities:[]).filter(o=>o&&o.date===date&&o.source==='sos'&&o.status==='resolved'&&o.acceptedBy);
     const cells=[...grid.querySelectorAll('[data-sos-cell="true"]')];
-    cells.forEach(cell=>{cell.classList.remove('sos-cell','sos-cell-found');cell.removeAttribute('data-sos-id');cell.innerHTML='Livre';});
     accepted.forEach(item=>{
       const start=mins(item.time),cell=cells.find(c=>{const t=mins(c.dataset.time);return t>=start&&t<start+120;});
       if(!cell)return;
@@ -163,9 +165,16 @@
       const client=item.client||appointment?.client||'Cliente';
       const service=item.service||appointment?.service||'Atendimento';
       const professional=item.acceptedBy||'Profissional selecionada';
+      if(cell.dataset.sosId===item.id&&cell.classList.contains('sos-cell-found'))return;
       cell.dataset.sosId=item.id;
       cell.classList.add('sos-cell','sos-cell-found');
-      cell.innerHTML=`<strong>${String(client).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}</strong><span>${String(service).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}</span><small class="sos-found-status">✓ Profissional encontrada</small><small>Profissional: ${String(professional).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}</small>`;
+      cell.innerHTML=`<strong>${escapeHtml(client)}</strong><span>${escapeHtml(service)}</span><small class="sos-found-status">✓ Profissional encontrada</small><small>Profissional: ${escapeHtml(professional)}</small>`;
+    });
+    cells.forEach(cell=>{
+      if(cell.dataset.sosId||cell.classList.contains('sos-cell-found'))return;
+      if(cell.textContent.trim()==='Livre')return;
+      cell.classList.remove('sos-cell','sos-cell-found');
+      cell.innerHTML='Livre';
     });
   }
 
@@ -176,7 +185,7 @@
     const interval=document.getElementById('agendaInterval');
     interval?.addEventListener('change',()=>{setTimeout(syncTimeOptions,0);});
     const grid=document.getElementById('agendaGrid');
-    if(grid){let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;lastSignature='';run();});}).observe(grid,{childList:true,subtree:true});}
+    if(grid){let queued=false;new MutationObserver(()=>{if(syncingSos)return;if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;lastSignature='';run();});}).observe(grid,{childList:true,subtree:true});}
     document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{lastSignature='';setTimeout(()=>{syncTimeOptions();run();},0);});
     window.addEventListener('resize',()=>{lastSignature='';fixSticky();renderOccurrences();syncSosStatus();});
     window.addEventListener('storage',()=>{lastSignature='';run();});

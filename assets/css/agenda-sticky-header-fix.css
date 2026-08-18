@@ -1,25 +1,67 @@
-/* BeautyMove — correção isolada do cabeçalho da Agenda. */
-/* A grade atual usa um único thead. O cabeçalho deve permanecer fixo
-   dentro da área de rolagem da Agenda, em desktop, notebook e mobile. */
+/* BeautyMove — estabilização definitiva da rolagem da Agenda — 2026-08-18 */
+/* Não altera a estrutura da tabela. A rolagem continua pertencendo à grade,
+   enquanto o cabeçalho permanece fixo. */
+
+html,body{
+  height:100%!important;
+  overflow:hidden!important;
+}
+
+.salon-app{
+  height:100vh!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+
+.salon-main{
+  height:100vh!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+}
+
+.agenda-shell-v2{
+  min-height:0!important;
+  flex:1 1 auto!important;
+  overflow:hidden!important;
+}
+
+/* Uma única área de rolagem para a grade. */
 .agenda-scroll-v2{
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
   overflow:auto!important;
   overscroll-behavior:contain!important;
   -webkit-overflow-scrolling:touch!important;
 }
+
+/* Mantém a tabela como tabela: não usar display:block/grid em table,
+   pois isso desalinha cabeçalho, profissionais e linhas. */
 .agenda-grid{
+  width:100%!important;
+  min-width:1120px!important;
   border-collapse:separate!important;
   border-spacing:0!important;
+  table-layout:fixed!important;
 }
+
 .agenda-grid thead th{
   position:sticky!important;
   top:0!important;
   z-index:30!important;
   background:#fff!important;
 }
+
 .agenda-grid thead .time-col{
+  position:sticky!important;
+  top:0!important;
   left:0!important;
   z-index:33!important;
+  background:#fff!important;
 }
+
 .agenda-grid tbody .time-col{
   position:sticky!important;
   left:0!important;
@@ -27,13 +69,13 @@
   background:#fff!important;
 }
 
-/* O cabeçalho combina especialidade e profissional na mesma célula. */
 .agenda-grid thead th:not(.time-col){
   height:82px!important;
   box-sizing:border-box!important;
   vertical-align:middle!important;
   overflow:hidden!important;
 }
+
 .agenda-grid .specialty-label{
   display:flex!important;
   align-items:center!important;
@@ -42,54 +84,58 @@
   margin-bottom:2px!important;
   line-height:1.1!important;
 }
+
 .agenda-grid .professional-name{
+  display:block!important;
   line-height:1.1!important;
 }
 
-/* A coluna S.O.S. faz parte da Agenda e permanece visível.
-   A Central de Oportunidades lateral continua existindo separadamente. */
-.sos-col{
-  display:table-cell!important;
-}
+/* S.O.S. continua sendo uma coluna real da Agenda. */
+.sos-col,
 .agenda-grid td.sos-cell,
 .agenda-grid td.sos-free-cell{
   display:table-cell!important;
 }
 
-/* Notebook: manter a coluna S.O.S. dentro da área visível sem criar
-   rolagem horizontal obrigatória para a grade inteira. */
+/* Desktop/notebook: preservar as colunas sem criar uma segunda rolagem. */
 @media (max-width:1400px) and (min-width:781px){
   .agenda-grid{
     min-width:0!important;
     width:100%!important;
-    table-layout:fixed!important;
   }
+
   .agenda-grid th,
   .agenda-grid td{
     min-width:0!important;
   }
+
   .agenda-grid .time-col{
     width:68px!important;
     min-width:68px!important;
   }
-  .agenda-grid thead th:not(.time-col){
-    padding-left:7px!important;
-    padding-right:7px!important;
-  }
-  .agenda-grid tbody td{
-    padding-left:8px!important;
-    padding-right:8px!important;
-  }
+
   .agenda-grid .sos-col,
   .agenda-grid .sos-cell,
   .agenda-grid .sos-free-cell{
     width:175px!important;
     min-width:175px!important;
   }
+
+  .agenda-grid thead th:not(.time-col){
+    padding-left:7px!important;
+    padding-right:7px!important;
+  }
+
+  .agenda-grid tbody td{
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+
   .specialty-label{
     font-size:11px!important;
     line-height:1.1!important;
   }
+
   .professional-name{
     font-size:14px!important;
   }
@@ -100,130 +146,70 @@
     width:64px!important;
     min-width:64px!important;
   }
+
   .agenda-grid .sos-col,
   .agenda-grid .sos-cell,
   .agenda-grid .sos-free-cell{
     width:155px!important;
     min-width:155px!important;
   }
+
   .agenda-grid tbody td{
     padding-left:6px!important;
     padding-right:6px!important;
   }
+
   .agenda-grid .sos-cell strong{
     font-size:12px!important;
   }
+
   .agenda-grid .sos-cell span,
   .agenda-grid .sos-cell small{
     font-size:10px!important;
   }
 }
 
-@media(max-width:780px){
-  .salon-main{
-    display:flex!important;
-    flex-direction:column!important;
+@media (max-width:780px){
+  html,body{
+    overflow:auto!important;
   }
+
+  .salon-app{
+    height:auto!important;
+    min-height:100vh!important;
+    overflow:visible!important;
+  }
+
+  .salon-main{
+    height:auto!important;
+    min-height:100vh!important;
+    overflow:visible!important;
+  }
+
   .agenda-shell-v2{
-    overflow:hidden!important;
     height:60vh!important;
     min-height:320px!important;
+    flex:none!important;
+    overflow:hidden!important;
   }
+
   .agenda-scroll-v2{
     height:100%!important;
     max-height:100%!important;
     overflow:auto!important;
   }
+
+  .agenda-grid{
+    min-width:1120px!important;
+  }
+
   .agenda-grid thead th{
     position:sticky!important;
     top:0!important;
     z-index:30!important;
   }
+
   .agenda-grid thead .time-col{
     z-index:33!important;
-  }
-}
-
-/* Correção estrutural 2026-08-18:
-   a rolagem vertical pertence somente ao corpo da Agenda.
-   O cabeçalho com especialidades/profissionais fica estável e
-   não acompanha a rolagem das linhas. A grade usa CSS Grid para
-   manter exatamente as mesmas colunas no cabeçalho e no corpo. */
-@media (min-width:781px){
-  .agenda-scroll-v2{
-    overflow:hidden!important;
-    height:100%!important;
-    max-height:none!important;
-  }
-  .agenda-grid{
-    display:block!important;
-    width:100%!important;
-    height:100%!important;
-    min-width:0!important;
-    table-layout:fixed!important;
-  }
-  .agenda-grid thead{
-    display:block!important;
-    width:100%!important;
-    height:82px!important;
-  }
-  .agenda-grid thead tr,
-  .agenda-grid tbody tr{
-    display:grid!important;
-    width:100%!important;
-    grid-template-columns:78px repeat(4,minmax(0,1fr)) 220px!important;
-  }
-  .agenda-grid thead tr{
-    height:82px!important;
-  }
-  .agenda-grid tbody{
-    display:block!important;
-    width:100%!important;
-    height:calc(100% - 82px)!important;
-    overflow-y:auto!important;
-    overflow-x:hidden!important;
-    scrollbar-gutter:stable!important;
-  }
-  .agenda-grid tbody tr{
-    min-height:56px!important;
-  }
-  .agenda-grid thead th,
-  .agenda-grid tbody th,
-  .agenda-grid tbody td{
-    min-width:0!important;
-    width:auto!important;
-    max-width:none!important;
-    box-sizing:border-box!important;
-  }
-  .agenda-grid thead th{
-    position:static!important;
-    top:auto!important;
-    left:auto!important;
-    z-index:2!important;
-  }
-  .agenda-grid tbody .time-col{
-    position:static!important;
-    left:auto!important;
-    z-index:auto!important;
-  }
-  .agenda-grid .sos-col,
-  .agenda-grid .sos-cell,
-  .agenda-grid .sos-free-cell{
-    width:auto!important;
-    min-width:0!important;
-  }
-}
-
-@media (max-width:1400px) and (min-width:781px){
-  .agenda-grid thead tr,
-  .agenda-grid tbody tr{
-    grid-template-columns:68px repeat(4,minmax(0,1fr)) 175px!important;
-  }
-}
-
-@media (max-width:1050px) and (min-width:781px){
-  .agenda-grid thead tr,
-  .agenda-grid tbody tr{
-    grid-template-columns:64px repeat(4,minmax(0,1fr)) 155px!important;
   }
 }

@@ -10,6 +10,14 @@
   const currentId=()=>window.__bmCurrentAppointmentId||document.getElementById('detailsActions')?.dataset?.appointmentId||null;
   const current=()=>{const id=currentId();return id?read().appointments.find(a=>a.id===id)||null:null;};
 
+  function refreshSosMetric(){
+    const el=document.getElementById('metricSos');if(!el)return;
+    const date=document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
+    const s=read(),items=Array.isArray(s.opportunities)?s.opportunities:[];
+    const active=items.filter(o=>o&&o.date===date&&o.source==='sos'&&o.status!=='resolved'&&o.status!=='cancelado'&&o.status!=='cancelada'&&!o.acceptedBy);
+    el.textContent=String(active.length);
+  }
+
   function classifyButtons(box){
     box.querySelectorAll('button').forEach(btn=>{
       const text=(btn.textContent||'').trim().toLowerCase();
@@ -113,6 +121,13 @@
   function boot(){
     const actions=document.getElementById('detailsActions');
     document.addEventListener('click',e=>{const cell=e.target.closest?.('#agendaGrid [data-appointment-id]');if(cell)window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;},true);
+    refreshSosMetric();
+    setInterval(refreshSosMetric,700);
+    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(refreshSosMetric,100));
+    document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(refreshSosMetric,180));
+    document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(refreshSosMetric,180));
+    document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(refreshSosMetric,180));
+    window.addEventListener('beautymove:sos-accepted',()=>setTimeout(refreshSosMetric,50));
     if(!actions)return;
     actions.addEventListener('click',intercept,true);
     let normalizing=false;

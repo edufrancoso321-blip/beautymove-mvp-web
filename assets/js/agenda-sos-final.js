@@ -43,13 +43,48 @@
     });
   }
 
+  function setupSosServiceMenu(){
+    const specialty=document.getElementById('sosSpecialty');
+    const service=document.getElementById('sosService');
+    if(!specialty||!service||service.dataset.beautymoveServiceMenu==='1')return;
+
+    const menus={
+      'Cabelos':['Corte','Escova','Coloração','Luzes','Corte feminino','Corte masculino'],
+      'Mãos e Pés':['Manicure','Pedicure'],
+      'Estética':['Limpeza de pele'],
+      'Depilação':['Depilação facial','Depilação de axilas','Depilação de pernas','Depilação de virilha'],
+      'Sobrancelhas':['Design de sobrancelhas']
+    };
+
+    const previous=service.value;
+    const select=document.createElement('select');
+    select.id='sosService';
+    select.name='service';
+    select.required=true;
+    select.className=service.className||'';
+    select.setAttribute('aria-label','Serviço');
+    service.replaceWith(select);
+
+    const render=()=>{
+      const list=menus[specialty.value]||[];
+      select.innerHTML=list.map((name,i)=>`<option value="${esc(name)}">${esc(name)}</option>`).join('');
+      if(previous&&list.includes(previous))select.value=previous;
+      if(!list.length)select.innerHTML='<option value="">Nenhum serviço cadastrado para esta especialidade</option>';
+    };
+
+    specialty.addEventListener('change',render);
+    select.dataset.beautymoveServiceMenu='1';
+    render();
+  }
+
   function boot(){
     loadSosColumnIdentity();
     restoreAppointments();
+    setupSosServiceMenu();
     let signature='';
     const tick=()=>{const s=JSON.stringify([date(),localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0]);if(s!==signature){signature=s;sync();}};
     setTimeout(tick,700);
-    setInterval(()=>{restoreAppointments();tick();},800);
+    setInterval(()=>{restoreAppointments();tick();setupSosServiceMenu();},800);
     window.addEventListener('beautymove:sos-accepted',()=>{signature='';setTimeout(tick,100);});
     ['prevDay','nextDay','todayBtn','agendaDatePicker'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>{signature='';setTimeout(tick,250);}));
     document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{signature='';setTimeout(tick,150);});

@@ -14,7 +14,7 @@
   function ensurePanel(){const ws=ensureWorkspace();if(!ws)return null;let p=document.getElementById('sosOpportunityPanel');if(!p){p=document.createElement('aside');p.id='sosOpportunityPanel';p.setAttribute('aria-label','Central de Oportunidades S.O.S.');ws.appendChild(p);}else if(p.parentElement!==ws)ws.appendChild(p);return p;}
   function affected(){
     const date=today(),statuses=read(STATUS_KEY,{}),state=read(STATE_KEY,{appointments:[],opportunities:[]}),appointments=Array.isArray(state.appointments)?state.appointments:[];
-    return appointments.filter(a=>a&&a.date===date&&a.status!=='cancelado').map(a=>{const r=statuses[date+'::'+a.professional];if(!r||!['absent','late'].includes(r.status))return null;const start=minutes(a.time),end=start+Math.max(30,Number(a.duration)||60);const ok=r.status==='late'?start<minutes(r.lateStart||'00:00'):r.absenceType==='during_day'?end>minutes(r.absenceStart||'23:59'):true;if(!ok)return null;return {id:'affected-'+a.id,appointmentId:a.id,date:a.date,time:a.time,client:a.client||'Cliente',service:a.service||'Atendimento',specialty:specialty[a.professional]||'Cabelos',professional:a.professional||'',kind:'urgente',status:'searching',reason:r.status==='late'?'Atraso':'Ausência'};}).filter(Boolean);
+    return appointments.filter(a=>a&&a.date===date&&a.status!=='cancelado'&&!a.sosAcceptedBy).map(a=>{const r=statuses[date+'::'+a.professional];if(!r||!['absent','late'].includes(r.status))return null;const start=minutes(a.time),end=start+Math.max(30,Number(a.duration)||60);const ok=r.status==='late'?start<minutes(r.lateStart||'00:00'):r.absenceType==='during_day'?end>minutes(r.absenceStart||'23:59'):true;if(!ok)return null;return {id:'affected-'+a.id,appointmentId:a.id,date:a.date,time:a.time,client:a.client||'Cliente',service:a.service||'Atendimento',specialty:specialty[a.professional]||'Cabelos',professional:a.professional||'',kind:'urgente',status:'searching',reason:r.status==='late'?'Atraso':'Ausência'};}).filter(Boolean);
   }
   function manual(){const date=today(),state=read(STATE_KEY,{opportunities:[]}),items=Array.isArray(state.opportunities)?state.opportunities:[];return items.filter(o=>o&&o.date===date&&o.source==='sos'&&o.status!=='cancelado'&&o.status!=='resolved').map(o=>({...o,kind:o.kind||'manual',status:o.status||'searching'}));}
   function tracking(){
@@ -41,6 +41,7 @@
         appointment.sosAcceptedBy=professional;
         appointment.sosAcceptedAt=now;
       }
+      state.opportunities.forEach(o=>{if(o&&o.source==='sos'&&o.date===active.date&&o.time===active.time&&o.client===active.client){o.status='resolved';o.acceptedBy=professional;o.acceptedAt=now;o.appointmentId=o.appointmentId||active.appointmentId;}});
       const existing=state.opportunities.find(o=>o&&o.id===active.id);
       if(existing){existing.status='resolved';existing.acceptedBy=professional;existing.acceptedAt=now;existing.appointmentId=existing.appointmentId||active.appointmentId;}
       else{state.opportunities.push({id:active.id,date:active.date,time:active.time,client:active.client,service:active.service,specialty:active.specialty,source:'sos',status:'resolved',acceptedBy:professional,acceptedAt:now,appointmentId:active.appointmentId});}
@@ -51,13 +52,8 @@
     if(!write(STATE_KEY,state))return;
     const n=document.getElementById('agendaNotice');
     if(n){n.textContent=`${professional} selecionada para a oportunidade S.O.S.`;n.hidden=false;clearTimeout(window.__bmSosNotice);window.__bmSosNotice=setTimeout(()=>n.hidden=true,4500);}
-    const panel=document.getElementById('sosOpportunityPanel');
-    if(panel){
-      const body=panel.querySelector('.sos-op-body');
-      if(body)body.innerHTML=`<div style="padding:22px 14px;text-align:left"><div style="font-size:10px;color:#7438F5;font-weight:900;letter-spacing:.08em">PROFISSIONAL SELECIONADA</div><strong style="display:block;margin-top:7px;font-size:14px;color:#30263a">${esc(professional)}</strong><span style="display:block;margin-top:5px;font-size:11px;color:#6f6878">${esc(active.client)} · ${esc(active.service)} · ${esc(active.time)}</span><div style="margin-top:14px;padding:10px;border:1px solid #e5daf7;border-radius:9px;background:#fbf8ff"><strong style="display:block;font-size:11px;color:#4b3670">Acompanhando atendimento</strong><span style="display:block;margin-top:3px;font-size:10px;color:#7a6b91">A oportunidade foi encerrada, mas permanece na Central para acompanhamento.</span></div></div>`;
-    }
     window.dispatchEvent(new CustomEvent('beautymove:sos-accepted',{detail:{professional,opportunity:active}}));
-    setTimeout(render,1200);
+    render();
   }
   function render(){
     const panel=ensurePanel();if(!panel)return;const items=opportunities(),tracked=tracking();

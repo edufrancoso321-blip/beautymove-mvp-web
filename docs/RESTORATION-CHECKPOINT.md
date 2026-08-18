@@ -1,0 +1,1 @@
+Current restoration checkpoint is preserved in the refactor/clean-architecture-2026-08-18 branch. This marker is intentionally kept during stabilization.

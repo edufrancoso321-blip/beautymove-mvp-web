@@ -8,6 +8,13 @@
   window.__BEAUTYMOVE_AGENDA_LIVE_SYNC__ = true;
 
   let queued = false;
+  let lastStateSignature = '';
+
+  function stateSignature(){
+    try { return localStorage.getItem('beautymove.mvp.state') || ''; }
+    catch (_) { return ''; }
+  }
+
   function refreshAgenda(){
     if (queued) return;
     queued = true;
@@ -19,8 +26,22 @@
     });
   }
 
-  window.addEventListener('beautymove:state-changed', refreshAgenda);
+  window.addEventListener('beautymove:state-changed', () => {
+    lastStateSignature = stateSignature();
+    refreshAgenda();
+  });
   window.addEventListener('beautymove:sos-created', refreshAgenda);
   window.addEventListener('beautymove:sos-accepted', refreshAgenda);
   window.addEventListener('beautymove:agenda-hours-changed', refreshAgenda);
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'beautymove.mvp.state' || event.key === null) refreshAgenda();
+  });
+
+  setInterval(() => {
+    const current = stateSignature();
+    if (current && current !== lastStateSignature) {
+      lastStateSignature = current;
+      refreshAgenda();
+    }
+  }, 700);
 })();

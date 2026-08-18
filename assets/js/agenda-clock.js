@@ -72,4 +72,12 @@
     script.src='assets/js/agenda-sos-metric-sync.js?v=20260818-1';
     document.head.appendChild(script);
   }
+
+  // Corrige a renderização de atendimentos longos para um único bloco visual.
+  if(!document.getElementById('agendaAppointmentSpanFix')){
+    const script=document.createElement('script');
+    script.id='agendaAppointmentSpanFix';
+    script.src='assets/js/agenda-appointment-span-fix.js?v=20260818-1';
+    document.head.appendChild(script);
+  }
 })();

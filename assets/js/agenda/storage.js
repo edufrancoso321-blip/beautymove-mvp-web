@@ -1,5 +1,6 @@
-/* BeautyMove Agenda — storage facade.
- * Agenda modules use this API instead of knowing where state is stored.
+/* BeautyMove Agenda — storage facade and legacy bridge.
+ * The bridge is temporary: it lets the existing agenda.js migrate safely
+ * without duplicating or deleting its existing behavior in one step.
  */
 window.BeautyMoveAgendaStorage = (() => {
   'use strict';
@@ -26,5 +27,22 @@ window.BeautyMoveAgendaStorage = (() => {
     return api.updateState(mutator, reason || 'agenda');
   }
 
-  return Object.freeze({ readState, saveState, update });
+  function installLegacyBridge() {
+    const api = data();
+    if (!api) return;
+
+    window.agendaReadState = () => api.getState();
+    window.agendaSaveState = (state) => api.saveState(state, 'agenda');
+    window.agendaReadHours = () => api.getAgendaHours();
+    window.agendaSaveHours = (hours) => api.saveAgendaHours(hours);
+    window.agendaId = (prefix) => api.id(prefix);
+  }
+
+  /* agenda.js is intentionally loaded immediately after this file. The
+   * deferred bridge runs after the synchronous script chain has loaded, so
+   * the legacy global functions are redirected without editing the large
+   * legacy controller in place. */
+  setTimeout(installLegacyBridge, 0);
+
+  return Object.freeze({ readState, saveState, update, installLegacyBridge });
 })();

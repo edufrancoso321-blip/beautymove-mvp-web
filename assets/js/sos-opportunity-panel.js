@@ -12,6 +12,17 @@
   const candidates=[['Juliana Costa','4,9','15 min','2,3 km'],['Lucas Ferreira','4,8','18 min','3,1 km'],['Bianca Rodrigues','4,7','22 min','4,2 km'],['Carla Menezes','4,6','25 min','4,8 km'],['Rafael Santos','4,5','28 min','5,0 km']];
   function ensureWorkspace(){const grid=document.getElementById('agendaGrid');if(!grid)return null;let ws=document.getElementById('agendaWorkspace');if(!ws){ws=document.createElement('div');ws.id='agendaWorkspace';ws.className='agenda-workspace';grid.parentNode.insertBefore(ws,grid);ws.appendChild(grid);}return ws;}
   function ensurePanel(){const ws=ensureWorkspace();if(!ws)return null;let p=document.getElementById('sosOpportunityPanel');if(!p){p=document.createElement('aside');p.id='sosOpportunityPanel';p.setAttribute('aria-label','Central de Oportunidades S.O.S.');ws.appendChild(p);}else if(p.parentElement!==ws)ws.appendChild(p);return p;}
+  function normalizeAcceptedAppointments(){
+    const state=read(STATE_KEY,{appointments:[],opportunities:[],transactions:[]});
+    let changed=false;
+    (state.appointments||[]).forEach(a=>{
+      if(a?.sosAcceptedBy&&a?.sosOriginalProfessional&&a.professional!==a.sosOriginalProfessional){
+        a.professional=a.sosOriginalProfessional;
+        changed=true;
+      }
+    });
+    if(changed)write(STATE_KEY,state);
+  }
   function affected(){
     const date=today(),statuses=read(STATUS_KEY,{}),state=read(STATE_KEY,{appointments:[],opportunities:[]}),appointments=Array.isArray(state.appointments)?state.appointments:[];
     return appointments.filter(a=>a&&a.date===date&&a.status!=='cancelado'&&!a.sosAcceptedBy).map(a=>{const r=statuses[date+'::'+a.professional];if(!r||!['absent','late'].includes(r.status))return null;const start=minutes(a.time),end=start+Math.max(30,Number(a.duration)||60);const ok=r.status==='late'?start<minutes(r.lateStart||'00:00'):r.absenceType==='during_day'?end>minutes(r.absenceStart||'23:59'):true;if(!ok)return null;return {id:'affected-'+a.id,appointmentId:a.id,date:a.date,time:a.time,client:a.client||'Cliente',service:a.service||'Atendimento',specialty:specialty[a.professional]||'Cabelos',professional:a.professional||'',kind:'urgente',status:'searching',reason:r.status==='late'?'Atraso':'Ausência'};}).filter(Boolean);
@@ -68,6 +79,6 @@
     panel.onclick=(event)=>{const button=event.target.closest('.sos-op-select');if(!button||!panel.contains(button))return;event.preventDefault();event.stopPropagation();selectCandidate(button.dataset.professional);};
     panel.querySelectorAll('.sos-op-queue-item').forEach(b=>b.addEventListener('click',()=>{const idx=Number(b.dataset.opIndex),selected=items[idx];if(!selected)return;panel.querySelectorAll('.sos-op-queue-item').forEach(x=>x.classList.remove('is-active'));b.classList.add('is-active');const alert=panel.querySelector('.sos-op-alert');alert.querySelector('.sos-op-alert-label').textContent=selected.kind==='manual'?'NOVA OPORTUNIDADE':'AÇÃO NECESSÁRIA';alert.querySelector('strong').textContent=selected.service;alert.querySelector('div').textContent=`${selected.client} · ${selected.time}`;alert.querySelector('small').textContent=selected.kind==='manual'?'Solicitação S.O.S.':'Profissional indisponível';}));
   }
-  function boot(){ensureWorkspace();render();let signature='';setInterval(()=>{const s=JSON.stringify([today(),localStorage.getItem(STATUS_KEY),localStorage.getItem(STATE_KEY)]);if(s!==signature){signature=s;render();}},700);document.getElementById('agendaDatePicker')?.addEventListener('change',render);document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(render,150));document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(render,150));document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(render,150));}
+  function boot(){normalizeAcceptedAppointments();ensureWorkspace();render();let signature='';setInterval(()=>{normalizeAcceptedAppointments();const s=JSON.stringify([today(),localStorage.getItem(STATUS_KEY),localStorage.getItem(STATE_KEY)]);if(s!==signature){signature=s;render();}},700);document.getElementById('agendaDatePicker')?.addEventListener('change',render);document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(render,150));document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(render,150));document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(render,150));}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,250),{once:true});else setTimeout(boot,250);
 })();

@@ -1,1 +1,0 @@
-Este diretório documenta o bloco de estabilização. Nenhum arquivo visual deve ser alterado apenas para tratar inconsistência de dados. O objetivo é primeiro consolidar a fonte de verdade e depois publicar a correção funcional.

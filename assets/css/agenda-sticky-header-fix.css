@@ -1,0 +1,35 @@
+/* BeautyMove — correção isolada do cabeçalho da Agenda. */
+@media (min-width: 781px) {
+  .agenda-scroll-v2 {
+    overflow: auto !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .agenda-grid thead th {
+    position: sticky !important;
+    background: #fff !important;
+  }
+
+  /* Linha de especialidades */
+  .agenda-grid thead tr.agenda-specialty-row th {
+    top: 0 !important;
+    z-index: 20 !important;
+  }
+
+  /* Linha de profissionais permanece visível abaixo das especialidades. */
+  .agenda-grid thead tr.agenda-professional-row th {
+    top: 36px !important;
+    z-index: 21 !important;
+  }
+
+  /* Células que ocupam as duas linhas do cabeçalho. */
+  .agenda-grid thead tr.agenda-specialty-row th.time-col {
+    top: 0 !important;
+    z-index: 23 !important;
+  }
+
+  .agenda-grid thead tr.agenda-specialty-row th.sos-col {
+    top: 0 !important;
+    z-index: 22 !important;
+  }
+}

@@ -1,7 +1,5 @@
 /* BeautyMove MVP — shared operational data bridge.
  * Firestore is the source of truth; localStorage remains only as a fast UI cache.
- * This bridge intentionally keeps the existing UI code stable while moving
- * opportunities, appointments and transactions to shared Firestore documents.
  */
 (function () {
   'use strict';
@@ -35,17 +33,9 @@
     catch (_) { return {}; }
   }
 
-  function currentRole() {
-    return document.body?.dataset?.role || profile().role || '';
-  }
-
-  function currentUser() {
-    return window.BeautyMoveFirebase?.auth?.currentUser || null;
-  }
-
-  function db() {
-    return window.BeautyMoveFirebase?.db || null;
-  }
+  function currentRole() { return document.body?.dataset?.role || profile().role || ''; }
+  function currentUser() { return window.BeautyMoveFirebase?.auth?.currentUser || null; }
+  function db() { return window.BeautyMoveFirebase?.db || null; }
 
   function queuePush() {
     if (syncing) return;
@@ -71,14 +61,12 @@
   async function pushCollection(name, items, uid, role) {
     const firestore = db();
     if (!firestore || !Array.isArray(items)) return;
-
     const batch = firestore.batch();
     let count = 0;
     for (const item of items) {
       if (!item?.id) continue;
       const ref = firestore.collection(name).doc(String(item.id));
       let payload = { ...item };
-
       if (name === 'opportunities') {
         if (role === 'salao') payload = addCommon(payload, uid, role);
         else if (role === 'profissional' && payload.salonOwnerId && payload.status !== 'aberta') payload = addCommon(payload, uid, role);
@@ -93,7 +81,6 @@
         else if (role === 'profissional') payload = addCommon(payload, uid, role);
         else continue;
       }
-
       batch.set(ref, payload, { merge: true });
       count += 1;
     }
@@ -101,9 +88,7 @@
   }
 
   async function pushLocalState() {
-    const user = currentUser();
-    const firestore = db();
-    const role = currentRole();
+    const user = currentUser(), firestore = db(), role = currentRole();
     if (!user || !firestore || !role) return;
     try {
       const state = readState();
@@ -147,7 +132,6 @@
     clearSubscriptions();
     bootedUid = user?.uid || null;
     if (!user || !db()) return;
-
     const role = currentRole();
     const firestore = db();
 
@@ -157,6 +141,7 @@
       subscribeCollection('transactions', firestore.collection('transactions').where('salonOwnerId', '==', user.uid), item => item.salonOwnerId === user.uid);
     } else if (role === 'profissional') {
       subscribeCollection('opportunities', firestore.collection('opportunities').where('status', '==', 'aberta'), item => item.status === 'aberta' || item.professionalOwnerId === user.uid);
+      subscribeCollection('opportunities', firestore.collection('opportunities').where('professionalOwnerId', '==', user.uid), item => item.status === 'aberta' || item.professionalOwnerId === user.uid);
       subscribeCollection('appointments', firestore.collection('appointments').where('professionalOwnerId', '==', user.uid), item => item.professionalOwnerId === user.uid);
       subscribeCollection('transactions', firestore.collection('transactions').where('professionalOwnerId', '==', user.uid), item => item.professionalOwnerId === user.uid);
     } else if (role === 'cliente') {
@@ -168,20 +153,16 @@
   }
 
   function boot() {
-    const firebase = window.BeautyMoveFirebase;
-    if (!firebase?.enabled || !firebase.auth || !firebase.db) return;
-    firebase.auth.onAuthStateChanged(user => {
+    const firebaseClient = window.BeautyMoveFirebase;
+    if (!firebaseClient?.enabled || !firebaseClient.auth || !firebaseClient.db) return;
+    firebaseClient.auth.onAuthStateChanged(user => {
       if (user?.uid === bootedUid) return;
       startForUser(user);
     });
-    if (firebase.auth.currentUser) startForUser(firebase.auth.currentUser);
+    if (firebaseClient.auth.currentUser) startForUser(firebaseClient.auth.currentUser);
   }
 
-  window.BeautyMoveDataSync = {
-    refresh: pushLocalState,
-    state: readState,
-    enabled: () => !!db() && !!currentUser()
-  };
+  window.BeautyMoveDataSync = { refresh: pushLocalState, state: readState, enabled: () => !!db() && !!currentUser() };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
   else boot();

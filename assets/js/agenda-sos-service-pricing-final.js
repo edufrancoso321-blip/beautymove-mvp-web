@@ -63,7 +63,14 @@
     });
     sync();
   }
-  function boot(){bind();setTimeout(bind,100);setTimeout(bind,300);setTimeout(bind,700);setTimeout(bind,1200);}
+  let observer=null;
+  function safeBind(){
+    if(observer)observer.disconnect();
+    bind();
+    if(observer)observer.observe(document.body,{childList:true,subtree:true});
+  }
+  function boot(){safeBind();setTimeout(safeBind,100);setTimeout(safeBind,300);setTimeout(safeBind,700);setTimeout(safeBind,1200);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  new MutationObserver(()=>{fixConcluir();bind();}).observe(document.body,{childList:true,subtree:true});
+  observer=new MutationObserver(()=>safeBind());
+  observer.observe(document.body,{childList:true,subtree:true});
 })();

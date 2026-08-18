@@ -27,3 +27,33 @@
 .sos-op-shell.tracking .sos-op-alert{background:#fff}.sos-op-shell.tracking .sos-op-alert strong{font-size:16px!important}.sos-op-shell.tracking .sos-op-candidate{padding:12px 1px!important}.sos-op-shell.tracking .sos-op-candidate-name{font-size:12px!important}.sos-op-shell.tracking .sos-op-search-state{background:#f7f2ff!important}
 .sos-cell-found{background:#f2eaff!important;border-left:3px solid #7438F5!important}.sos-cell-found strong{font-size:12px!important;color:#30263a!important}.sos-cell-found span{font-size:10px!important;color:#5b3a8c!important}.sos-cell-found small{font-size:9px!important;color:#5b3a8c!important;font-weight:700!important}.sos-cell-found .sos-found-status{color:#159447!important;font-weight:900!important;margin-top:4px!important}
 @media(max-width:1100px){#agendaWorkspace{grid-template-columns:minmax(0,1fr) 330px!important}#sosOpportunityPanel{width:330px!important;min-width:330px!important;max-width:330px!important}}@media(max-width:760px){#agendaWorkspace{display:flex!important;flex-direction:column!important}#sosOpportunityPanel{width:100%!important;min-width:0!important;max-width:none!important}.sos-op-body{max-height:none!important}}
+/* 2026-08-18 — responsive correction: preserve the approved structure while fitting notebook/desktop widths */
+@media (max-width:1400px) and (min-width:781px){
+ #agendaWorkspace{grid-template-columns:minmax(0,1fr) 300px!important;gap:12px!important}
+ #sosOpportunityPanel{width:300px!important;min-width:300px!important;max-width:300px!important}
+ #agendaWorkspace #agendaGrid{min-width:0!important}
+}
+@media (max-width:1400px) and (min-width:1181px){
+ #agendaWorkspace .agenda-grid{min-width:0!important;width:100%!important}
+ #agendaWorkspace .agenda-grid th:not(.time-col),#agendaWorkspace .agenda-grid td:not(.time-col){min-width:0!important}
+ #agendaWorkspace .agenda-grid .time-col{width:60px!important;min-width:60px!important}
+ #agendaWorkspace .agenda-grid .sos-col{width:145px!important;min-width:145px!important}
+ #agendaWorkspace .professional-name{font-size:14px!important}
+ #agendaWorkspace .specialty-label{font-size:11px!important}
+}
+@media (max-width:1180px) and (min-width:781px){
+ #agendaWorkspace{grid-template-columns:minmax(0,1fr) 280px!important;gap:10px!important}
+ #sosOpportunityPanel{width:280px!important;min-width:280px!important;max-width:280px!important}
+ #agendaWorkspace .agenda-grid{min-width:0!important;width:100%!important}
+ #agendaWorkspace .agenda-grid th:not(.time-col),#agendaWorkspace .agenda-grid td:not(.time-col){min-width:0!important}
+ #agendaWorkspace .agenda-grid .time-col{width:56px!important;min-width:56px!important}
+ #agendaWorkspace .agenda-grid .sos-col{width:130px!important;min-width:130px!important}
+ #agendaWorkspace .professional-name{font-size:13px!important}
+ #agendaWorkspace .specialty-label{font-size:10px!important}
+}
+@media (max-height:800px) and (min-width:781px){
+ #agendaWorkspace{min-height:0!important}
+ #sosOpportunityPanel{min-height:0!important}
+ .sos-op-header{padding-top:14px!important;padding-bottom:10px!important}
+ .sos-op-body{padding:10px!important}
+}

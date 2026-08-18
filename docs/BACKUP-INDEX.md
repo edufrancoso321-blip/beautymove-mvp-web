@@ -1,0 +1,1 @@
+Backup index marker. Current protected source branch: refactor/clean-architecture-2026-08-18.

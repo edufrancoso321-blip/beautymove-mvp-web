@@ -84,6 +84,50 @@ window.BeautyMoveData = (() => {
     return clone(normalized);
   }
 
+  function normalizeService(service) {
+    const source = service && typeof service === 'object' ? service : {};
+    const result = { ...source };
+    result.name = String(source.name || source.service || '').trim();
+    result.duration = Math.max(0, Number(source.duration) || 0);
+    result.value = Math.max(0, Number(source.value ?? source.price) || 0);
+    return result;
+  }
+
+  function servicesFromAppointment(appointment) {
+    const source = appointment || {};
+    if (Array.isArray(source.services) && source.services.length) {
+      return source.services.map(normalizeService).filter(item => item.name);
+    }
+    if (source.service) {
+      const item = normalizeService({ name: source.service, duration: source.duration, value: source.value });
+      return item.name ? [item] : [];
+    }
+    return [];
+  }
+
+  function summarizeServices(services) {
+    const items = Array.isArray(services) ? services.map(normalizeService).filter(item => item.name) : [];
+    return {
+      services: clone(items),
+      duration: items.reduce((sum, item) => sum + item.duration, 0),
+      value: items.reduce((sum, item) => sum + item.value, 0),
+      label: items.map(item => item.name).join(' + ')
+    };
+  }
+
+  function createOfferSnapshot(services, context = {}) {
+    const summary = summarizeServices(services);
+    return clone({
+      ...context,
+      services: summary.services,
+      service: summary.label,
+      duration: summary.duration,
+      offeredValue: summary.value,
+      value: summary.value,
+      snapshotAt: context.snapshotAt || new Date().toISOString()
+    });
+  }
+
   return {
     mode: () => window.BEAUTYMOVE_BACKEND_ENABLED ? 'firebase' : 'local',
     keys: Object.freeze({ state: STATE_KEY, profile: PROFILE_KEY, agendaHours: AGENDA_HOURS_KEY }),
@@ -99,6 +143,10 @@ window.BeautyMoveData = (() => {
     updateState,
     getAgendaHours,
     saveAgendaHours,
+    normalizeService,
+    servicesFromAppointment,
+    summarizeServices,
+    createOfferSnapshot,
     subscribe: (handler) => {
       if (typeof handler !== 'function') return () => {};
       const listener = (event) => handler(event.detail);

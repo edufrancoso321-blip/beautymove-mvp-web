@@ -5,72 +5,15 @@
   const norm=s=>String(s||'').replace(/\s+/g,' ').trim();
   const parseMoney=text=>[...String(text||'').matchAll(/R\$\s*([\d.]+(?:,\d{1,2})?)/gi)].map(m=>Number(m[1].replace(/\./g,'').replace(',','.')));
   const parseMinutes=text=>{const m=String(text||'').match(/(\d+)\s*min/i);return m?Number(m[1]):0;};
-  function serviceRow(input){
-    const row=input.closest('label,.service-option,[data-service],li');
-    const text=norm(row?.innerText||row?.textContent||input.parentElement?.innerText||'');
-    const values=parseMoney(text);
-    const name=norm(row?.querySelector('[data-service-name],strong,b')?.textContent||text.split('R$')[0]).replace(/\s*·\s*$/,'');
-    return {name,client:values[0]||0,offer:values[1]||0,duration:parseMinutes(text)};
-  }
-  function getChecked(){return [...document.querySelectorAll('#sosModal input[type="checkbox"]:checked,#sosModal input[type="radio"]:checked')];}
-  function setSummary(label,value){
-    const modal=document.getElementById('sosModal'); if(!modal)return;
-    const exact=[...modal.querySelectorAll('*')].find(el=>el.children.length===0&&norm(el.textContent)===label);
-    if(!exact)return;
-    const parent=exact.parentElement;
-    const target=parent?.querySelector('strong,b,[data-value]')||exact.nextElementSibling||parent?.lastElementChild;
-    if(target&&target!==exact)target.textContent=value;
-  }
-  function sync(){
-    const form=document.getElementById('sosForm'); if(!form)return;
-    const items=getChecked().map(serviceRow);
-    const client=items.reduce((s,x)=>s+x.client,0),offer=items.reduce((s,x)=>s+x.offer,0),duration=items.reduce((s,x)=>s+x.duration,0);
-    const clientEl=document.getElementById('sosClientPrice'),offerEl=document.getElementById('sosProfessionalOffer'),durationEl=document.getElementById('sosServiceDuration');
-    if(clientEl)clientEl.textContent=client?money(client):'—';
-    if(offerEl)offerEl.textContent=offer?money(offer):'—';
-    if(durationEl)durationEl.textContent=duration?`${duration} min`:'—';
-    setSummary('Valor para cliente',client?money(client):'—');
-    setSummary('Oferta ao profissional',offer?money(offer):'—');
-    setSummary('Tempo estimado',duration?`${duration} min`:'—');
-    form.dataset.sosSelectedServices=JSON.stringify(items);form.dataset.sosClientPrice=String(client);form.dataset.sosProfessionalOffer=String(offer);form.dataset.sosDuration=String(duration);
-  }
-  function fixConcluir(){
-    const modal=document.getElementById('sosModal');if(!modal)return;
-    [...modal.querySelectorAll('button')].filter(b=>norm(b.textContent)==='Concluir').forEach(button=>{
-      if(button.dataset.bmFooterFixed==='1')return;
-      let container=button.parentElement;
-      let list=container?.querySelector('input[type="checkbox"],input[type="radio"]')?.closest('div,ul,section')||container?.previousElementSibling;
-      if(!list)list=container;
-      const shell=list.parentElement||list;
-      shell.classList.add('bm-service-picker-shell');
-      list.classList.add('bm-service-picker-list');
-      const footer=document.createElement('div');footer.className='bm-service-picker-footer';footer.appendChild(button);shell.appendChild(footer);button.dataset.bmFooterFixed='1';
-    });
-  }
-  function addCss(){
-    if(document.getElementById('bm-sos-service-final-css'))return;
-    const style=document.createElement('style');style.id='bm-sos-service-final-css';style.textContent=`
-      #sosModal .bm-service-picker-shell{display:flex!important;flex-direction:column!important;max-height:250px!important;overflow:hidden!important;background:#fff!important}
-      #sosModal .bm-service-picker-list{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important}
-      #sosModal .bm-service-picker-footer{flex:0 0 auto!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;padding:8px 0 0!important;margin-top:6px!important;border-top:1px solid #e7e2ec!important;background:#fff!important;position:sticky!important;bottom:0!important;z-index:5!important}
-      #sosModal .bm-service-picker-footer button{position:static!important;margin:0!important}
-    `;document.head.appendChild(style);
-  }
-  function bind(){
-    addCss();fixConcluir();
-    document.querySelectorAll('#sosModal input[type="checkbox"],#sosModal input[type="radio"]').forEach(input=>{
-      if(input.dataset.bmLiveTotals==='1')return;input.dataset.bmLiveTotals='1';input.addEventListener('change',()=>setTimeout(sync,0));
-    });
-    sync();
-  }
-  let observer=null;
-  function safeBind(){
-    if(observer)observer.disconnect();
-    bind();
-    if(observer)observer.observe(document.body,{childList:true,subtree:true});
-  }
-  function boot(){safeBind();setTimeout(safeBind,100);setTimeout(safeBind,300);setTimeout(safeBind,700);setTimeout(safeBind,1200);}
+  function serviceRow(input){const row=input.closest('label,.service-option,[data-service],li');const text=norm(row?.innerText||row?.textContent||input.parentElement?.innerText||'');const values=parseMoney(text);const name=norm(row?.querySelector('[data-service-name],strong,b')?.textContent||text.split('R$')[0]).replace(/\s*·\s*$/,'');return{name,client:values[0]||0,offer:values[1]||0,duration:parseMinutes(text)};}
+  function getChecked(){return[...document.querySelectorAll('#sosModal input[type="checkbox"]:checked,#sosModal input[type="radio"]:checked')];}
+  function setSummary(label,value){const modal=document.getElementById('sosModal');if(!modal)return;const exact=[...modal.querySelectorAll('*')].find(el=>el.children.length===0&&norm(el.textContent)===label);if(!exact)return;const parent=exact.parentElement,target=parent?.querySelector('strong,b,[data-value]')||exact.nextElementSibling||parent?.lastElementChild;if(target&&target!==exact)target.textContent=value;}
+  function sync(){const form=document.getElementById('sosForm');if(!form)return;const items=getChecked().map(serviceRow),client=items.reduce((s,x)=>s+x.client,0),offer=items.reduce((s,x)=>s+x.offer,0),duration=items.reduce((s,x)=>s+x.duration,0),clientEl=document.getElementById('sosClientPrice'),offerEl=document.getElementById('sosProfessionalOffer'),durationEl=document.getElementById('sosServiceDuration');if(clientEl)clientEl.textContent=client?money(client):'—';if(offerEl)offerEl.textContent=offer?money(offer):'—';if(durationEl)durationEl.textContent=duration?`${duration} min`:'—';setSummary('Valor para cliente',client?money(client):'—');setSummary('Oferta ao profissional',offer?money(offer):'—');setSummary('Tempo estimado',duration?`${duration} min`:'—');form.dataset.sosSelectedServices=JSON.stringify(items);form.dataset.sosClientPrice=String(client);form.dataset.sosProfessionalOffer=String(offer);form.dataset.sosDuration=String(duration);}
+  function fixConcluir(){const modal=document.getElementById('sosModal');if(!modal)return;[...modal.querySelectorAll('button')].filter(b=>norm(b.textContent)==='Concluir').forEach(button=>{if(button.dataset.bmFooterFixed==='1')return;let container=button.parentElement;let list=container?.querySelector('input[type="checkbox"],input[type="radio"]')?.closest('div,ul,section')||container?.previousElementSibling;if(!list)list=container;const shell=list.parentElement||list;shell.classList.add('bm-service-picker-shell');list.classList.add('bm-service-picker-list');const footer=document.createElement('div');footer.className='bm-service-picker-footer';footer.appendChild(button);shell.appendChild(footer);button.dataset.bmFooterFixed='1';});}
+  function addCss(){if(document.getElementById('bm-sos-service-final-css'))return;const style=document.createElement('style');style.id='bm-sos-service-final-css';style.textContent=`#sosModal .bm-service-picker-shell{display:flex!important;flex-direction:column!important;max-height:250px!important;overflow:hidden!important;background:#fff!important}#sosModal .bm-service-picker-list{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important}#sosModal .bm-service-picker-footer{flex:0 0 auto!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;padding:8px 0 0!important;margin-top:6px!important;border-top:1px solid #e7e2ec!important;background:#fff!important;position:sticky!important;bottom:0!important;z-index:5!important}#sosModal .bm-service-picker-footer button{position:static!important;margin:0!important}`;document.head.appendChild(style);}
+  function bind(){addCss();fixConcluir();document.querySelectorAll('#sosModal input[type="checkbox"],#sosModal input[type="radio"]').forEach(input=>{if(input.dataset.bmLiveTotals==='1')return;input.dataset.bmLiveTotals='1';input.addEventListener('change',()=>setTimeout(sync,0));});sync();}
+  function boot(){bind();setTimeout(bind,100);setTimeout(bind,300);setTimeout(bind,700);setTimeout(bind,1200);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  observer=new MutationObserver(()=>safeBind());
-  observer.observe(document.body,{childList:true,subtree:true});
+  document.addEventListener('change',event=>{if(event.target.closest?.('#sosModal'))setTimeout(()=>{fixConcluir();sync();},0);});
+  document.addEventListener('click',event=>{if(event.target.closest?.('#sosModal'))setTimeout(fixConcluir,0);});
 })();

@@ -3,211 +3,40 @@
   'use strict';
   const KEY='beautymove.mvp.professional.daily-status';
   const PROFESSIONALS=['Ana','Bruna','Paula','Carla'];
-  const STATUS={
-    unregistered:{label:'Sem registro',cls:'unregistered'},
-    working:{label:'Presença registrada',cls:'working'},
-    late:{label:'Atraso registrado',cls:'late'},
-    absent:{label:'Ausência registrada',cls:'absent'}
-  };
+  const STATUS={unregistered:{label:'Sem registro',cls:'unregistered'},working:{label:'Presença registrada',cls:'working'},late:{label:'Atraso registrado',cls:'late'},absent:{label:'Ausência registrada',cls:'absent'}};
   let popover=null;
-
   const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}};
   const save=data=>localStorage.setItem(KEY,JSON.stringify(data));
   const now=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
-  const dateKey=()=>{
-    const p=document.getElementById('agendaDatePicker');
-    if(p&&p.value)return p.value;
-    const d=new Date();
-    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  };
+  const dateKey=()=>{const p=document.getElementById('agendaDatePicker');if(p&&p.value)return p.value;const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
   const keyFor=name=>dateKey()+'::'+name;
   const record=name=>{const v=read()[keyFor(name)];return typeof v==='string'?{status:v}:v||{status:'unregistered'};};
   const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
-  const occurrenceText=r=>{
-    if(!r.absenceType)return '';
-    if(r.absenceType==='during_day')return (r.absenceReason||'Interrupção do expediente')+(r.absenceStart?' · a partir de '+r.absenceStart:'');
-    return r.absenceType==='full_notice'?'Ausência com aviso prévio':'Não compareceu';
-  };
-
-  function styles(){
-    if(document.getElementById('professionalStableStyles'))return;
-    const s=document.createElement('style');
-    s.id='professionalStableStyles';
-    s.textContent=`
-      .professional-header-control{cursor:pointer;position:relative}
-      .professional-header-control:hover{background:#faf8ff}
-      .professional-day-status{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:5px;font-size:10px;font-weight:600;color:#667085;line-height:1.2;flex-wrap:wrap}
-      .professional-day-status .status-dot{width:6px;height:6px;border-radius:50%;background:#98a2b3;flex:none}
-      .professional-day-status.is-working .status-dot{background:#159957}
-      .professional-day-status.is-late .status-dot{background:#d97706}
-      .professional-day-status.is-absent{background:#fff1f0;border-radius:5px;padding:3px 5px;color:#b42318}
-      .professional-day-status.is-absent .status-dot{background:#d92d20}
-      .professional-day-status .status-detail{font-weight:500;color:#667085}
-      .professional-day-status.is-absent .status-detail{color:#b42318}
-      .professional-absent-period{background:#fff7f5!important}
-      .professional-absence-marker{display:block;margin-top:4px;font-size:10px;font-weight:700;color:#b42318;line-height:1.2}
-      .professional-control-popover{position:fixed;z-index:10050;width:min(340px,calc(100vw - 20px));background:#fff;border:1px solid #e5def4;border-radius:12px;box-shadow:0 14px 34px rgba(32,18,65,.16);padding:14px;color:#17131f;font-family:inherit}
-      .professional-control-popover .popover-title{font-size:17px;font-weight:800;margin:0 0 2px}
-      .professional-control-popover .popover-date{font-size:11px;color:#6f6878;margin-bottom:10px}
-      .professional-control-popover .popover-status{font-size:11px;margin:0 0 11px;color:#5f5968}
-      .professional-control-popover .popover-status strong{color:#17131f}
-      .professional-control-popover .popover-actions{display:grid;gap:7px}
-      .professional-control-popover button{font:inherit;text-align:left;cursor:pointer;background:#fff;border:1px solid #e4dfeb;border-radius:9px;padding:9px 11px}
-      .professional-control-popover button strong{display:block;font-size:13px}
-      .professional-control-popover button small{display:block;font-size:10px;color:#746d7d;margin-top:2px}
-      .professional-control-popover .action-success{border-color:#b9dfca}.professional-control-popover .action-success strong{color:#147a4d}
-      .professional-control-popover .action-warning{border-color:#ecd49c}.professional-control-popover .action-warning strong{color:#a86a00}
-      .professional-control-popover .action-danger{border-color:#efc2c2}.professional-control-popover .action-danger strong{color:#c62828}
-      .professional-control-popover .absence-panel{margin-top:10px;padding-top:10px;border-top:1px solid #eee8f2}
-      .professional-control-popover .absence-panel label{display:block;font-size:11px;font-weight:600;color:#5f5968;margin-bottom:5px}
-      .professional-control-popover .absence-panel select,.professional-control-popover .absence-panel textarea{width:100%;box-sizing:border-box;border:1px solid #ddd6e6;border-radius:8px;padding:8px;font:inherit;font-size:12px;background:#fff;margin-bottom:8px}
-      .professional-control-popover .absence-panel textarea{min-height:52px;resize:vertical}
-      .professional-control-popover .time-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-      .professional-control-popover .confirm-absence,.professional-control-popover .edit-occurrence{width:100%;text-align:center;background:#7139ef!important;color:#fff!important;border:1px solid #7139ef!important;font-weight:700}
-      .professional-control-popover .cancel-absence{width:100%;text-align:center;margin-top:6px}
-    `;
-    document.head.appendChild(s);
-  }
-
+  const occurrenceText=r=>{if(!r.absenceType)return '';if(r.absenceType==='during_day')return (r.absenceReason||'Interrupção do expediente')+(r.absenceStart?' · a partir de '+r.absenceStart:'');return r.absenceType==='full_notice'?'Ausência com aviso prévio':'Não compareceu';};
+  function styles(){if(document.getElementById('professionalStableStyles'))return;const s=document.createElement('style');s.id='professionalStableStyles';s.textContent=`
+      .professional-header-control{cursor:pointer;position:relative}.professional-header-control:hover{background:#faf8ff}
+      .professional-day-status{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:5px;font-size:10px;font-weight:600;color:#667085;line-height:1.2;flex-wrap:wrap}.professional-day-status .status-dot{width:6px;height:6px;border-radius:50%;background:#98a2b3;flex:none}.professional-day-status.is-working .status-dot{background:#159957}.professional-day-status.is-late .status-dot{background:#d97706}.professional-day-status.is-absent{background:#fff1f0;border-radius:5px;padding:3px 5px;color:#b42318}.professional-day-status.is-absent .status-dot{background:#d92d20}.professional-day-status .status-detail{font-weight:500;color:#667085}.professional-day-status.is-absent .status-detail{color:#b42318}.professional-absent-period{background:#fff7f5!important}.professional-absence-marker{display:block;margin-top:4px;font-size:10px;font-weight:700;color:#b42318;line-height:1.2}
+      .professional-control-popover{position:fixed;z-index:10050;width:min(340px,calc(100vw - 20px));background:#fff;border:1px solid #e5def4;border-radius:12px;box-shadow:0 14px 34px rgba(32,18,65,.16);padding:14px;color:#17131f;font-family:inherit}.professional-control-popover .popover-title{font-size:17px;font-weight:800;margin:0 0 2px}.professional-control-popover .popover-date{font-size:11px;color:#6f6878;margin-bottom:10px}.professional-control-popover .popover-status{font-size:11px;margin:0 0 11px;color:#5f5968}.professional-control-popover .popover-status strong{color:#17131f}.professional-control-popover .popover-actions{display:grid;gap:7px}.professional-control-popover button{font:inherit;text-align:left;cursor:pointer;background:#fff;border:1px solid #e4dfeb;border-radius:9px;padding:9px 11px}.professional-control-popover button strong{display:block;font-size:13px}.professional-control-popover button small{display:block;font-size:10px;color:#746d7d;margin-top:2px}.professional-control-popover .action-success{border-color:#b9dfca}.professional-control-popover .action-success strong{color:#147a4d}.professional-control-popover .action-warning{border-color:#ecd49c}.professional-control-popover .action-warning strong{color:#a86a00}.professional-control-popover .action-danger{border-color:#efc2c2}.professional-control-popover .action-danger strong{color:#c62828}.professional-control-popover .absence-panel{margin-top:10px;padding-top:10px;border-top:1px solid #eee8f2}.professional-control-popover .absence-panel label{display:block;font-size:11px;font-weight:600;color:#5f5968;margin-bottom:5px}.professional-control-popover .absence-panel select,.professional-control-popover .absence-panel textarea{width:100%;box-sizing:border-box;border:1px solid #ddd6e6;border-radius:8px;padding:8px;font:inherit;font-size:12px;background:#fff;margin-bottom:8px}.professional-control-popover .absence-panel textarea{min-height:52px;resize:vertical}.professional-control-popover .time-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.professional-control-popover .confirm-absence,.professional-control-popover .edit-occurrence{width:100%;text-align:center;background:#7139ef!important;color:#fff!important;border:1px solid #7139ef!important;font-weight:700}.professional-control-popover .cancel-absence{width:100%;text-align:center;margin-top:6px}`;document.head.appendChild(s);}
   function close(){if(popover){popover.remove();popover=null;}}
-  function place(p){
-    const a=document.getElementById('professionalFilter');
-    if(!a)return;
-    const r=a.getBoundingClientRect(),w=Math.min(340,innerWidth-20);
-    let left=Math.max(10,Math.min(r.left+r.width/2-w/2,innerWidth-w-10));
-    let top=r.bottom+8;
-    if(top+430>innerHeight)top=Math.max(10,r.top-438);
-    p.style.left=left+'px';p.style.top=top+'px';
-  }
+  function place(p){const a=document.getElementById('professionalFilter');if(!a)return;const r=a.getBoundingClientRect(),w=Math.min(340,innerWidth-20);let left=Math.max(10,Math.min(r.left+r.width/2-w/2,innerWidth-w-10));let top=r.bottom+8;if(top+430>innerHeight)top=Math.max(10,r.top-438);p.style.left=left+'px';p.style.top=top+'px';}
   function options(max,selected){let h='';for(let i=0;i<=max;i++){const v=String(i).padStart(2,'0');h+='<option value="'+v+'"'+(v===selected?' selected':'')+'>'+v+'</option>';}return h;}
   function splitTime(v){const p=String(v||now()).split(':');return {hour:p[0]||'00',minute:p[1]||'00'};}
-
-  function openControl(name){
-    if(!PROFESSIONALS.includes(name))return;
-    styles();close();
-    const r=record(name),st=STATUS[r.status]||STATUS.unregistered,detail=occurrenceText(r),d=dateKey().split('-').reverse().join('/'),t=splitTime(r.absenceStart);
-    const p=document.createElement('div');popover=p;p.className='professional-control-popover';
-    p.innerHTML=`
-      <div class="popover-title">${esc(name)}</div>
-      <div class="popover-date">Controle do dia · ${d}</div>
-      <div class="popover-status">Status: <strong>${st.label}</strong>${detail?' · '+esc(detail):''}</div>
-      <div class="popover-actions">
-        <button class="action-success" data-action="working"><strong>Marcar presença</strong><small>Registra a entrada da profissional.</small></button>
-        <button class="action-warning" data-action="late"><strong>Registrar atraso</strong><small>Registra chegada fora do horário.</small></button>
-        <button class="action-danger" data-action="absent"><strong>Registrar ausência</strong><small>Não compareceu ou interrompeu o expediente.</small></button>
-      </div>
+  function openControl(name){if(!PROFESSIONALS.includes(name))return;styles();close();const r=record(name),st=STATUS[r.status]||STATUS.unregistered,detail=occurrenceText(r),d=dateKey().split('-').reverse().join('/'),t=splitTime(r.absenceStart);const p=document.createElement('div');popover=p;p.className='professional-control-popover';p.innerHTML=`
+      <div class="popover-title">${esc(name)}</div><div class="popover-date">Controle do dia · ${d}</div><div class="popover-status">Status: <strong>${st.label}</strong>${detail?' · '+esc(detail):''}</div>
+      <div class="popover-actions"><button class="action-success" data-action="working"><strong>Marcar presença</strong><small>Registra a entrada da profissional.</small></button><button class="action-warning" data-action="late"><strong>Registrar atraso</strong><small>Registra chegada fora do horário.</small></button><button class="action-danger" data-action="absent"><strong>Registrar ausência</strong><small>Não compareceu ou interrompeu o expediente.</small></button></div>
       ${r.absenceType?'<button class="edit-occurrence" data-edit>Alterar ocorrência</button>':''}
-      <div class="absence-panel" id="absencePanel" hidden>
-        <label>Tipo de ausência</label>
-        <select id="absenceType">
-          <option value="full_no_show">Não compareceu</option>
-          <option value="full_notice">Ausência com aviso prévio</option>
-          <option value="during_day">Interrupção do expediente</option>
-        </select>
-        <div id="interruptionFields" hidden>
-          <label>Horário de saída</label>
-          <div class="time-fields"><div><label>Hora</label><select id="absenceHour">${options(23,t.hour)}</select></div><div><label>Min</label><select id="absenceMinute">${options(59,t.minute)}</select></div></div>
-          <label>Motivo</label>
-          <select id="absenceReason"><option>Emergência médica</option><option>Mal-estar</option><option>Imprevisto pessoal</option><option>Outro motivo</option></select>
-          <div id="otherReasonField" hidden><label>Justificativa</label><textarea id="otherReason" placeholder="Descreva o motivo."></textarea></div>
-        </div>
-        <button class="confirm-absence" data-save>Salvar</button><button class="cancel-absence" data-cancel>Cancelar</button>
-      </div>`;
-    document.body.appendChild(p);place(p);
-
-    const panel=p.querySelector('#absencePanel');
-    const typeEl=p.querySelector('#absenceType'),reasonEl=p.querySelector('#absenceReason');
-    const syncForm=()=>{
-      const type=typeEl.value;panel.hidden=false;p.querySelector('#interruptionFields').hidden=type!=='during_day';p.querySelector('#otherReasonField').hidden=reasonEl.value!=='Outro motivo';
-    };
-    const editExisting=()=>{
-      if(!r.absenceType)return syncForm();
-      typeEl.value=r.absenceType;
-      if(r.absenceType==='during_day'){
-        const tm=splitTime(r.absenceStart);p.querySelector('#absenceHour').value=tm.hour;p.querySelector('#absenceMinute').value=tm.minute;
-        const known=[...reasonEl.options].some(o=>o.value===r.absenceReason);reasonEl.value=known?r.absenceReason:'Outro motivo';
-        if(!known)p.querySelector('#otherReason').value=r.absenceReason||'';
-      }
-      syncForm();
-    };
-    p.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
-      const a=btn.dataset.action,c=record(name);
-      if(a==='absent'){editExisting();return;}
-      const patch=a==='working'?{status:'working',presenceStart:c.presenceStart||now(),presenceEnd:null,absenceType:null,absenceStart:null,absenceReason:null}:{status:'late',lateStart:now(),absenceType:null,absenceStart:null,absenceReason:null};
-      saveRecord(name,patch);
-    }));
-    p.querySelector('[data-edit]')?.addEventListener('click',editExisting);
-    typeEl.addEventListener('change',syncForm);reasonEl.addEventListener('change',syncForm);
-    p.querySelector('[data-cancel]').addEventListener('click',()=>panel.hidden=true);
-    p.querySelector('[data-save]').addEventListener('click',()=>{
-      const type=typeEl.value,c=record(name);
-      if(type==='during_day'){
-        const start=p.querySelector('#absenceHour').value+':'+p.querySelector('#absenceMinute').value;
-        const reason=reasonEl.value==='Outro motivo'?(p.querySelector('#otherReason').value.trim()||'Outro motivo'):reasonEl.value;
-        saveRecord(name,{status:'absent',absenceType:type,absenceStart:start,absenceReason:reason,presenceStart:c.presenceStart||'09:00',presenceEnd:start});
-      }else saveRecord(name,{status:'absent',absenceType:type,absenceStart:null,absenceReason:type==='full_notice'?'Ausência com aviso prévio':'Não compareceu',presenceEnd:null});
-    });
+      <div class="absence-panel" id="absencePanel" hidden><label>Tipo de ausência</label><select id="absenceType"><option value="full_no_show">Não compareceu</option><option value="full_notice">Ausência com aviso prévio</option><option value="during_day">Interrupção do expediente</option></select><div id="interruptionFields" hidden><label>Horário de saída</label><div class="time-fields"><div><label>Hora</label><select id="absenceHour">${options(23,t.hour)}</select></div><div><label>Min</label><select id="absenceMinute">${options(59,t.minute)}</select></div></div><label>Motivo</label><select id="absenceReason"><option>Emergência médica</option><option>Mal-estar</option><option>Imprevisto pessoal</option><option>Outro motivo</option></select><div id="otherReasonField" hidden><label>Justificativa</label><textarea id="otherReason" placeholder="Descreva o motivo."></textarea></div></div><button class="confirm-absence" data-save>Salvar</button><button class="cancel-absence" data-cancel>Cancelar</button></div>`;document.body.appendChild(p);place(p);
+    const panel=p.querySelector('#absencePanel'),typeEl=p.querySelector('#absenceType'),reasonEl=p.querySelector('#absenceReason');
+    const syncForm=()=>{const type=typeEl.value;panel.hidden=false;p.querySelector('#interruptionFields').hidden=type!=='during_day';p.querySelector('#otherReasonField').hidden=reasonEl.value!=='Outro motivo';};
+    const editExisting=()=>{if(!r.absenceType)return syncForm();typeEl.value=r.absenceType;if(r.absenceType==='during_day'){const tm=splitTime(r.absenceStart);p.querySelector('#absenceHour').value=tm.hour;p.querySelector('#absenceMinute').value=tm.minute;const known=[...reasonEl.options].some(o=>o.value===r.absenceReason);reasonEl.value=known?r.absenceReason:'Outro motivo';if(!known)p.querySelector('#otherReason').value=r.absenceReason||'';}syncForm();};
+    p.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{const a=btn.dataset.action,c=record(name);if(a==='absent'){editExisting();return;}const patch=a==='working'?{status:'working',presenceStart:c.presenceStart||now(),presenceEnd:null,absenceType:null,absenceStart:null,absenceReason:null}:{status:'late',lateStart:now(),absenceType:null,absenceStart:null,absenceReason:null};saveRecord(name,patch);}));
+    p.querySelector('[data-edit]')?.addEventListener('click',editExisting);typeEl.addEventListener('change',syncForm);reasonEl.addEventListener('change',syncForm);p.querySelector('[data-cancel]').addEventListener('click',()=>panel.hidden=true);p.querySelector('[data-save]').addEventListener('click',()=>{const type=typeEl.value,c=record(name);if(type==='during_day'){const start=p.querySelector('#absenceHour').value+':'+p.querySelector('#absenceMinute').value;const reason=reasonEl.value==='Outro motivo'?(p.querySelector('#otherReason').value.trim()||'Outro motivo'):reasonEl.value;saveRecord(name,{status:'absent',absenceType:type,absenceStart:start,absenceReason:reason,presenceStart:c.presenceStart||'09:00',presenceEnd:start});}else saveRecord(name,{status:'absent',absenceType:type,absenceStart:null,absenceReason:type==='full_notice'?'Ausência com aviso prévio':'Não compareceu',presenceEnd:null});});
   }
-
-  function saveRecord(name,patch){
-    const d=read();d[keyFor(name)]={...record(name),...patch,updatedAt:new Date().toISOString()};save(d);close();refresh(true);setTimeout(()=>openControl(name),0);
-  }
-
-  function renderGrid(){
-    const g=document.getElementById('agendaGrid');if(!g)return;
-    g.querySelectorAll('.professional-absence-marker').forEach(e=>e.remove());
-    g.querySelectorAll('.professional-absent-period').forEach(e=>e.classList.remove('professional-absent-period'));
-    const heads=[...g.querySelectorAll('thead th')],rows=[...g.querySelectorAll('tbody tr')];
-    const first=rows[0]?.querySelector('th.time-col')?.textContent.trim()||'';
-    rows.forEach(row=>{
-      const time=row.querySelector('th.time-col')?.textContent.trim();if(!time)return;
-      heads.forEach((th,i)=>{
-        const name=th.querySelector('.professional-name')?.textContent.trim();if(!PROFESSIONALS.includes(name))return;
-        const r=record(name);if(r.status!=='absent'||!r.absenceType)return;
-        const during=r.absenceType==='during_day';
-        const start=during&&r.absenceStart?Number(r.absenceStart.slice(0,2))*60+Number(r.absenceStart.slice(3,5)):0;
-        const cur=Number(time.slice(0,2))*60+Number(time.slice(3,5));
-        if(during&&cur<start)return;
-        const cell=row.children[i];if(!cell)return;cell.classList.add('professional-absent-period');
-        if((during&&time===r.absenceStart)||(!during&&time===first)){
-          const x=document.createElement('span');x.className='professional-absence-marker';x.textContent=during?'Ausente desde '+r.absenceStart+' · '+(r.absenceReason||'Ocorrência registrada'):(r.absenceType==='full_notice'?'Ausência com aviso prévio':'Não compareceu');cell.appendChild(x);
-        }
-      });
-    });
-  }
-
-  function refresh(){
-    const g=document.getElementById('agendaGrid');if(!g)return;styles();
-    g.querySelectorAll('thead th:not(.time-col):not(.sos-col)').forEach(th=>{
-      const name=th.querySelector('.professional-name')?.textContent.trim();if(!PROFESSIONALS.includes(name))return;
-      th.classList.add('professional-header-control');th.setAttribute('tabindex','0');
-      const r=record(name),st=STATUS[r.status]||STATUS.unregistered,detail=occurrenceText(r);
-      let el=th.querySelector('.professional-day-status');if(!el){el=document.createElement('span');el.className='professional-day-status';th.appendChild(el);}
-      el.className='professional-day-status is-'+st.cls;
-      el.innerHTML='<i class="status-dot"></i><span>'+st.label+'</span>'+(detail?'<span class="status-detail">· '+esc(detail)+'</span>':'');
-    });
-    renderGrid();
-  }
-
-  function boot(){
-    styles();refresh();
-    const g=document.getElementById('agendaGrid');
-    if(g){let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refresh();});}).observe(g,{childList:true,subtree:true});}
-    document.getElementById('agendaDatePicker')?.addEventListener('change',refresh);
-    window.addEventListener('resize',()=>{if(popover)place(popover);});
-  }
-
-  document.addEventListener('click',e=>{
-    const header=e.target.closest('.professional-header-control');
-    if(header&&!e.target.closest('button,a')){
-      const name=header.querySelector('.professional-name')?.textContent.trim();
-      if(PROFESSIONALS.includes(name)){openControl(name);return;}
-    }
-    if(popover&&!popover.contains(e.target)&&!e.target.closest('.professional-header-control')&&!e.target.closest('#professionalFilter'))close();
-  });
-  document.addEventListener('keydown',e=>{
-    const header=e.target.closest?.('.professional-header-control');
-    if(header&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const name=header.querySelector('.professional-name')?.textContent.trim();if(PROFESSIONALS.includes(name))openControl(name);}
-  });
+  function saveRecord(name,patch){const d=read();d[keyFor(name)]={...record(name),...patch,updatedAt:new Date().toISOString()};save(d);close();refresh(true);setTimeout(()=>openControl(name),0);}
+  function renderGrid(){const g=document.getElementById('agendaGrid');if(!g)return;g.querySelectorAll('.professional-absence-marker').forEach(e=>e.remove());g.querySelectorAll('.professional-absent-period').forEach(e=>e.classList.remove('professional-absent-period'));const heads=[...g.querySelectorAll('thead th')],rows=[...g.querySelectorAll('tbody tr')];const first=rows[0]?.querySelector('th.time-col')?.textContent.trim()||'';rows.forEach(row=>{const time=row.querySelector('th.time-col')?.textContent.trim();if(!time)return;heads.forEach((th,i)=>{const name=th.querySelector('.professional-name')?.textContent.trim();if(!PROFESSIONALS.includes(name))return;const r=record(name);if(r.status!=='absent'||!r.absenceType)return;const during=r.absenceType==='during_day';const start=during&&r.absenceStart?Number(r.absenceStart.slice(0,2))*60+Number(r.absenceStart.slice(3,5)):0;const cur=Number(time.slice(0,2))*60+Number(time.slice(3,5));if(during&&cur<start)return;const cell=row.children[i];if(!cell)return;cell.classList.add('professional-absent-period');if((during&&time===r.absenceStart)||(!during&&time===first)){const x=document.createElement('span');x.className='professional-absence-marker';x.textContent=during?'Ausente desde '+r.absenceStart+' · '+(r.absenceReason||'Ocorrência registrada'):(r.absenceType==='full_notice'?'Ausência com aviso prévio':'Não compareceu');cell.appendChild(x);}});});}
+  function refresh(){const g=document.getElementById('agendaGrid');if(!g)return;styles();g.querySelectorAll('thead th:not(.time-col):not(.sos-col)').forEach(th=>{const name=th.querySelector('.professional-name')?.textContent.trim();if(!PROFESSIONALS.includes(name))return;th.classList.add('professional-header-control');th.setAttribute('tabindex','0');const r=record(name),st=STATUS[r.status]||STATUS.unregistered,detail=occurrenceText(r);let el=th.querySelector('.professional-day-status');if(!el){el=document.createElement('span');el.className='professional-day-status';th.appendChild(el);}el.className='professional-day-status is-'+st.cls;el.innerHTML='<i class="status-dot"></i><span>'+st.label+'</span>'+(detail?'<span class="status-detail">· '+esc(detail)+'</span>':'');});renderGrid();}
+  function boot(){styles();refresh();document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(refresh,0));document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(refresh,150));document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(refresh,150));document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(refresh,150));document.getElementById('agendaInterval')?.addEventListener('change',()=>setTimeout(refresh,150));window.addEventListener('resize',()=>{if(popover)place(popover);});}
+  document.addEventListener('click',e=>{const header=e.target.closest('.professional-header-control');if(header&&!e.target.closest('button,a')){const name=header.querySelector('.professional-name')?.textContent.trim();if(PROFESSIONALS.includes(name)){openControl(name);return;}}if(popover&&!popover.contains(e.target)&&!e.target.closest('.professional-header-control')&&!e.target.closest('#professionalFilter'))close();});
+  document.addEventListener('keydown',e=>{const header=e.target.closest?.('.professional-header-control');if(header&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const name=header.querySelector('.professional-name')?.textContent.trim();if(PROFESSIONALS.includes(name))openControl(name);}});
   document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,250));
 })();

@@ -1,7 +1,29 @@
-/* BeautyMove — sincronização robusta do indicador S.O.S. da Agenda */
+/* BeautyMove — compatibilidade após remoção das métricas inferiores da Agenda */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
+
+  /* A Agenda não exibe mais a faixa de métricas, mas versões antigas do
+     motor ainda consultam estes IDs. Criamos apenas alvos invisíveis para
+     preservar a lógica sem reintroduzir qualquer elemento visual. */
+  function ensureMetricTargets(){
+    const ids=['metricAppointments','metricProgress','metricSos','metricCanceled'];
+    let host=document.getElementById('agendaMetricCompat');
+    if(!host){
+      host=document.createElement('div');
+      host.id='agendaMetricCompat';
+      host.hidden=true;
+      host.setAttribute('aria-hidden','true');
+      document.body.appendChild(host);
+    }
+    ids.forEach(id=>{
+      if(!document.getElementById(id)){
+        const node=document.createElement('span');
+        node.id=id;
+        host.appendChild(node);
+      }
+    });
+  }
 
   function today(){
     const picker=document.getElementById('agendaDatePicker');
@@ -15,6 +37,7 @@
   }
 
   function sync(){
+    ensureMetricTargets();
     const metric=document.getElementById('metricSos');
     if(!metric)return;
     const state=readState();
@@ -36,6 +59,7 @@
   }
 
   function boot(){
+    ensureMetricTargets();
     sync();
     document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(sync,100));
     ['prevDay','nextDay','todayBtn'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>setTimeout(sync,300)));
@@ -44,6 +68,12 @@
     setInterval(sync,300);
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
-  else boot();
+  /* Executa antes do DOMContentLoaded para que o motor da Agenda encontre
+     os alvos compatíveis quando fizer o primeiro render. */
+  if(document.readyState==='loading'){
+    ensureMetricTargets();
+    document.addEventListener('DOMContentLoaded',boot,{once:true});
+  }else{
+    boot();
+  }
 })();

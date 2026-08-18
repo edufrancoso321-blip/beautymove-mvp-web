@@ -18,6 +18,23 @@
     el.textContent=String(active.length);
   }
 
+  function refreshSosGrid(){
+    const grid=document.querySelector('#agendaGrid .agenda-grid');if(!grid)return;
+    const date=document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
+    const state=read(),appointments=Array.isArray(state.appointments)?state.appointments:[],opportunities=Array.isArray(state.opportunities)?state.opportunities:[];
+    const tracked=appointments.find(a=>a&&a.date===date&&a.sosAcceptedBy&&a.status!=='cancelado');
+    grid.querySelectorAll('tbody tr').forEach(row=>{
+      const time=row.querySelector('.time-col')?.textContent?.trim();
+      const cell=row.querySelector('[data-sos-cell],.sos-free-cell,.sos-cell');
+      if(!cell)return;
+      if(tracked&&time===tracked.time){
+        const opportunity=opportunities.find(o=>o&&o.appointmentId===tracked.id&&o.source==='sos'&&o.status==='resolved'&&o.acceptedBy)||opportunities.find(o=>o&&o.appointmentId===tracked.id&&o.source==='sos'&&o.acceptedBy);
+        if(!opportunity)return;
+        cell.outerHTML=`<td data-agenda-cell data-time="${time}" data-sos-id="${opportunity.id}" class="sos-cell"><strong>${String(tracked.client||'Cliente').replace(/[&<>\"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[char]))}</strong><span>${String(tracked.service||'Atendimento').replace(/[&<>\"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[char]))}</span><small>Acompanhando · ${String(tracked.sosAcceptedBy).replace(/[&<>\"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[char]))}</small></td>`;
+      }
+    });
+  }
+
   function classifyButtons(box){
     box.querySelectorAll('button').forEach(btn=>{
       const text=(btn.textContent||'').trim().toLowerCase();
@@ -122,12 +139,13 @@
     const actions=document.getElementById('detailsActions');
     document.addEventListener('click',e=>{const cell=e.target.closest?.('#agendaGrid [data-appointment-id]');if(cell)window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;},true);
     refreshSosMetric();
-    setInterval(refreshSosMetric,700);
-    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(refreshSosMetric,100));
-    document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(refreshSosMetric,180));
-    document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(refreshSosMetric,180));
-    document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(refreshSosMetric,180));
-    window.addEventListener('beautymove:sos-accepted',()=>setTimeout(refreshSosMetric,50));
+    refreshSosGrid();
+    setInterval(()=>{refreshSosMetric();refreshSosGrid();},700);
+    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},100));
+    document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},180));
+    document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},180));
+    document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},180));
+    window.addEventListener('beautymove:sos-accepted',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},50));
     if(!actions)return;
     actions.addEventListener('click',intercept,true);
     let normalizing=false;

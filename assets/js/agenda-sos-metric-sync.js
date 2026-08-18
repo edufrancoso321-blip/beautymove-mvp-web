@@ -33,6 +33,49 @@
     catch(_){return {};}
   }
 
+  function writeState(state){
+    try{localStorage.setItem(STATE_KEY,JSON.stringify(state));return true;}
+    catch(_){return false;}
+  }
+
+  /* Remove apenas registros impossíveis: mesmo salão/data/profissional/cliente/serviço
+     com horários sobrepostos. O atendimento mais antigo é preservado e sua duração
+     cobre o maior término encontrado. Agendamentos distintos e não sobrepostos ficam intactos. */
+  function normalizeOverlappingAppointments(state){
+    if(!Array.isArray(state.appointments)||state.appointments.length<2)return false;
+    const appointments=state.appointments.filter(a=>a&&a.status!=='cancelado');
+    const groups=new Map();
+    const minutes=t=>{const [h,m]=String(t||'00:00').split(':').map(Number);return (h||0)*60+(m||0);};
+    const duration=a=>Number(a?.duration)||((Array.isArray(a?.services)?a.services:[]).reduce((s,x)=>s+Number(x?.duration||0),0)||30);
+    const key=a=>[a.date,a.professional,a.client,(a.service||'').trim()].join('|');
+    appointments.forEach(a=>{const k=key(a);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(a);});
+    let changed=false;
+    groups.forEach(list=>{
+      list.sort((a,b)=>minutes(a.time)-minutes(b.time));
+      for(let i=0;i<list.length-1;i++){
+        const keep=list[i];
+        let keepEnd=minutes(keep.time)+duration(keep);
+        let j=i+1;
+        while(j<list.length){
+          const duplicate=list[j];
+          const start=minutes(duplicate.time);
+          if(start>=keepEnd)break;
+          const duplicateEnd=start+duration(duplicate);
+          if(duplicateEnd>keepEnd){
+            keep.duration=duplicateEnd-minutes(keep.time);
+            if(Array.isArray(keep.services)&&keep.services.length===1)keep.services[0].duration=keep.duration;
+            keepEnd=duplicateEnd;
+          }
+          const index=state.appointments.indexOf(duplicate);
+          if(index>=0){state.appointments.splice(index,1);changed=true;}
+          list.splice(j,1);
+        }
+      }
+    });
+    if(changed)writeState(state);
+    return changed;
+  }
+
   function signature(state){
     return JSON.stringify({
       appointments:Array.isArray(state.appointments)?state.appointments:[],
@@ -45,7 +88,8 @@
     clearTimeout(refreshTimer);
     refreshTimer=setTimeout(()=>{
       const state=readState();
-      const next=signature(state);
+      normalizeOverlappingAppointments(state);
+      const next=signature(readState());
       if(next===lastSignature)return;
       lastSignature=next;
       document.getElementById('todayBtn')?.click();
@@ -72,11 +116,14 @@
 
   function boot(){
     ensureMetricTargets();
+    const state=readState();
+    const normalized=normalizeOverlappingAppointments(state);
     lastSignature=signature(readState());
     window.addEventListener('beautymove:data-ready',refreshAgenda);
     window.addEventListener('storage',event=>{
       if(event.key===STATE_KEY)refreshAgenda();
     });
+    if(normalized)document.getElementById('todayBtn')?.click();
     loadBridge();
   }
 

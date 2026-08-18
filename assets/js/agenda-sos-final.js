@@ -1,93 +1,35 @@
-/* BeautyMove — sincronização final da célula S.O.S., sem observer recursivo */
+/* BeautyMove — Central S.O.S. + catálogo de serviços */
 (function(){
-  'use strict';
-  const STATE_KEY='beautymove.mvp.state';
-  const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[]};}catch(_){return {appointments:[],opportunities:[]};}};
-  const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
-  const mins=v=>{const p=String(v||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);};
-  const date=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
-
-  function loadSosColumnIdentity(){
-    if(document.getElementById('beautymoveSosColumnIdentity'))return;
-    const link=document.createElement('link');
-    link.id='beautymoveSosColumnIdentity';
-    link.rel='stylesheet';
-    link.href='assets/css/agenda-sos-column-identity.css?v=20260818-1';
-    document.head.appendChild(link);
-  }
-
-  function accepted(){
-    const s=read(),appointments=Array.isArray(s.appointments)?s.appointments:[],opportunities=Array.isArray(s.opportunities)?s.opportunities:[];
-    return opportunities.filter(o=>o&&o.date===date()&&o.source==='sos'&&o.status==='resolved'&&o.acceptedBy&&!o.cancelled)
-      .map(o=>{const a=o.appointmentId?appointments.find(x=>x&&x.id===o.appointmentId):null;return {...o,appointment:a||null,client:o.client||a?.client||'Cliente',service:o.service||a?.service||'Atendimento',time:o.time||a?.time||'08:00',acceptedBy:o.acceptedBy};})
-      .filter(o=>o.time);
-  }
-
-  function restoreAppointments(){
-    const s=read();let changed=false;
-    (s.appointments||[]).forEach(a=>{if(a?.sosAcceptedBy&&a?.sosOriginalProfessional&&a.professional!==a.sosOriginalProfessional){a.professional=a.sosOriginalProfessional;changed=true;}});
-    if(changed)localStorage.setItem(STATE_KEY,JSON.stringify(s));
-  }
-
-  function sync(){
-    const grid=document.getElementById('agendaGrid');if(!grid)return;
-    const items=accepted();
-    grid.querySelectorAll('td.sos-cell-found').forEach(cell=>{cell.className='sos-free-cell';cell.innerHTML='Livre';cell.removeAttribute('data-sos-id');cell.removeAttribute('data-appointment-id');});
-    grid.querySelectorAll('td[data-sos-cell="true"]').forEach(cell=>{
-      const item=items.find(x=>mins(x.time)===mins(cell.dataset.time));
-      if(!item)return;
-      cell.className='sos-cell sos-cell-found';
-      cell.dataset.sosId=item.id||'';
-      cell.dataset.appointmentId=item.appointment?.id||'';
-      cell.innerHTML=`<strong>${esc(item.client)}</strong><span>${esc(item.service)}</span><small>${esc(item.acceptedBy)}</small><div class="sos-found-status">✓ Profissional ${/a$/i.test(item.acceptedBy||'')?'confirmada':'confirmado'}</div>`;
-    });
-  }
-
-  function setupSosServiceMenu(){
-    const specialty=document.getElementById('sosSpecialty');
-    const service=document.getElementById('sosService');
-    if(!specialty||!service||service.dataset.beautymoveServiceMenu==='1')return;
-
-    const menus={
-      'Cabelos':['Corte','Escova','Coloração','Luzes','Corte feminino','Corte masculino'],
-      'Mãos e Pés':['Manicure','Pedicure'],
-      'Estética':['Limpeza de pele'],
-      'Depilação':['Depilação facial','Depilação de axilas','Depilação de pernas','Depilação de virilha'],
-      'Sobrancelhas':['Design de sobrancelhas']
-    };
-
-    const previous=service.value;
-    const select=document.createElement('select');
-    select.id='sosService';
-    select.name='service';
-    select.required=true;
-    select.className=service.className||'';
-    select.setAttribute('aria-label','Serviço');
-    service.replaceWith(select);
-
-    const render=()=>{
-      const list=menus[specialty.value]||[];
-      select.innerHTML=list.map((name,i)=>`<option value="${esc(name)}">${esc(name)}</option>`).join('');
-      if(previous&&list.includes(previous))select.value=previous;
-      if(!list.length)select.innerHTML='<option value="">Nenhum serviço cadastrado para esta especialidade</option>';
-    };
-
-    specialty.addEventListener('change',render);
-    select.dataset.beautymoveServiceMenu='1';
-    render();
-  }
-
-  function boot(){
-    loadSosColumnIdentity();
-    restoreAppointments();
-    setupSosServiceMenu();
-    let signature='';
-    const tick=()=>{const s=JSON.stringify([date(),localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0]);if(s!==signature){signature=s;sync();}};
-    setTimeout(tick,700);
-    setInterval(()=>{restoreAppointments();tick();setupSosServiceMenu();},800);
-    window.addEventListener('beautymove:sos-accepted',()=>{signature='';setTimeout(tick,100);});
-    ['prevDay','nextDay','todayBtn','agendaDatePicker'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>{signature='';setTimeout(tick,250);}));
-    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{signature='';setTimeout(tick,150);});
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+'use strict';
+const STATE_KEY='beautymove.mvp.state',SERVICES_KEY='beautymove.mvp.services';
+const DEFAULT_SERVICES=[
+{id:'cab-corte-fem',specialty:'Cabelos',name:'Corte feminino',clientPrice:80,professionalOffer:40,duration:60,active:true},
+{id:'cab-escova',specialty:'Cabelos',name:'Escova',clientPrice:60,professionalOffer:30,duration:30,active:true},
+{id:'cab-coloracao',specialty:'Cabelos',name:'Coloração',clientPrice:150,professionalOffer:75,duration:120,active:true},
+{id:'cab-luzes',specialty:'Cabelos',name:'Luzes',clientPrice:250,professionalOffer:125,duration:180,active:true},
+{id:'cab-corte-masc',specialty:'Cabelos',name:'Corte masculino',clientPrice:50,professionalOffer:25,duration:45,active:true},
+{id:'mp-manicure',specialty:'Mãos e Pés',name:'Manicure',clientPrice:55,professionalOffer:28,duration:60,active:true},
+{id:'mp-pedicure',specialty:'Mãos e Pés',name:'Pedicure',clientPrice:65,professionalOffer:33,duration:60,active:true},
+{id:'est-limpeza',specialty:'Estética',name:'Limpeza de pele',clientPrice:120,professionalOffer:60,duration:75,active:true},
+{id:'sob-design',specialty:'Sobrancelhas',name:'Design de sobrancelhas',clientPrice:60,professionalOffer:30,duration:45,active:true},
+{id:'dep-facial',specialty:'Depilação',name:'Depilação facial',clientPrice:45,professionalOffer:23,duration:30,active:true},
+{id:'dep-axilas',specialty:'Depilação',name:'Depilação de axilas',clientPrice:35,professionalOffer:18,duration:20,active:true},
+{id:'dep-pernas',specialty:'Depilação',name:'Depilação de pernas',clientPrice:80,professionalOffer:40,duration:45,active:true}];
+const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[]};}catch(_){return{appointments:[],opportunities:[]};}};
+const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
+const mins=v=>{const p=String(v||'00:00').split(':').map(Number);return(p[0]||0)*60+(p[1]||0);};
+const date=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
+const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function services(){try{const v=JSON.parse(localStorage.getItem(SERVICES_KEY)||'null');if(Array.isArray(v)&&v.length)return v;}catch(_){}localStorage.setItem(SERVICES_KEY,JSON.stringify(DEFAULT_SERVICES));return DEFAULT_SERVICES.slice();}
+function loadColumnIdentity(){if(document.getElementById('beautymoveSosColumnIdentity'))return;const l=document.createElement('link');l.id='beautymoveSosColumnIdentity';l.rel='stylesheet';l.href='assets/css/agenda-sos-column-identity.css?v=20260818-2';document.head.appendChild(l);}
+function accepted(){const s=read(),appointments=Array.isArray(s.appointments)?s.appointments:[],opportunities=Array.isArray(s.opportunities)?s.opportunities:[];return opportunities.filter(o=>o&&o.date===date()&&o.source==='sos'&&o.status==='resolved'&&o.acceptedBy&&!o.cancelled).map(o=>{const a=o.appointmentId?appointments.find(x=>x&&x.id===o.appointmentId):null;return{...o,appointment:a||null,client:o.client||a?.client||'Cliente',service:o.service||a?.service||'Atendimento',time:o.time||a?.time||'08:00',acceptedBy:o.acceptedBy};}).filter(o=>o.time);}
+function restoreAppointments(){const s=read();let changed=false;(s.appointments||[]).forEach(a=>{if(a?.sosAcceptedBy&&a?.sosOriginalProfessional&&a.professional!==a.sosOriginalProfessional){a.professional=a.sosOriginalProfessional;changed=true;}});if(changed)localStorage.setItem(STATE_KEY,JSON.stringify(s));}
+function sync(){const grid=document.getElementById('agendaGrid');if(!grid)return;const items=accepted();grid.querySelectorAll('td.sos-cell-found').forEach(c=>{c.className='sos-free-cell';c.innerHTML='Livre';c.removeAttribute('data-sos-id');c.removeAttribute('data-appointment-id');});grid.querySelectorAll('td[data-sos-cell="true"]').forEach(c=>{const item=items.find(x=>mins(x.time)===mins(c.dataset.time));if(!item)return;c.className='sos-cell sos-cell-found';c.dataset.sosId=item.id||'';c.dataset.appointmentId=item.appointment?.id||'';c.innerHTML=`<strong>${esc(item.client)}</strong><span>${esc(item.service)}</span><small>${esc(item.acceptedBy)}</small><div class="sos-found-status">✓ Profissional ${/a$/i.test(item.acceptedBy||'')?'confirmada':'confirmado'}</div>`;});}
+function setupServiceSelector(){const specialty=document.getElementById('sosSpecialty'),field=document.getElementById('sosService');if(!specialty||!field||field.dataset.catalogReady)return;field.dataset.catalogReady='1';const wrap=field.closest('.field');const select=document.createElement('select');select.id='sosService';select.name='service';select.required=true;select.className=field.className||'';field.replaceWith(select);const info=document.createElement('div');info.className='sos-service-pricing';info.innerHTML='<div><span>Valor para cliente</span><strong id="sosClientPrice">—</strong></div><div><span>Oferta ao profissional</span><input id="sosProfessionalOffer" name="professionalOffer" type="number" min="0" step="0.01" placeholder="R$ 0,00" required></div><div><span>Tempo estimado</span><strong id="sosServiceDuration">—</strong></div>';wrap.appendChild(info);const clientPrice=document.getElementById('sosClientPrice'),offer=document.getElementById('sosProfessionalOffer'),duration=document.getElementById('sosServiceDuration');function populate(){const list=services().filter(s=>s.active&&s.specialty===specialty.value);select.innerHTML=list.length?'<option value="">Selecione o serviço</option>'+list.map(s=>`<option value="${esc(s.name)}" data-price="${s.clientPrice}" data-offer="${s.professionalOffer}" data-duration="${s.duration}" data-specialty="${esc(s.specialty)}">${esc(s.name)}</option>`).join(''):'<option value="">Nenhum serviço ativo cadastrado</option>';select.disabled=!list.length;clientPrice.textContent='—';offer.value='';duration.textContent='—';}
+select.addEventListener('change',()=>{const o=select.selectedOptions[0];if(!o||!o.value){clientPrice.textContent='—';offer.value='';duration.textContent='—';return;}clientPrice.textContent=money(o.dataset.price);offer.value=o.dataset.offer||'';duration.textContent=`${o.dataset.duration} min`;});specialty.addEventListener('change',populate);populate();
+const form=document.getElementById('sosForm');form?.addEventListener('submit',()=>{const o=select.selectedOptions[0];if(!o||!o.value)return;const hidden=(id,name,value)=>{let h=document.getElementById(id);if(!h){h=document.createElement('input');h.type='hidden';h.id=id;h.name=name;form.appendChild(h);}h.value=value;};hidden('sosClientPriceSnapshot','clientPriceSnapshot',o.dataset.price);hidden('sosProfessionalOfferSnapshot','professionalOfferSnapshot',offer.value);hidden('sosDurationSnapshot','durationSnapshot',o.dataset.duration);hidden('sosSpecialtySnapshot','specialtySnapshot',o.dataset.specialty||specialty.value);setTimeout(()=>freezeLatestOpportunity({clientPrice:Number(o.dataset.price),professionalOffer:Number(offer.value),duration:Number(o.dataset.duration),specialty:o.dataset.specialty||specialty.value,service:select.value}),450);},true);}
+function freezeLatestOpportunity(snapshot){const s=read(),items=Array.isArray(s.opportunities)?s.opportunities:[];const matches=items.filter(o=>o&&o.source==='sos'&&o.date===date()&&o.service===snapshot.service);const o=matches[matches.length-1];if(!o)return;o.clientPriceSnapshot=snapshot.clientPrice;o.professionalOfferSnapshot=snapshot.professionalOffer;o.durationSnapshot=snapshot.duration;o.specialtySnapshot=snapshot.specialty;o.offerFrozenAt=new Date().toISOString();localStorage.setItem(STATE_KEY,JSON.stringify(s));}
+function linkServicesNav(){document.querySelectorAll('.salon-nav a').forEach(a=>{if(a.textContent.trim()==='Serviços')a.href='servicos.html';});}
+function boot(){loadColumnIdentity();services();restoreAppointments();linkServicesNav();setupServiceSelector();let signature='';const tick=()=>{const s=JSON.stringify([date(),localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0]);if(s!==signature){signature=s;sync();}};setTimeout(tick,700);setInterval(()=>{restoreAppointments();tick();setupServiceSelector();},800);window.addEventListener('beautymove:sos-accepted',()=>{signature='';setTimeout(tick,100);});['prevDay','nextDay','todayBtn','agendaDatePicker'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>{signature='';setTimeout(tick,250);}));document.getElementById('agendaDatePicker')?.addEventListener('change',()=>{signature='';setTimeout(tick,150);});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

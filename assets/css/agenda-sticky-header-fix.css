@@ -143,3 +143,87 @@
     z-index:33!important;
   }
 }
+
+/* Correção estrutural 2026-08-18:
+   a rolagem vertical pertence somente ao corpo da Agenda.
+   O cabeçalho com especialidades/profissionais fica estável e
+   não acompanha a rolagem das linhas. A grade usa CSS Grid para
+   manter exatamente as mesmas colunas no cabeçalho e no corpo. */
+@media (min-width:781px){
+  .agenda-scroll-v2{
+    overflow:hidden!important;
+    height:100%!important;
+    max-height:none!important;
+  }
+  .agenda-grid{
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+  .agenda-grid thead{
+    display:block!important;
+    width:100%!important;
+    height:82px!important;
+  }
+  .agenda-grid thead tr,
+  .agenda-grid tbody tr{
+    display:grid!important;
+    width:100%!important;
+    grid-template-columns:78px repeat(4,minmax(0,1fr)) 220px!important;
+  }
+  .agenda-grid thead tr{
+    height:82px!important;
+  }
+  .agenda-grid tbody{
+    display:block!important;
+    width:100%!important;
+    height:calc(100% - 82px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    scrollbar-gutter:stable!important;
+  }
+  .agenda-grid tbody tr{
+    min-height:56px!important;
+  }
+  .agenda-grid thead th,
+  .agenda-grid tbody th,
+  .agenda-grid tbody td{
+    min-width:0!important;
+    width:auto!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+  }
+  .agenda-grid thead th{
+    position:static!important;
+    top:auto!important;
+    left:auto!important;
+    z-index:2!important;
+  }
+  .agenda-grid tbody .time-col{
+    position:static!important;
+    left:auto!important;
+    z-index:auto!important;
+  }
+  .agenda-grid .sos-col,
+  .agenda-grid .sos-cell,
+  .agenda-grid .sos-free-cell{
+    width:auto!important;
+    min-width:0!important;
+  }
+}
+
+@media (max-width:1400px) and (min-width:781px){
+  .agenda-grid thead tr,
+  .agenda-grid tbody tr{
+    grid-template-columns:68px repeat(4,minmax(0,1fr)) 175px!important;
+  }
+}
+
+@media (max-width:1050px) and (min-width:781px){
+  .agenda-grid thead tr,
+  .agenda-grid tbody tr{
+    grid-template-columns:64px repeat(4,minmax(0,1fr)) 155px!important;
+  }
+}

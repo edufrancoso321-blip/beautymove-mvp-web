@@ -29,7 +29,10 @@
     const panel=document.getElementById('sosOpportunityPanel');
     const queue=panel?.querySelectorAll('.sos-op-queue-item');
     const panelCount=queue?queue.length:0;
-    metric.textContent=String(active.length||panelCount||0);
+    const activeShell=panel?.querySelector('.sos-op-shell.active');
+    const hasActiveCentral=!!activeShell && !activeShell.classList.contains('tracking');
+    const fallbackCount=hasActiveCentral ? Math.max(1,panelCount) : 0;
+    metric.textContent=String(active.length||fallbackCount);
   }
 
   function boot(){

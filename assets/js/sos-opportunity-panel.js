@@ -30,10 +30,11 @@
     if(active.appointmentId){
       const appointment=state.appointments.find(a=>a&&a.id===active.appointmentId);
       if(appointment){
+        const originalProfessional=appointment.professional||'';
+        appointment.sosOriginalProfessional=appointment.sosOriginalProfessional||originalProfessional;
         appointment.professional=professional;
         appointment.sosAcceptedBy=professional;
         appointment.sosAcceptedAt=now;
-        appointment.sosOriginalProfessional=appointment.sosOriginalProfessional||appointment.professional;
       }
       const existing=state.opportunities.find(o=>o&&o.id===active.id);
       if(existing){existing.status='resolved';existing.acceptedBy=professional;existing.acceptedAt=now;}

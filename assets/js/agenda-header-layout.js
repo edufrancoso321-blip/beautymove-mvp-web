@@ -25,6 +25,14 @@
       .agenda-grid thead tr.agenda-professional-row th.sos-col.agenda-sos-action{vertical-align:top!important;text-align:center!important;padding:6px 8px 10px!important;font-size:12px!important;font-weight:800!important;color:var(--purple)!important;background:#fff!important;border-top:0!important;border-bottom:0!important;position:relative!important;height:auto!important;min-height:0!important;box-sizing:border-box!important;align-self:stretch!important}
       .agenda-grid thead tr.agenda-professional-row th.sos-col.agenda-sos-action .sos-action-label{display:block!important;margin:4px 0 0!important;line-height:1.2!important;font-size:12px!important;font-weight:850!important;color:var(--purple)!important}
       .agenda-grid thead tr.agenda-professional-row th.sos-col.agenda-sos-action::after{content:''!important;position:absolute!important;left:12px!important;right:12px!important;bottom:0!important;height:6px!important;border-radius:6px 6px 0 0!important;background:var(--purple)!important}
+
+      /* 2026-08-18 — cabeçalho de especialidades/profissionais permanece fixo dentro da rolagem da grade. */
+      .agenda-grid thead tr.agenda-specialty-row th{position:sticky!important;top:0!important;z-index:8!important;background:#fff!important}
+      .agenda-grid thead tr.agenda-specialty-row th.time-col{z-index:10!important}
+      .agenda-grid thead tr.agenda-specialty-row th.sos-col{z-index:9!important}
+      .agenda-grid thead tr.agenda-professional-row th{position:sticky!important;top:36px!important;z-index:7!important;background:#fff!important}
+      .agenda-grid thead tr.agenda-professional-row th.sos-col{z-index:8!important}
+      .agenda-grid thead tr.agenda-professional-row th.time-col{z-index:10!important}
     `;
     document.head.appendChild(s);
   }

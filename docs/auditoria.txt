@@ -1,1 +1,0 @@
-Fonte de verdade: Firestore. Estados derivados devem ser determinísticos.

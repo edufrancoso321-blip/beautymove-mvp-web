@@ -31,42 +31,33 @@
 @media(max-width:900px){#agendaWorkspace{grid-template-columns:minmax(0,1fr) 280px;gap:10px}#sosOpportunityPanel{height:100%!important}}
 @media(max-width:760px){#agendaWorkspace{display:flex;flex-direction:column}.agenda-shell-v2{height:60vh!important}.sos-op-body{max-height:520px}}
 
-/* BeautyMove — refinamento de leitura da Central S.O.S. — 2026-08-18 */
-#agendaWorkspace{grid-template-columns:minmax(0,1fr) 340px;gap:14px}
-#sosOpportunityPanel{border-color:#d8c8f3;border-radius:15px;box-shadow:0 8px 22px rgba(66,38,104,.10)}
-.sos-op-header{padding:18px 17px 15px}
-.sos-op-kicker{font-size:18px;gap:8px}
-.sos-op-bolt{width:24px;height:24px;font-size:14px}
-.sos-op-subtitle{font-size:11px;margin-top:5px}
-.sos-op-state{margin-top:11px;padding:9px 10px;font-size:11px;border-radius:8px}
-.sos-op-state>span{width:7px;height:7px}
-.sos-op-body{padding:13px}
-.sos-op-queue{gap:8px;margin-bottom:11px}
-.sos-op-queue-item{padding:9px 10px;border-radius:9px}
-.sos-op-queue-item strong{font-size:11px}
-.sos-op-queue-item span{font-size:10px;margin-top:3px}
-.sos-op-queue-item small{font-size:9px;margin-top:3px}
-.sos-op-alert{padding:13px 13px 12px;margin-bottom:11px;border-radius:10px}
-.sos-op-alert-label{font-size:9px;margin-bottom:5px}
-.sos-op-alert strong{font-size:14px}
-.sos-op-alert div{font-size:11px;margin-top:6px}
-.sos-op-alert small{font-size:9px;margin-top:7px;padding:4px 7px}
-.sos-op-search-state{padding:10px 11px;margin-bottom:10px;grid-template-columns:10px 1fr;column-gap:8px;border-radius:9px}
-.sos-op-search-state strong{font-size:11px}
-.sos-op-search-state small{font-size:9px}
-.sos-op-candidates-title{font-size:11px;margin:11px 1px 4px}
-#sosCandidates{max-height:none}
-.sos-op-candidate{grid-template-columns:36px minmax(0,1fr) auto;gap:9px;padding:11px 1px}
-.sos-op-avatar-placeholder{width:36px;height:36px;font-size:12px}
-.sos-op-candidate-name{font-size:11px}
-.sos-op-candidate-name span{font-size:10px}
-.sos-op-candidate-data{font-size:9px;margin-top:4px}
-.sos-op-available{font-size:9px;margin-top:3px}
-.sos-op-select{padding:7px 9px;font-size:9px;border-radius:8px}
-.sos-op-footer{padding:11px;font-size:9px}
-.sos-op-selected-candidate{padding-top:13px;padding-bottom:13px}
-.sos-op-shell.tracking .sos-op-alert strong{font-size:15px}
-.sos-op-shell.tracking .sos-op-alert small{font-size:10px}
-.sos-op-shell.tracking .sos-op-candidate-data{font-size:10px}
-@media(max-width:1050px){#agendaWorkspace{grid-template-columns:minmax(0,1fr) 320px}}
-@media(max-width:760px){#agendaWorkspace{display:flex;flex-direction:column}.sos-op-body{max-height:none}}
+/* BeautyMove — refinamento visual final da Central S.O.S. — referência aprovada */
+#agendaWorkspace{grid-template-columns:minmax(0,1fr) 300px!important;gap:12px!important}
+#sosOpportunityPanel{border-color:#ddd2f1!important;border-radius:14px!important;box-shadow:0 6px 18px rgba(66,38,104,.08)!important}
+.sos-op-header{padding:15px 14px 12px!important}
+.sos-op-kicker{font-size:16px!important;gap:7px!important}
+.sos-op-bolt{width:22px!important;height:22px!important;font-size:13px!important}
+.sos-op-subtitle{font-size:10px!important;margin-top:4px!important}
+.sos-op-state{margin-top:9px!important;padding:8px 9px!important;font-size:9px!important}
+.sos-op-body{padding:10px!important}
+.sos-op-queue{gap:6px!important;margin-bottom:9px!important}
+.sos-op-queue-item{padding:8px!important;border-radius:8px!important}
+.sos-op-queue-item strong{font-size:10px!important}.sos-op-queue-item span{font-size:9px!important}.sos-op-queue-item small{font-size:7.5px!important}
+.sos-op-alert{padding:11px!important;margin-bottom:9px!important;border-radius:9px!important}
+.sos-op-alert-label{font-size:8px!important}.sos-op-alert strong{font-size:13px!important}.sos-op-alert div{font-size:10px!important}.sos-op-alert small{font-size:8px!important}
+.sos-op-search-state{padding:8px 9px!important;margin-bottom:8px!important}.sos-op-search-state strong{font-size:9px!important}.sos-op-search-state small{font-size:8px!important}
+.sos-op-candidates-title{font-size:9px!important;margin:9px 1px 2px!important}
+.sos-op-candidate{grid-template-columns:34px minmax(0,1fr) auto!important;gap:8px!important;padding:9px 1px!important}
+.sos-op-avatar-placeholder{width:34px!important;height:34px!important}
+.sos-op-candidate-name{font-size:10px!important}.sos-op-candidate-name span{font-size:9px!important}.sos-op-candidate-data{font-size:8px!important}.sos-op-available{font-size:8px!important}.sos-op-select{padding:6px 8px!important;font-size:8px!important}
+.sos-op-footer{padding:9px!important;font-size:8px!important}
+.sos-op-shell.tracking .sos-op-alert-label{font-size:8px!important}.sos-op-shell.tracking .sos-op-alert strong{font-size:13px!important}.sos-op-shell.tracking .sos-op-alert div{font-size:10px!important}
+.sos-op-shell.tracking .sos-op-candidate{padding:10px 1px!important}.sos-op-shell.tracking .sos-op-candidate-name{font-size:10px!important}.sos-op-shell.tracking .sos-op-candidate-data{font-size:8px!important}
+.sos-op-shell.tracking .sos-op-search-state{background:#f7f2ff!important}
+.sos-cell-found{background:#f2eaff!important;border-left:3px solid #7438F5!important}
+.sos-cell-found strong{font-size:12px!important;color:#30263a!important}
+.sos-cell-found span{font-size:10px!important;color:#5b3a8c!important}
+.sos-cell-found small{font-size:9px!important;color:#5b3a8c!important;font-weight:700!important}
+.sos-cell-found .sos-found-status{color:#159447!important;font-weight:900!important;margin-top:4px!important}
+@media(max-width:1050px){#agendaWorkspace{grid-template-columns:minmax(0,1fr) 300px!important}}
+@media(max-width:760px){#agendaWorkspace{display:flex!important;flex-direction:column!important}.sos-op-body{max-height:none!important}}

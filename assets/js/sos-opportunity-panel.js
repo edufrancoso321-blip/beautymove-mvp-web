@@ -35,9 +35,9 @@
     if(active.appointmentId){
       const appointment=state.appointments.find(a=>a&&a.id===active.appointmentId);
       if(appointment){
-        const originalProfessional=appointment.professional||'';
-        appointment.sosOriginalProfessional=appointment.sosOriginalProfessional||originalProfessional;
-        appointment.professional=professional;
+        const originalProfessional=appointment.sosOriginalProfessional||appointment.professional||'';
+        appointment.sosOriginalProfessional=originalProfessional;
+        appointment.professional=originalProfessional;
         appointment.sosAcceptedBy=professional;
         appointment.sosAcceptedAt=now;
       }

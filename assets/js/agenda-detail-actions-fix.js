@@ -1,4 +1,4 @@
-/* BeautyMove — ações essenciais do atendimento + acionamento manual do S.O.S. */
+/* BeautyMove — ações essenciais do atendimento + S.O.S. vinculado ao atendimento */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
@@ -9,6 +9,7 @@
   const notice=msg=>{const n=document.getElementById('agendaNotice');if(!n)return;n.textContent=msg;n.hidden=false;clearTimeout(window.__bmDetailNotice);window.__bmDetailNotice=setTimeout(()=>n.hidden=true,3500);};
   const currentId=()=>window.__bmCurrentAppointmentId||document.getElementById('detailsActions')?.dataset?.appointmentId||null;
   const current=()=>{const id=currentId();return id?read().appointments.find(a=>a.id===id)||null:null;};
+
   function classifyButtons(box){
     box.querySelectorAll('button').forEach(btn=>{
       const text=(btn.textContent||'').trim().toLowerCase();
@@ -21,49 +22,94 @@
       else if(text==='financeiro')btn.dataset.detailAction='finance';
     });
   }
+
   function ensureSosButton(){
     const box=document.getElementById('detailsActions');if(!box)return;
+    if(box.dataset.sosId)return;
     classifyButtons(box);
     box.querySelector('[data-detail-action="professional"]')?.remove();
     box.querySelector('[data-detail-action="finance"]')?.remove();
     const start=box.querySelector('[data-detail-action="arrived"]');
-    if(start){
-      start.classList.add('action-start');
-      if(start.textContent.trim()!=='Iniciar atendimento')start.textContent='Iniciar atendimento';
-    }
+    if(start){start.classList.add('action-start');if(start.textContent.trim()!=='Iniciar atendimento')start.textContent='Iniciar atendimento';}
     if(!box.querySelector('[data-detail-action="sos"]')){
       const b=document.createElement('button');b.type='button';b.className='action-button action-sos';b.dataset.detailAction='sos';b.textContent='S.O.S.';box.appendChild(b);
     }
     const a=current();
     if(a?.status==='em_andamento'||a?.status==='chegou'){if(start)start.hidden=true;}
-    else if(a?.status==='finalizado'||a?.status==='concluido'){if(start)start.hidden=true;const finish=box.querySelector('[data-detail-action="finish"]');if(finish)finish.hidden=true;}
+    else if(a?.status==='finalizado'||a?.status==='concluido'){
+      if(start)start.hidden=true;
+      const finish=box.querySelector('[data-detail-action="finish"]');if(finish)finish.hidden=true;
+    }
   }
-  function setStatus(status){
-    const id=currentId();if(!id)return;
+
+  function ensureSosDetailActions(){
+    const box=document.getElementById('detailsActions');if(!box||!box.dataset.sosId)return;
+    const id=box.dataset.sosId;const state=read();const opportunity=state.opportunities.find(o=>o.id===id);if(!opportunity)return;
+    const appointment=opportunity.appointmentId?state.appointments.find(a=>a.id===opportunity.appointmentId):null;
+    if(!appointment)return;
+    if(box.querySelector('[data-detail-action="sos-appointment-schedule"]'))return;
+    const schedule=document.createElement('button');schedule.type='button';schedule.className='action-button';schedule.dataset.detailAction='sos-appointment-schedule';schedule.textContent='Alterar horário';
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='action-button action-cancel';cancel.dataset.detailAction='sos-appointment-cancel';cancel.textContent='Cancelar atendimento';
+    box.insertBefore(schedule,box.firstChild);box.insertBefore(cancel,box.firstChild.nextSibling);
+  }
+
+  function openAppointmentEditor(appointment){
+    const modal=document.getElementById('appointmentModal');if(!modal)return;
+    const id=document.getElementById('appointmentId');const client=document.getElementById('appointmentClient');const professional=document.getElementById('appointmentProfessional');const time=document.getElementById('appointmentTime');const status=document.getElementById('appointmentStatus');const statusField=document.getElementById('appointmentStatusField');const mode=document.getElementById('appointmentMode');const title=document.getElementById('appointmentTitle');
+    if(id)id.value=appointment.id;
+    if(client)client.value=appointment.client||'';
+    if(professional)professional.value=appointment.professional||'Ana';
+    if(time&&appointment.time)time.value=appointment.time;
+    if(status)status.value=appointment.status||'agendado';
+    if(statusField)statusField.style.display='flex';
+    if(mode)mode.textContent='ALTERAR HORÁRIO';
+    if(title)title.textContent='Alterar horário';
+    modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');
+    client?.focus();
+  }
+
+  function setStatus(status,id=currentId()){
+    if(!id)return;
     const s=read(),a=s.appointments.find(x=>x.id===id);if(!a)return;
     if(status==='em_andamento')a.arrivedAt=new Date().toISOString();
     if(status==='finalizado')a.finishedAt=new Date().toISOString();
     a.status=status;save(s);closeDetails();location.reload();
   }
+
+  function cancelAppointment(id){
+    const s=read(),a=s.appointments.find(x=>x.id===id);if(!a)return;
+    a.status='cancelado';save(s);closeDetails();location.reload();
+  }
+
   function triggerSos(){
     const id=currentId();if(!id)return;
     const s=read(),a=s.appointments.find(x=>x.id===id);if(!a)return;
     s.opportunities=Array.isArray(s.opportunities)?s.opportunities:[];
-    const active=s.opportunities.some(o=>o.source==='sos'&&o.appointmentId===a.id&&!['resolved','cancelado'].includes(o.status));
+    const active=s.opportunities.some(o=>o.source==='sos'&&o.appointmentId===a.id&&!['resolved','cancelado','cancelada'].includes(o.status));
     if(active){notice('Este atendimento já possui uma oportunidade S.O.S. ativa.');closeDetails();return;}
     const service=a.service||(Array.isArray(a.services)?a.services.map(x=>x.name).join(' + '):'Atendimento');
     s.opportunities.push({id:'sos-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),appointmentId:a.id,date:a.date,time:a.time,client:a.client||'Cliente',service,specialty:SPECIALTY[a.professional]||'Cabelos',professional:a.professional||'',source:'sos',kind:'manual',status:'searching',radius:'5 km',acceptedBy:'',createdAt:new Date().toISOString()});
     save(s);closeDetails();location.reload();
   }
+
   function intercept(e){
     const btn=e.target.closest?.('#detailsActions [data-detail-action]');if(!btn)return;
     const action=btn.dataset.detailAction;
+    if(action==='sos-appointment-schedule'){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      const state=read(),opportunity=state.opportunities.find(o=>o.id===document.getElementById('detailsActions')?.dataset?.sosId);const a=opportunity?.appointmentId?state.appointments.find(x=>x.id===opportunity.appointmentId):null;if(a){closeDetails();openAppointmentEditor(a);}return;
+    }
+    if(action==='sos-appointment-cancel'){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      const state=read(),opportunity=state.opportunities.find(o=>o.id===document.getElementById('detailsActions')?.dataset?.sosId);if(opportunity?.appointmentId)cancelAppointment(opportunity.appointmentId);return;
+    }
     if(!['professional','finance','arrived','finish','sos'].includes(action))return;
     e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
     if(action==='arrived')setStatus('em_andamento');
     else if(action==='finish')setStatus('finalizado');
     else if(action==='sos')triggerSos();
   }
+
   function boot(){
     const actions=document.getElementById('detailsActions');
     document.addEventListener('click',e=>{const cell=e.target.closest?.('#agendaGrid [data-appointment-id]');if(cell)window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;},true);
@@ -74,14 +120,12 @@
       if(normalizing)return;
       normalizing=true;
       try{
-        ensureSosButton();
-        const a=current();
-        if(a)actions.dataset.appointmentId=a.id;
+        if(actions.dataset.sosId)ensureSosDetailActions();else ensureSosButton();
+        const a=current();if(a&&!actions.dataset.sosId)actions.dataset.appointmentId=a.id;
       }finally{normalizing=false;}
     };
     const modal=document.getElementById('detailsModal')||document.body;
-    const ob=new MutationObserver(()=>normalize());
-    ob.observe(modal,{childList:true,subtree:true});
+    const ob=new MutationObserver(()=>normalize());ob.observe(modal,{childList:true,subtree:true});
     normalize();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300),{once:true});else setTimeout(boot,300);

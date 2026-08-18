@@ -1,1 +1,0 @@
-Auditoria técnica do MVP em andamento.

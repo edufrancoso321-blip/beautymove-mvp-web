@@ -1,69 +1,52 @@
-/* BeautyMove — S.O.S. service selection, fixed footer and live totals */
+/* BeautyMove — S.O.S. pricing sync final */
 (function(){
   'use strict';
+  const SERVICES_KEY='beautymove.mvp.services';
   const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const norm=s=>String(s||'').replace(/\s+/g,' ').trim();
-  const parseMoney=text=>[...String(text||'').matchAll(/R\$\s*([\d.]+(?:,\d{1,2})?)/gi)].map(m=>Number(m[1].replace(/\./g,'').replace(',','.')));
-  const parseMinutes=text=>{const m=String(text||'').match(/(\d+)\s*min/i);return m?Number(m[1]):0;};
-  function serviceRow(input){
-    const row=input.closest('label,.service-option,[data-service],li');
-    const text=norm(row?.innerText||row?.textContent||input.parentElement?.innerText||'');
-    const values=parseMoney(text);
-    const name=norm(row?.querySelector('[data-service-name],strong,b')?.textContent||text.split('R$')[0]).replace(/\s*·\s*$/,'');
-    return {name,client:values[0]||0,offer:values[1]||0,duration:parseMinutes(text)};
-  }
-  function getChecked(){return [...document.querySelectorAll('#sosModal input[type="checkbox"]:checked,#sosModal input[type="radio"]:checked')];}
-  function setSummary(label,value){
-    const modal=document.getElementById('sosModal'); if(!modal)return;
-    const exact=[...modal.querySelectorAll('*')].find(el=>el.children.length===0&&norm(el.textContent)===label);
-    if(!exact)return;
-    const parent=exact.parentElement;
-    const target=parent?.querySelector('strong,b,[data-value]')||exact.nextElementSibling||parent?.lastElementChild;
-    if(target&&target!==exact)target.textContent=value;
-  }
+  const read=()=>{try{const v=JSON.parse(localStorage.getItem(SERVICES_KEY)||'null');return Array.isArray(v)?v:[];}catch(_){return[];}};
+  const findService=(input, list)=>{
+    const idx=input?.dataset?.index ?? input?.dataset?.i;
+    if(idx!=null && list[Number(idx)]) return list[Number(idx)];
+    const key=input?.value || input?.dataset?.service || input?.dataset?.id;
+    return list.find(s=>String(s.id||'')===String(key)||String(s.name)===String(key));
+  };
   function sync(){
-    const form=document.getElementById('sosForm'); if(!form)return;
-    const items=getChecked().map(serviceRow);
-    const client=items.reduce((s,x)=>s+x.client,0),offer=items.reduce((s,x)=>s+x.offer,0),duration=items.reduce((s,x)=>s+x.duration,0);
-    const clientEl=document.getElementById('sosClientPrice'),offerEl=document.getElementById('sosProfessionalOffer'),durationEl=document.getElementById('sosServiceDuration');
-    if(clientEl)clientEl.textContent=client?money(client):'—';
-    if(offerEl)offerEl.textContent=offer?money(offer):'—';
-    if(durationEl)durationEl.textContent=duration?`${duration} min`:'—';
-    setSummary('Valor para cliente',client?money(client):'—');
-    setSummary('Oferta ao profissional',offer?money(offer):'—');
-    setSummary('Tempo estimado',duration?`${duration} min`:'—');
-    form.dataset.sosSelectedServices=JSON.stringify(items);form.dataset.sosClientPrice=String(client);form.dataset.sosProfessionalOffer=String(offer);form.dataset.sosDuration=String(duration);
-  }
-  function fixConcluir(){
-    const modal=document.getElementById('sosModal');if(!modal)return;
-    [...modal.querySelectorAll('button')].filter(b=>norm(b.textContent)==='Concluir').forEach(button=>{
-      if(button.dataset.bmFooterFixed==='1')return;
-      let container=button.parentElement;
-      let list=container?.querySelector('input[type="checkbox"],input[type="radio"]')?.closest('div,ul,section')||container?.previousElementSibling;
-      if(!list)list=container;
-      const shell=list.parentElement||list;
-      shell.classList.add('bm-service-picker-shell');
-      list.classList.add('bm-service-picker-list');
-      const footer=document.createElement('div');footer.className='bm-service-picker-footer';footer.appendChild(button);shell.appendChild(footer);button.dataset.bmFooterFixed='1';
-    });
-  }
-  function addCss(){
-    if(document.getElementById('bm-sos-service-final-css'))return;
-    const style=document.createElement('style');style.id='bm-sos-service-final-css';style.textContent=`
-      #sosModal .bm-service-picker-shell{display:flex!important;flex-direction:column!important;max-height:250px!important;overflow:hidden!important;background:#fff!important}
-      #sosModal .bm-service-picker-list{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important}
-      #sosModal .bm-service-picker-footer{flex:0 0 auto!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;padding:8px 0 0!important;margin-top:6px!important;border-top:1px solid #e7e2ec!important;background:#fff!important;position:sticky!important;bottom:0!important;z-index:5!important}
-      #sosModal .bm-service-picker-footer button{position:static!important;margin:0!important}
-    `;document.head.appendChild(style);
+    const form=document.getElementById('sosForm');
+    const menus=[document.getElementById('bmSosServiceMenu'),document.getElementById('sosServiceMenu')].filter(Boolean);
+    if(!form||!menus.length)return;
+    const list=read();
+    const checked=[];
+    menus.forEach(menu=>menu.querySelectorAll('input[type="checkbox"]:checked').forEach(input=>{
+      const item=findService(input,list); if(item&&!checked.some(x=>x.id===item.id))checked.push(item);
+    }));
+    const client=checked.reduce((n,s)=>n+Number(s.clientPrice||0),0);
+    const offer=checked.reduce((n,s)=>n+Number(s.professionalOffer||0),0);
+    const duration=checked.reduce((n,s)=>n+Number(s.duration||0),0);
+    const clientEl=document.getElementById('sosClientPrice');
+    const offerEl=document.getElementById('sosProfessionalOffer');
+    const durationEl=document.getElementById('sosServiceDuration');
+    if(clientEl)clientEl.textContent=checked.length?money(client):'—';
+    if(offerEl)offerEl.textContent=checked.length?money(offer):'—';
+    if(durationEl)durationEl.textContent=checked.length?`${duration} min`:'—';
+    form.dataset.sosClientPrice=String(client);
+    form.dataset.sosProfessionalOffer=String(offer);
+    form.dataset.sosDuration=String(duration);
+    form.dataset.sosSelectedServices=JSON.stringify(checked);
   }
   function bind(){
-    addCss();fixConcluir();
-    document.querySelectorAll('#sosModal input[type="checkbox"],#sosModal input[type="radio"]').forEach(input=>{
-      if(input.dataset.bmLiveTotals==='1')return;input.dataset.bmLiveTotals='1';input.addEventListener('change',()=>setTimeout(sync,0));
+    [document.getElementById('bmSosServiceMenu'),document.getElementById('sosServiceMenu')].filter(Boolean).forEach(menu=>{
+      menu.querySelectorAll('input[type="checkbox"]').forEach(input=>{
+        if(input.dataset.bmPricingFinal==='1')return;
+        input.dataset.bmPricingFinal='1';
+        input.addEventListener('change',()=>setTimeout(sync,0));
+      });
+      if(!menu.dataset.bmPricingObserver){
+        menu.dataset.bmPricingObserver='1';
+        new MutationObserver(()=>{bind();sync();}).observe(menu,{childList:true,subtree:true});
+      }
     });
     sync();
   }
-  function boot(){bind();setTimeout(bind,100);setTimeout(bind,300);setTimeout(bind,700);setTimeout(bind,1200);}
+  function boot(){bind();setTimeout(bind,250);setTimeout(bind,700);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  new MutationObserver(()=>{fixConcluir();bind();}).observe(document.body,{childList:true,subtree:true});
 })();

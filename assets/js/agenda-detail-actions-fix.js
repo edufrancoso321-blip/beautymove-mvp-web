@@ -26,7 +26,11 @@
     classifyButtons(box);
     box.querySelector('[data-detail-action="professional"]')?.remove();
     box.querySelector('[data-detail-action="finance"]')?.remove();
-    const start=box.querySelector('[data-detail-action="arrived"]');if(start){start.textContent='Iniciar atendimento';start.classList.add('action-start');}
+    const start=box.querySelector('[data-detail-action="arrived"]');
+    if(start){
+      start.classList.add('action-start');
+      if(start.textContent.trim()!=='Iniciar atendimento')start.textContent='Iniciar atendimento';
+    }
     if(!box.querySelector('[data-detail-action="sos"]')){
       const b=document.createElement('button');b.type='button';b.className='action-button action-sos';b.dataset.detailAction='sos';b.textContent='S.O.S.';box.appendChild(b);
     }
@@ -65,9 +69,20 @@
     document.addEventListener('click',e=>{const cell=e.target.closest?.('#agendaGrid [data-appointment-id]');if(cell)window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;},true);
     if(!actions)return;
     actions.addEventListener('click',intercept,true);
-    const normalize=()=>{ensureSosButton();const a=current();if(a)actions.dataset.appointmentId=a.id;};
-    const ob=new MutationObserver(normalize);ob.observe(actions,{childList:true,subtree:true});normalize();
-    new MutationObserver(()=>{if(document.getElementById('detailsActions')===actions)normalize();}).observe(document.getElementById('detailsModal')||document.body,{childList:true,subtree:true});
+    let normalizing=false;
+    const normalize=()=>{
+      if(normalizing)return;
+      normalizing=true;
+      try{
+        ensureSosButton();
+        const a=current();
+        if(a)actions.dataset.appointmentId=a.id;
+      }finally{normalizing=false;}
+    };
+    const modal=document.getElementById('detailsModal')||document.body;
+    const ob=new MutationObserver(()=>normalize());
+    ob.observe(modal,{childList:true,subtree:true});
+    normalize();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300),{once:true});else setTimeout(boot,300);
 })();

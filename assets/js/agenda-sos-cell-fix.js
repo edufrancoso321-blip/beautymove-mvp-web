@@ -1,4 +1,4 @@
-/* BeautyMove — sincronização visual da célula S.O.S. após seleção de profissional */
+/* BeautyMove — sincronização da célula S.O.S. após seleção de profissional */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
@@ -6,20 +6,47 @@
   const dateKey=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
   const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
   const minutes=v=>{const p=String(v||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);};
-  function accepted(){
+
+  /*
+   * A coluna S.O.S. representa a oportunidade que está sendo acompanhada pela
+   * recepção neste momento. O atendimento continua normalmente na coluna da
+   * profissional original; na coluna S.O.S. mostramos somente a oportunidade
+   * aceita mais recentemente, evitando que atendimentos antigos permaneçam
+   * visualmente duplicados na Central.
+   */
+  function currentAccepted(){
     const state=readState();
-    return (Array.isArray(state.appointments)?state.appointments:[]).filter(a=>a&&a.date===dateKey()&&a.sosAcceptedBy&&a.status!=='cancelado');
+    const items=(Array.isArray(state.appointments)?state.appointments:[])
+      .filter(a=>a&&a.date===dateKey()&&a.sosAcceptedBy&&a.status!=='cancelado');
+    if(!items.length)return null;
+    items.sort((a,b)=>{
+      const ta=Date.parse(a.sosAcceptedAt||'')||0;
+      const tb=Date.parse(b.sosAcceptedAt||'')||0;
+      return tb-ta || minutes(b.time)-minutes(a.time);
+    });
+    return items[0];
   }
+
   function sync(){
     const grid=document.getElementById('agendaGrid');
     if(!grid)return;
-    const items=accepted();
-    grid.querySelectorAll('[data-sos-cell="true"]').forEach(cell=>{
-      const item=items.find(a=>minutes(cell.dataset.time)===minutes(a.time));
-      if(!item)return;
-      cell.outerHTML=`<td data-agenda-cell data-time="${esc(item.time)}" data-appointment-id="${esc(item.id)}" class="sos-cell sos-cell-found"><strong>${esc(item.client||'Cliente')}</strong><span>${esc(item.service||'Atendimento')}</span><small>${esc(item.time)} · Profissional: ${esc(item.sosAcceptedBy)}</small><div class="sos-found-status">● Atendimento em acompanhamento</div></td>`;
+    const item=currentAccepted();
+
+    /* Primeiro remove qualquer célula S.O.S. antiga criada por esta camada. */
+    grid.querySelectorAll('.sos-cell-found').forEach(cell=>{
+      const time=cell.dataset.time||'08:00';
+      cell.outerHTML=`<td data-agenda-cell data-time="${esc(time)}" data-sos-cell="true" class="sos-free-cell">Livre</td>`;
     });
+
+    /* Depois marca somente a oportunidade atualmente acompanhada. */
+    if(!item)return;
+    const cell=[...grid.querySelectorAll('[data-sos-cell="true"]')]
+      .find(cell=>minutes(cell.dataset.time)===minutes(item.time));
+    if(!cell)return;
+
+    cell.outerHTML=`<td data-agenda-cell data-time="${esc(item.time)}" data-appointment-id="${esc(item.id)}" class="sos-cell sos-cell-found"><strong>${esc(item.client||'Cliente')}</strong><span>${esc(item.service||'Atendimento')}</span><small>${esc(item.time)} · Profissional: ${esc(item.sosAcceptedBy)}</small><div class="sos-found-status">✓ Profissional encontrada · Atendimento em acompanhamento</div></td>`;
   }
+
   function boot(){
     sync();
     const grid=document.getElementById('agendaGrid');

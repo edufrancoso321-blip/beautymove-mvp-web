@@ -7,7 +7,7 @@
   const save=s=>localStorage.setItem(STATE_KEY,JSON.stringify(s));
   const closeDetails=()=>{const m=document.getElementById('detailsModal');if(m){m.classList.remove('is-open');m.setAttribute('aria-hidden','true');}};
   const notice=msg=>{const n=document.getElementById('agendaNotice');if(!n)return;n.textContent=msg;n.hidden=false;clearTimeout(window.__bmDetailNotice);window.__bmDetailNotice=setTimeout(()=>n.hidden=true,3500);};
-  const currentId=()=>window.__bmCurrentAppointmentId||document.getElementById('detailActions')?.dataset?.appointmentId||null;
+  const currentId=()=>window.__bmCurrentAppointmentId||document.getElementById('detailsActions')?.dataset?.appointmentId||null;
   const current=()=>{const id=currentId();return id?read().appointments.find(a=>a.id===id)||null:null;};
   function classifyButtons(box){
     box.querySelectorAll('button').forEach(btn=>{
@@ -22,7 +22,7 @@
     });
   }
   function ensureSosButton(){
-    const box=document.getElementById('detailActions');if(!box)return;
+    const box=document.getElementById('detailsActions');if(!box)return;
     classifyButtons(box);
     box.querySelector('[data-detail-action="professional"]')?.remove();
     box.querySelector('[data-detail-action="finance"]')?.remove();
@@ -52,7 +52,7 @@
     save(s);closeDetails();location.reload();
   }
   function intercept(e){
-    const btn=e.target.closest?.('#detailActions [data-detail-action]');if(!btn)return;
+    const btn=e.target.closest?.('#detailsActions [data-detail-action]');if(!btn)return;
     const action=btn.dataset.detailAction;
     if(!['professional','finance','arrived','finish','sos'].includes(action))return;
     e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
@@ -61,13 +61,13 @@
     else if(action==='sos')triggerSos();
   }
   function boot(){
-    const actions=document.getElementById('detailActions');
+    const actions=document.getElementById('detailsActions');
     document.addEventListener('click',e=>{const cell=e.target.closest?.('#agendaGrid [data-appointment-id]');if(cell)window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;},true);
     if(!actions)return;
     actions.addEventListener('click',intercept,true);
     const normalize=()=>{ensureSosButton();const a=current();if(a)actions.dataset.appointmentId=a.id;};
     const ob=new MutationObserver(normalize);ob.observe(actions,{childList:true,subtree:true});normalize();
-    new MutationObserver(()=>{if(document.getElementById('detailActions')===actions)normalize();}).observe(document.getElementById('detailsModal')||document.body,{childList:true,subtree:true});
+    new MutationObserver(()=>{if(document.getElementById('detailsActions')===actions)normalize();}).observe(document.getElementById('detailsModal')||document.body,{childList:true,subtree:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300),{once:true});else setTimeout(boot,300);
 })();

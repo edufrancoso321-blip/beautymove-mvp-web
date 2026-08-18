@@ -1,47 +1,44 @@
-/* BeautyMove — sincronização do indicador S.O.S. da Agenda */
+/* BeautyMove — sincronização robusta do indicador S.O.S. da Agenda */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
 
-  function dateKey(){
+  function today(){
     const picker=document.getElementById('agendaDatePicker');
     if(picker&&picker.value)return picker.value;
-    const d=new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return new Date().toISOString().slice(0,10);
   }
 
   function readState(){
-    try{
-      const value=JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{};
-      return {
-        appointments:Array.isArray(value.appointments)?value.appointments:[],
-        opportunities:Array.isArray(value.opportunities)?value.opportunities:[]
-      };
-    }catch(_){
-      return {appointments:[],opportunities:[]};
-    }
+    try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{};}
+    catch(_){return {};}
   }
 
   function sync(){
     const metric=document.getElementById('metricSos');
     if(!metric)return;
     const state=readState();
-    const active=state.opportunities.filter(o=>
-      o &&
-      o.date===dateKey() &&
-      o.source==='sos' &&
-      o.status!=='resolved' &&
-      o.status!=='cancelado'
-    ).length;
-    metric.textContent=String(active);
+    const date=today();
+    const opportunities=Array.isArray(state.opportunities)?state.opportunities:[];
+    const active=opportunities.filter(o=>
+      o && o.date===date && o.source==='sos' &&
+      o.status!=='resolved' && o.status!=='cancelado'
+    );
+
+    /* A Central de Oportunidades é a referência visual final. */
+    const panel=document.getElementById('sosOpportunityPanel');
+    const queue=panel?.querySelectorAll('.sos-op-queue-item');
+    const panelCount=queue?queue.length:0;
+    metric.textContent=String(active.length||panelCount||0);
   }
 
   function boot(){
     sync();
-    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(sync,50));
-    ['prevDay','nextDay','todayBtn'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>setTimeout(sync,200)));
+    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(sync,100));
+    ['prevDay','nextDay','todayBtn'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>setTimeout(sync,300)));
     window.addEventListener('storage',sync);
-    setInterval(sync,500);
+    window.addEventListener('beautymove:sos-accepted',()=>setTimeout(sync,100));
+    setInterval(sync,300);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});

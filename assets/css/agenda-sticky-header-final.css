@@ -2,8 +2,7 @@
 /*
    Única responsabilidade desta camada: manter as duas linhas do cabeçalho
    fixas dentro da área de rolagem da Agenda.
-   A regra anterior colocava os TH como position:static e anulava o
-   comportamento sticky definido por agenda-header-layout.js.
+   A rolagem vertical pertence exclusivamente a .agenda-scroll-v2.
 */
 
 .agenda-shell-v2 > .agenda-scroll-v2 {
@@ -11,10 +10,9 @@
   overflow-x: auto !important;
   overflow-y: auto !important;
   isolation: isolate !important;
+  scrollbar-gutter: stable both-edges !important;
 }
 
-/* Cada TH é sticky; position:sticky no THEAD não é usado como mecanismo
-   principal porque o layout dinâmico da Agenda possui duas linhas. */
 .agenda-grid > thead > tr.agenda-specialty-row > th {
   position: sticky !important;
   top: 0 !important;
@@ -29,7 +27,6 @@
   background: #fff !important;
 }
 
-/* Interseções do cabeçalho com a coluna Horário. */
 .agenda-grid > thead > tr.agenda-specialty-row > th.time-col {
   position: sticky !important;
   top: 0 !important;
@@ -46,7 +43,6 @@
   background: #fff !important;
 }
 
-/* A coluna Horário permanece fixa no eixo horizontal durante a rolagem. */
 .agenda-grid > tbody > tr > th.time-col,
 .agenda-grid > tbody > tr > td.time-col {
   position: sticky !important;
@@ -63,7 +59,6 @@
   z-index: 20 !important;
 }
 
-/* A área de rolagem continua exclusivamente dentro da Agenda. */
 html,
 body {
   overflow: hidden !important;
@@ -72,7 +67,11 @@ body {
 .salon-app,
 .salon-main {
   min-height: 0 !important;
-  overflow: hidden !important;
+  overflow: clip !important;
+}
+
+.agenda-shell-v2 {
+  overflow: clip !important;
 }
 
 @media (max-width: 780px) {
@@ -84,6 +83,10 @@ body {
   .salon-app,
   .salon-main {
     overflow: visible !important;
+  }
+
+  .agenda-shell-v2 {
+    overflow: hidden !important;
   }
 
   .agenda-shell-v2 > .agenda-scroll-v2 {

@@ -1,0 +1,72 @@
+/* BeautyMove — correção final do cabeçalho fixo da Agenda — 2026-08-18 */
+/* O cabeçalho da grade permanece fixo enquanto somente as linhas da agenda rolam. */
+
+.agenda-shell-v2 > .agenda-scroll-v2{
+  position:relative!important;
+  overflow-x:auto!important;
+  overflow-y:auto!important;
+  isolation:isolate!important;
+}
+
+/* Fixação vertical do cabeçalho como um único bloco.
+   Evita que as duas linhas do cabeçalho se comportem como elementos independentes. */
+.agenda-grid > thead{
+  position:sticky!important;
+  top:0!important;
+  z-index:100!important;
+  background:#fff!important;
+}
+
+.agenda-grid > thead > tr > th{
+  position:static!important;
+  top:auto!important;
+  background:#fff!important;
+  z-index:auto!important;
+}
+
+/* Mantém somente a coluna Horário fixa no eixo horizontal. */
+.agenda-grid > thead > tr > th.time-col{
+  position:sticky!important;
+  left:0!important;
+  z-index:110!important;
+  background:#fff!important;
+}
+
+.agenda-grid > tbody > tr > th.time-col{
+  position:sticky!important;
+  left:0!important;
+  z-index:90!important;
+  background:#fff!important;
+}
+
+/* O cabeçalho deve ficar acima de qualquer célula da agenda. */
+.agenda-grid > thead > tr.agenda-specialty-row > th,
+.agenda-grid > thead > tr.agenda-professional-row > th{
+  box-sizing:border-box!important;
+  background:#fff!important;
+}
+
+/* Impede que conteúdos das linhas atravessem visualmente o cabeçalho. */
+.agenda-grid > tbody > tr:first-child > td,
+.agenda-grid > tbody > tr:first-child > th{
+  border-top:1px solid #e8e4ee!important;
+}
+
+/* A área de rolagem continua exclusivamente dentro da Agenda. */
+html,body{
+  overflow:hidden!important;
+}
+
+.salon-app,
+.salon-main{
+  min-height:0!important;
+  overflow:hidden!important;
+}
+
+@media(max-width:780px){
+  html,body{overflow:auto!important}
+  .salon-app,.salon-main{overflow:visible!important}
+  .agenda-shell-v2 > .agenda-scroll-v2{
+    overflow:auto!important;
+  }
+}

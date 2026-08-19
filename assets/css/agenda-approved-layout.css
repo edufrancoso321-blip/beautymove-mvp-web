@@ -21,21 +21,20 @@ html,body{height:100%!important;overflow:hidden!important}.salon-app{height:100v
 /* 2026-08-18 — métricas inferiores removidas: espaço integral destinado à Agenda */
 .agenda-metrics{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
 
-/* 2026-08-18 — correção isolada: cabeçalho de profissionais fixo dentro da rolagem da Agenda */
+/* 2026-08-19 — cabeçalho integral da grade: a linha inteira fica fixa; o nome/status não podem deslizar por baixo da faixa inferior. */
 .agenda-grid{border-collapse:separate!important;border-spacing:0!important}
-.agenda-grid thead th{position:sticky!important;top:0!important;z-index:20!important;background:#fff!important}
-.agenda-grid thead .time-col{left:0!important;z-index:23!important}
-.agenda-grid thead th:not(.time-col){z-index:21!important}
+.agenda-grid thead{position:sticky!important;top:0!important;z-index:40!important;background:#fff!important}
+.agenda-grid thead th{position:static!important;top:auto!important;z-index:41!important;background:#fff!important;height:82px!important}
+.agenda-grid thead th:not(.time-col){position:static!important;padding:10px 12px 14px!important}
+.agenda-grid thead .time-col{position:sticky!important;left:0!important;top:0!important;z-index:50!important;background:#fff!important}
 .agenda-grid tbody .time-col{position:sticky!important;left:0!important;z-index:10!important;background:#fff!important}
-
-/* 2026-08-19 — a Agenda mantém a barra vertical disponível mesmo quando a grade atual cabe na área visível. Isso preserva o comportamento quando o salão configurar períodos maiores, como 05:00–22:00. */
 .agenda-scroll-v2{overflow-y:scroll!important}
 
-/* Em telas menores, mantém rolagem interna da grade. */
 @media(max-width:780px){
   .salon-main{display:flex!important;flex-direction:column!important}
   .agenda-shell-v2{overflow:hidden!important;height:60vh!important;min-height:320px!important}
   .agenda-scroll-v2{height:100%!important;max-height:100%!important;overflow-y:scroll!important;overflow-x:auto!important}
-  .agenda-grid thead th{position:sticky!important;top:0!important;z-index:30!important}
-  .agenda-grid thead .time-col{z-index:33!important}
+  .agenda-grid thead{position:sticky!important;top:0!important;z-index:40!important}
+  .agenda-grid thead th{position:static!important;z-index:41!important}
+  .agenda-grid thead .time-col{position:sticky!important;left:0!important;top:0!important;z-index:50!important}
 }

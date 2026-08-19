@@ -213,3 +213,57 @@ html,body{
     z-index:33!important;
   }
 }
+
+/* Camada final: mantém o viewport da Agenda estável e impede que a linha
+   de profissionais participe da rolagem vertical. */
+.agenda-shell-v2{
+  position:relative!important;
+  height:auto!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+
+.agenda-scroll-v2{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+}
+
+.agenda-grid thead{
+  position:sticky!important;
+  top:0!important;
+  z-index:39!important;
+}
+
+.agenda-grid thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:40!important;
+  background:#fff!important;
+}
+
+.agenda-grid thead th:not(.time-col){
+  z-index:41!important;
+}
+
+.agenda-grid thead .time-col{
+  z-index:43!important;
+}
+
+.agenda-grid tbody .time-col{
+  z-index:30!important;
+}
+
+@media(max-width:780px){
+  html,body{overflow:auto!important}
+  .salon-app{height:auto!important;min-height:100vh!important;overflow:visible!important}
+  .salon-main{height:auto!important;min-height:100vh!important;overflow:visible!important}
+  .agenda-shell-v2{height:60vh!important;min-height:320px!important;flex:none!important}
+  .agenda-scroll-v2{height:100%!important;max-height:100%!important}
+}

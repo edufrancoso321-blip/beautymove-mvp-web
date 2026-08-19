@@ -18,6 +18,7 @@
     if(!cancel){cancel=document.createElement('button');cancel.type='button';cancel.className='action-button action-cancel';cancel.textContent='Cancelar atendimento';b.appendChild(cancel);}
     b.querySelectorAll('button').forEach(btn=>{btn.removeAttribute('data-detail-action');btn.removeAttribute('data-sos-detail');});
     b.querySelectorAll('button').forEach(btn=>{const t=(btn.textContent||'').trim().toLowerCase();if(t!=='alterar horário'&&t!=='cancelar atendimento')btn.remove();});
+    if(!b.querySelector('[data-detail-action="sos-appointment-schedule"]')){const guard=document.createElement('span');guard.hidden=true;guard.setAttribute('data-detail-action','sos-appointment-schedule');b.appendChild(guard);}
   }
   function openReschedule(){
     const found=getSos();if(!found)return;

@@ -2,7 +2,6 @@
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
-  const PROFESSIONALS=['Ana','Bruna','Paula','Carla'];
   const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[],transactions:[]};}catch(_){return{appointments:[],opportunities:[],transactions:[]};}};
   const write=s=>localStorage.setItem(STATE_KEY,JSON.stringify(s));
   const mins=t=>{const p=String(t||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);};
@@ -38,36 +37,36 @@
     }
     const id=`apt-sos-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
     if(appointmentConflict(state,date,professional,timeStart,duration,id)){
-      opportunity.status='searching';opportunity.acceptedBy='';opportunity.acceptedAt=null;opportunity.appointmentId='';
-      write(state);
-      const n=document.getElementById('agendaNotice');if(n){n.textContent=`${professional} não está disponível das ${timeStart} às ${opportunity.endTime}.`;n.hidden=false;setTimeout(()=>n.hidden=true,4500);}
-      return;
+      opportunity.status='searching';opportunity.acceptedBy='';opportunity.acceptedAt=null;opportunity.appointmentId='';write(state);
+      const n=document.getElementById('agendaNotice');if(n){n.textContent=`${professional} não está disponível das ${timeStart} às ${opportunity.endTime}.`;n.hidden=false;setTimeout(()=>n.hidden=true,4500);}return;
     }
     const services=servicesOf(opportunity);
-    const appointment={id,date,time:timeStart,endTime:endOf(opportunity,timeStart),professional,client:opportunity.client||'Cliente',services,service:opportunity.service||services.map(s=>s.name).join(' + '),duration,durationMinutes:duration,value:valueOf(opportunity),status:'agendado',source:'sos',sosAcceptedBy:professional,sosAcceptedAt:opportunity.acceptedAt,sosOpportunityId:opportunity.id};
-    state.appointments.push(appointment);opportunity.appointmentId=id;write(state);
+    state.appointments.push({id,date,time:timeStart,endTime:endOf(opportunity,timeStart),professional,client:opportunity.client||'Cliente',services,service:opportunity.service||services.map(s=>s.name).join(' + '),duration,durationMinutes:duration,value:valueOf(opportunity),status:'agendado',source:'sos',sosAcceptedBy:professional,sosAcceptedAt:opportunity.acceptedAt,sosOpportunityId:opportunity.id});
+    opportunity.appointmentId=id;write(state);
   }
+  const escapeHtml=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
+  const durationLabel=m=>{m=Number(m)||0;const h=Math.floor(m/60),r=m%60;return h?(r?`${h}h ${r}min`:`${h}h`):`${r}min`;};
   function syncSosCells(){
     const grid=document.getElementById('agendaGrid');if(!grid)return;
     const date=document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10),state=read();
     const accepted=(Array.isArray(state.appointments)?state.appointments:[]).filter(a=>a&&a.date===date&&a.source==='sos'&&a.sosAcceptedBy&&a.status!=='cancelado');
     const cells=[...grid.querySelectorAll('td[data-sos-cell="true"]')];if(!cells.length)return;
-    cells.forEach(cell=>{if(cell.classList.contains('bm-sos-reserved'))return;cell.className='sos-free-cell';cell.removeAttribute('data-sos-id');cell.removeAttribute('data-appointment-id');cell.innerHTML='Livre';});
+    cells.forEach(cell=>{cell.classList.remove('bm-sos-reserved','sos-cell-start','sos-cell-continuation');if(!accepted.some(a=>mins(cell.dataset.time)>=mins(a.time)&&mins(cell.dataset.time)<mins(a.time)+Math.max(30,Number(a.duration)||30))){cell.className='sos-free-cell';cell.removeAttribute('data-sos-id');cell.removeAttribute('data-appointment-id');cell.innerHTML='Livre';}});
     accepted.forEach(a=>{
       const start=mins(a.time),end=start+Math.max(30,Number(a.duration)||30);
       cells.forEach(cell=>{
         const minute=mins(cell.dataset.time);if(minute<start||minute>=end)return;
         const isStart=minute===start;cell.className=`sos-cell sos-cell-found bm-sos-reserved ${isStart?'sos-cell-start':'sos-cell-continuation'}`;cell.dataset.sosId=a.sosOpportunityId||'';cell.dataset.appointmentId=a.id;
-        cell.innerHTML=isStart?`<strong>${escapeHtml(a.client||'Cliente')}</strong><span>${escapeHtml(a.service||'Atendimento')}</span><small>${escapeHtml(a.time)} – ${escapeHtml(a.endTime||time(end))} · ${durationLabel(Number(a.duration)||30)}</small><div class="sos-found-status">✓ ${escapeHtml(a.sosAcceptedBy)} · reservado</div>`:`<span>${escapeHtml(a.client||'Cliente')} · até ${escapeHtml(a.endTime||time(end))}</span>`;
+        const html=isStart?`<strong>${escapeHtml(a.client||'Cliente')}</strong><span>${escapeHtml(a.service||'Atendimento')}</span><small>${escapeHtml(a.time)} – ${escapeHtml(a.endTime||time(end))} · ${durationLabel(Number(a.duration)||30)}</small><div class="sos-found-status">✓ ${escapeHtml(a.sosAcceptedBy)} · reservado</div>`:`<span>${escapeHtml(a.client||'Cliente')} · até ${escapeHtml(a.endTime||time(end))}</span>`;
+        if(cell.innerHTML!==html)cell.innerHTML=html;
       });
     });
   }
-  const escapeHtml=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
-  const durationLabel=m=>{m=Number(m)||0;const h=Math.floor(m/60),r=m%60;return h?(r?`${h}h ${r}min`:`${h}h`):`${r}min`;};
   function boot(){
-    window.addEventListener('beautymove:sos-accepted',event=>{ensureReservation(event.detail||{});setTimeout(syncSosCells,80);});
-    const observer=new MutationObserver(()=>syncSosCells());const grid=document.getElementById('agendaGrid');if(grid)observer.observe(grid,{childList:true,subtree:true});
-    setTimeout(syncSosCells,900);setInterval(syncSosCells,900);
+    window.addEventListener('beautymove:sos-accepted',event=>{ensureReservation(event.detail||{});setTimeout(()=>{lastSignature='';syncSosCells();},80);});
+    let lastSignature='';
+    const tick=()=>{const signature=JSON.stringify([document.getElementById('agendaDatePicker')?.value||'',localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0]);if(signature!==lastSignature){lastSignature=signature;syncSosCells();}};
+    setTimeout(tick,900);setInterval(tick,700);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

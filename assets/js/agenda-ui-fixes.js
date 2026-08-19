@@ -1,8 +1,13 @@
 /* BeautyMove — layout oficial da Agenda + controles visuais.
    Atendimento ocupa visualmente todo o período e exibe cliente/serviço uma única vez.
+   Cancelamento normal é isolado do S.O.S. e altera somente o appointment selecionado.
 */
 (function(){
   'use strict';
+  const STATE_KEY='beautymove.mvp.state';
+  function readState(){try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[],transactions:[]};}catch(_){return{appointments:[],opportunities:[],transactions:[]};}}
+  function writeState(state){localStorage.setItem(STATE_KEY,JSON.stringify(state));}
+
   function mergeAppointments(){
     const table=document.querySelector('#agendaGrid .agenda-grid');
     if(!table)return;
@@ -29,6 +34,31 @@
       items.slice(1).forEach(item=>item.cell.remove());
     });
   }
+
+  function cancelNormalAppointment(event){
+    const actions=document.getElementById('detailsActions');
+    if(actions?.dataset?.sosId)return;
+    const button=event.target.closest?.('#detailsActions [data-detail-action="cancel"]');
+    if(!button)return;
+    const id=actions?.dataset?.appointmentId||window.__bmCurrentAppointmentId||null;
+    if(!id)return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    const state=readState();
+    const appointment=state.appointments.find(a=>a&&String(a.id)===String(id));
+    if(!appointment)return;
+    if(!window.confirm(`Cancelar o atendimento de ${appointment.client||'esta cliente'}?`))return;
+    appointment.status='cancelado';
+    appointment.cancelledAt=new Date().toISOString();
+    appointment.cancelledReason='Cancelado pelo salão';
+    writeState(state);
+    window.__bmCurrentAppointmentId=null;
+    const modal=document.getElementById('detailsModal');
+    if(modal){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');}
+    setTimeout(()=>window.location.reload(),60);
+  }
+
   function decorateTodayLabel(){
     const label=document.getElementById('agendaDate'),picker=document.getElementById('agendaDatePicker');
     if(!label||!picker||!label.textContent.trim())return;
@@ -37,6 +67,7 @@
     label.textContent=picker.value===today?`Hoje · ${base}`:base;
   }
   function boot(){
+    document.addEventListener('click',cancelNormalAppointment,true);
     const calendarBtn=document.getElementById('calendarBtn'),picker=document.getElementById('agendaDatePicker');
     calendarBtn?.addEventListener('click',function(){
       if(!picker)return;

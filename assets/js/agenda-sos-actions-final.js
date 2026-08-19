@@ -38,7 +38,7 @@
     b.append(schedule,cancel);
   }
   function buildTimeOptions(selected){
-    const out=[];for(let m=480;m<=1080;m+=30){const t=`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;out.push(`<option value="${t}"${t===selected?' selected':''}>${t}</option>`);}return out.join('');
+    const out=[];for(let m=0;m<=1439;m+=30){const t=`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;out.push(`<option value="${t}"${t===selected?' selected':''}>${t}</option>`);}return out.join('');
   }
   function openReschedule(){
     const ctx=resolveContext();if(!ctx){notice('Não foi possível localizar a solicitação S.O.S.');return;}
@@ -47,7 +47,6 @@
       modal=document.createElement('div');modal.id='sosRescheduleModal';modal.className='modal';modal.setAttribute('aria-hidden','true');
       modal.innerHTML='<div class="modal-backdrop" data-bm-sos-close></div><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sosRescheduleTitle"><button class="modal-close" type="button" aria-label="Fechar" data-bm-sos-close>×</button><div class="eyebrow">S.O.S. PROFISSIONAIS</div><h2 id="sosRescheduleTitle">Alterar horário</h2><p class="modal-intro" id="sosRescheduleInfo"></p><div class="field"><label for="sosRescheduleTime">Novo horário</label><select id="sosRescheduleTime"></select></div><div class="modal-actions"><button class="secondary" type="button" data-bm-sos-close>Cancelar</button><button class="primary compact" type="button" id="sosRescheduleSave">Salvar horário</button></div></section></div>';
       document.body.appendChild(modal);
-      modal.addEventListener('click',e=>{if(e.target.closest('[data-bm-sos-close]'))close('sosRescheduleModal');if(e.target.id==='sosRescheduleSave')saveReschedule();});
     }
     const current=ctx.appointment?.time||ctx.opportunity.time||'08:00';
     document.getElementById('sosRescheduleTime').innerHTML=buildTimeOptions(current);
@@ -55,16 +54,18 @@
     modal.dataset.sosId=ctx.opportunity.id;modal.dataset.appointmentId=ctx.appointment?.id||'';open('sosRescheduleModal');
   }
   function saveReschedule(){
-    const modal=document.getElementById('sosRescheduleModal'),id=modal?.dataset?.sosId,time=document.getElementById('sosRescheduleTime')?.value;if(!id||!time)return;
+    const modal=document.getElementById('sosRescheduleModal'),id=modal?.dataset?.sosId,time=document.getElementById('sosRescheduleTime')?.value;
+    if(!id||!time){notice('Não foi possível identificar o horário.');return;}
     const state=read(),op=(state.opportunities||[]).find(o=>o&&o.id===id),appointmentId=modal.dataset.appointmentId,appointment=appointmentId?(state.appointments||[]).find(a=>a&&a.id===appointmentId):null;
     if(!op){notice('Solicitação S.O.S. não encontrada.');return;}
+    const start=time.split(':').map(Number),startMin=start[0]*60+start[1];
     if(appointment){
-      const start=time.split(':').map(Number),startMin=start[0]*60+start[1],duration=Math.max(30,Number(appointment.duration)||30),conflict=(state.appointments||[]).some(a=>a&&a.id!==appointment.id&&a.status!=='cancelado'&&a.date===appointment.date&&a.professional===appointment.professional&&(()=>{const p=String(a.time||'00:00').split(':').map(Number),s=p[0]*60+p[1],d=Math.max(30,Number(a.duration)||30);return startMin<s+d&&s<startMin+duration;})());
+      const duration=Math.max(30,Number(appointment.duration)||30),conflict=(state.appointments||[]).some(a=>a&&a.id!==appointment.id&&a.status!=='cancelado'&&a.date===appointment.date&&a.professional===appointment.professional&&(()=>{const p=String(a.time||'00:00').split(':').map(Number),s=p[0]*60+p[1],d=Math.max(30,Number(a.duration)||30);return startMin<s+d&&s<startMin+duration;})());
       if(conflict){notice(`${appointment.professional||'Profissional'} já possui atendimento nesse horário.`);return;}
-      appointment.time=time;appointment.endTime=`${String(Math.floor((startMin+duration)/60)).padStart(2,'0')}:${String((startMin+duration)%60).padStart(2,'0')}`;
+      appointment.time=time;const end=startMin+duration;appointment.endTime=`${String(Math.floor(end/60)).padStart(2,'0')}:${String(end%60).padStart(2,'0')}`;
     }
     op.time=time;
-    const duration=Number(op.durationSnapshot)||Number(op.duration)||30;const endMin=time.split(':').map(Number)[0]*60+time.split(':').map(Number)[1]+duration;op.endTime=`${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
+    const duration=Number(op.durationSnapshot)||Number(op.duration)||30,endMin=startMin+duration;op.endTime=`${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
     write(state);close('sosRescheduleModal');notice('Horário alterado com sucesso.');setTimeout(()=>location.reload(),120);
   }
   function cancelAppointment(){
@@ -76,6 +77,10 @@
   }
   function bind(){
     document.addEventListener('click',e=>{
+      const save=e.target.closest?.('#sosRescheduleSave');
+      if(save){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();saveReschedule();return;}
+      const closeBtn=e.target.closest?.('[data-bm-sos-close]');
+      if(closeBtn){e.preventDefault();e.stopPropagation();close('sosRescheduleModal');return;}
       const cell=e.target.closest?.('#agendaGrid [data-sos-id]');
       if(cell){window.__bmCurrentSosId=cell.dataset.sosId||null;window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;return;}
       const btn=e.target.closest?.('#detailsActions button');if(!btn)return;

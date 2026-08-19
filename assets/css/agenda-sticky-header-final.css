@@ -1,117 +1,16 @@
 /* BeautyMove — cabeçalho fixo + rolagem vertical permanente da Agenda — 2026-08-19 */
-/*
-   Responsabilidades desta camada:
-   1) a rolagem vertical da Agenda existe nos três intervalos (30/45/60 min);
-   2) quando o horário configurado for ampliado (ex.: 05:00–22:00), toda a grade
-      continua percorrível pela mesma barra interna;
-   3) o cabeçalho permanece fixo durante a rolagem.
-*/
-
-.agenda-shell-v2 > .agenda-scroll-v2 {
-  position: relative !important;
-  overflow-x: auto !important;
-  overflow-y: scroll !important;
-  isolation: isolate !important;
-  scrollbar-gutter: stable both-edges !important;
-  overscroll-behavior: contain !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-
-/* Estrutura atual: especialidade, profissional e status estão na mesma célula de cabeçalho. */
-.agenda-grid > thead > tr > th {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 20 !important;
-  background: #fff !important;
-}
-
-.agenda-grid > thead > tr > th.time-col {
-  position: sticky !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 30 !important;
-  background: #fff !important;
-}
-
-.agenda-grid > tbody > tr > th.time-col,
-.agenda-grid > tbody > tr > td.time-col {
-  position: sticky !important;
-  left: 0 !important;
-  z-index: 10 !important;
-  background: #fff !important;
-}
-
-/* Compatibilidade com uma futura estrutura em duas linhas de cabeçalho. */
-.agenda-grid > thead > tr.agenda-specialty-row > th {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 20 !important;
-  background: #fff !important;
-}
-
-.agenda-grid > thead > tr.agenda-professional-row > th {
-  position: sticky !important;
-  top: 36px !important;
-  z-index: 19 !important;
-  background: #fff !important;
-}
-
-.agenda-grid > thead > tr.agenda-specialty-row > th.time-col {
-  position: sticky !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 30 !important;
-  background: #fff !important;
-}
-
-.agenda-grid > thead > tr.agenda-professional-row > th.time-col {
-  position: sticky !important;
-  top: 36px !important;
-  left: 0 !important;
-  z-index: 30 !important;
-  background: #fff !important;
-}
-
-.agenda-grid > thead > tr.agenda-specialty-row > th.sos-col {
-  z-index: 21 !important;
-}
-
-.agenda-grid > thead > tr.agenda-professional-row > th.sos-col {
-  z-index: 20 !important;
-}
-
-html,
-body {
-  overflow: hidden !important;
-}
-
-.salon-app,
-.salon-main {
-  min-height: 0 !important;
-  overflow: clip !important;
-}
-
-.agenda-shell-v2 {
-  overflow: clip !important;
-}
-
-@media (max-width: 780px) {
-  html,
-  body {
-    overflow: auto !important;
-  }
-
-  .salon-app,
-  .salon-main {
-    overflow: visible !important;
-  }
-
-  .agenda-shell-v2 {
-    overflow: hidden !important;
-  }
-
-  .agenda-shell-v2 > .agenda-scroll-v2 {
-    overflow-x: auto !important;
-    overflow-y: scroll !important;
-  }
-}
+/* Regra oficial: 30, 45 e 60 minutos usam a mesma rolagem interna. */
+.agenda-shell-v2 > .agenda-scroll-v2{position:relative!important;height:100%!important;min-height:0!important;overflow-x:auto!important;overflow-y:scroll!important;isolation:isolate!important;scrollbar-gutter:stable both-edges!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}
+.agenda-shell-v2 > .agenda-scroll-v2 > .agenda-grid{min-height:calc(100% + 2px)!important}
+.agenda-shell-v2 > .agenda-scroll-v2::-webkit-scrollbar{width:12px!important;height:12px!important}
+.agenda-shell-v2 > .agenda-scroll-v2::-webkit-scrollbar-track{background:#f4f2f6!important;border-radius:8px!important}
+.agenda-shell-v2 > .agenda-scroll-v2::-webkit-scrollbar-thumb{background:#b9b4c1!important;border-radius:8px!important;border:2px solid #f4f2f6!important}
+.agenda-grid > thead > tr > th{position:sticky!important;top:0!important;z-index:20!important;background:#fff!important}
+.agenda-grid > thead > tr > th.time-col{position:sticky!important;top:0!important;left:0!important;z-index:30!important;background:#fff!important}
+.agenda-grid > tbody > tr > th.time-col,.agenda-grid > tbody > tr > td.time-col{position:sticky!important;left:0!important;z-index:10!important;background:#fff!important}
+.agenda-grid > thead > tr.agenda-specialty-row > th{position:sticky!important;top:0!important;z-index:20!important;background:#fff!important}
+.agenda-grid > thead > tr.agenda-professional-row > th{position:sticky!important;top:36px!important;z-index:19!important;background:#fff!important}
+.agenda-grid > thead > tr.agenda-specialty-row > th.time-col,.agenda-grid > thead > tr.agenda-professional-row > th.time-col{left:0!important;z-index:30!important;background:#fff!important}
+.agenda-grid > thead > tr.agenda-specialty-row > th.time-col{top:0!important}.agenda-grid > thead > tr.agenda-professional-row > th.time-col{top:36px!important}
+html,body{overflow:hidden!important}.salon-app,.salon-main{min-height:0!important;overflow:clip!important}.agenda-shell-v2{overflow:clip!important}
+@media(max-width:780px){html,body{overflow:auto!important}.salon-app,.salon-main{overflow:visible!important}.agenda-shell-v2{overflow:hidden!important}.agenda-shell-v2 > .agenda-scroll-v2{height:100%!important;overflow-x:auto!important;overflow-y:scroll!important}}

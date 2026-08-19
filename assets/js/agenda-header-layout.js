@@ -27,13 +27,13 @@
       .agenda-grid thead tr.agenda-professional-row th.sos-col.agenda-sos-action .sos-action-label{display:block!important;margin:4px 0 0!important;line-height:1.2!important;font-size:12px!important;font-weight:850!important;color:var(--purple)!important}
       .agenda-grid thead tr.agenda-professional-row th.sos-col.agenda-sos-action::after{content:''!important;position:absolute!important;left:12px!important;right:12px!important;bottom:0!important;height:6px!important;border-radius:6px 6px 0 0!important;background:var(--purple)!important}
 
-      /* 2026-08-19 — o cabeçalho inteiro é uma única unidade sticky. */
-      .agenda-grid thead tr.agenda-specialty-row th,
-      .agenda-grid thead tr.agenda-professional-row th{position:static!important;top:auto!important}
-      .agenda-grid thead tr.agenda-specialty-row th.time-col,
-      .agenda-grid thead tr.agenda-professional-row th.time-col{position:sticky!important;left:0!important;z-index:30!important;background:#fff!important}
-      .agenda-grid thead tr.agenda-specialty-row th.sos-col,
-      .agenda-grid thead tr.agenda-professional-row th.sos-col{z-index:26!important}
+      /* 2026-08-19 — cabeçalho de especialidades/profissionais permanece fixo durante a rolagem. */
+      .agenda-grid thead tr.agenda-specialty-row th{position:sticky!important;top:0!important;z-index:20!important;background:#fff!important}
+      .agenda-grid thead tr.agenda-specialty-row th.time-col{z-index:30!important}
+      .agenda-grid thead tr.agenda-specialty-row th.sos-col{z-index:21!important}
+      .agenda-grid thead tr.agenda-professional-row th{position:sticky!important;top:36px!important;z-index:19!important;background:#fff!important}
+      .agenda-grid thead tr.agenda-professional-row th.sos-col{z-index:20!important}
+      .agenda-grid thead tr.agenda-professional-row th.time-col{z-index:30!important}
     `;
     document.head.appendChild(s);
   }

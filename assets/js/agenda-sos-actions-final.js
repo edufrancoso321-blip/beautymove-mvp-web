@@ -10,14 +10,14 @@
   const notice=msg=>{const n=document.getElementById('agendaNotice');if(!n)return;n.textContent=msg;n.hidden=false;clearTimeout(window.__bmSosControllerNotice);window.__bmSosControllerNotice=setTimeout(()=>n.hidden=true,3500);};
   function resolveContext(){
     const state=read(),ops=Array.isArray(state.opportunities)?state.opportunities:[],apps=Array.isArray(state.appointments)?state.appointments:[];
-    const active=ops.filter(o=>o&&o.source==='sos'&&!['cancelado','cancelada'].includes(o.status));
+    const candidates=ops.filter(o=>o&&o.source==='sos'&&!['cancelado','cancelada'].includes(String(o.status||'').toLowerCase()));
     const b=box();
     const ids=[b?.dataset?.sosId,window.__bmCurrentSosId].filter(Boolean);
-    for(const id of ids){const op=active.find(o=>o.id===id);if(op)return{state,opportunity:op,appointment:op.appointmentId?apps.find(a=>a&&a.id===op.appointmentId)||null:null};}
+    for(const id of ids){const op=candidates.find(o=>o.id===id);if(op)return{state,opportunity:op,appointment:op.appointmentId?apps.find(a=>a&&a.id===op.appointmentId)||null:null};}
     const appointmentId=b?.dataset?.appointmentId||window.__bmCurrentAppointmentId;
-    if(appointmentId){const op=active.find(o=>o.appointmentId===appointmentId);if(op)return{state,opportunity:op,appointment:apps.find(a=>a&&a.id===appointmentId)||null};}
+    if(appointmentId){const op=candidates.find(o=>o.appointmentId===appointmentId);if(op)return{state,opportunity:op,appointment:apps.find(a=>a&&a.id===appointmentId)||null};}
     const text=document.getElementById('detailsContent')?.textContent||'';
-    for(const op of active){
+    for(const op of candidates){
       const a=op.appointmentId?apps.find(x=>x&&x.id===op.appointmentId):null;
       const client=String((a?.client||op.client||'')).trim();
       const time=String((a?.time||op.time||'')).trim();

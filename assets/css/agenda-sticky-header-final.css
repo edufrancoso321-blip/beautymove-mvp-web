@@ -1,72 +1,92 @@
-/* BeautyMove — correção final do cabeçalho fixo da Agenda — 2026-08-18 */
-/* O cabeçalho da grade permanece fixo enquanto somente as linhas da agenda rolam. */
+/* BeautyMove — cabeçalho fixo da Agenda — 2026-08-19 */
+/*
+   Única responsabilidade desta camada: manter as duas linhas do cabeçalho
+   fixas dentro da área de rolagem da Agenda.
+   A regra anterior colocava os TH como position:static e anulava o
+   comportamento sticky definido por agenda-header-layout.js.
+*/
 
-.agenda-shell-v2 > .agenda-scroll-v2{
-  position:relative!important;
-  overflow-x:auto!important;
-  overflow-y:auto!important;
-  isolation:isolate!important;
+.agenda-shell-v2 > .agenda-scroll-v2 {
+  position: relative !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  isolation: isolate !important;
 }
 
-/* Fixação vertical do cabeçalho como um único bloco.
-   Evita que as duas linhas do cabeçalho se comportem como elementos independentes. */
-.agenda-grid > thead{
-  position:sticky!important;
-  top:0!important;
-  z-index:100!important;
-  background:#fff!important;
+/* Cada TH é sticky; position:sticky no THEAD não é usado como mecanismo
+   principal porque o layout dinâmico da Agenda possui duas linhas. */
+.agenda-grid > thead > tr.agenda-specialty-row > th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+  background: #fff !important;
 }
 
-.agenda-grid > thead > tr > th{
-  position:static!important;
-  top:auto!important;
-  background:#fff!important;
-  z-index:auto!important;
+.agenda-grid > thead > tr.agenda-professional-row > th {
+  position: sticky !important;
+  top: 36px !important;
+  z-index: 19 !important;
+  background: #fff !important;
 }
 
-/* Mantém somente a coluna Horário fixa no eixo horizontal. */
-.agenda-grid > thead > tr > th.time-col{
-  position:sticky!important;
-  left:0!important;
-  z-index:110!important;
-  background:#fff!important;
+/* Interseções do cabeçalho com a coluna Horário. */
+.agenda-grid > thead > tr.agenda-specialty-row > th.time-col {
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 30 !important;
+  background: #fff !important;
 }
 
-.agenda-grid > tbody > tr > th.time-col{
-  position:sticky!important;
-  left:0!important;
-  z-index:90!important;
-  background:#fff!important;
+.agenda-grid > thead > tr.agenda-professional-row > th.time-col {
+  position: sticky !important;
+  top: 36px !important;
+  left: 0 !important;
+  z-index: 30 !important;
+  background: #fff !important;
 }
 
-/* O cabeçalho deve ficar acima de qualquer célula da agenda. */
-.agenda-grid > thead > tr.agenda-specialty-row > th,
-.agenda-grid > thead > tr.agenda-professional-row > th{
-  box-sizing:border-box!important;
-  background:#fff!important;
+/* A coluna Horário permanece fixa no eixo horizontal durante a rolagem. */
+.agenda-grid > tbody > tr > th.time-col,
+.agenda-grid > tbody > tr > td.time-col {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 10 !important;
+  background: #fff !important;
 }
 
-/* Impede que conteúdos das linhas atravessem visualmente o cabeçalho. */
-.agenda-grid > tbody > tr:first-child > td,
-.agenda-grid > tbody > tr:first-child > th{
-  border-top:1px solid #e8e4ee!important;
+.agenda-grid > thead > tr.agenda-specialty-row > th.sos-col {
+  z-index: 21 !important;
+}
+
+.agenda-grid > thead > tr.agenda-professional-row > th.sos-col {
+  z-index: 20 !important;
 }
 
 /* A área de rolagem continua exclusivamente dentro da Agenda. */
-html,body{
-  overflow:hidden!important;
+html,
+body {
+  overflow: hidden !important;
 }
 
 .salon-app,
-.salon-main{
-  min-height:0!important;
-  overflow:hidden!important;
+.salon-main {
+  min-height: 0 !important;
+  overflow: hidden !important;
 }
 
-@media(max-width:780px){
-  html,body{overflow:auto!important}
-  .salon-app,.salon-main{overflow:visible!important}
-  .agenda-shell-v2 > .agenda-scroll-v2{
-    overflow:auto!important;
+@media (max-width: 780px) {
+  html,
+  body {
+    overflow: auto !important;
+  }
+
+  .salon-app,
+  .salon-main {
+    overflow: visible !important;
+  }
+
+  .agenda-shell-v2 > .agenda-scroll-v2 {
+    overflow: auto !important;
   }
 }

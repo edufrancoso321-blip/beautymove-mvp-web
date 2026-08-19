@@ -52,33 +52,47 @@
 
   function resolveContext(){
     const state=read(),ops=Array.isArray(state.opportunities)?state.opportunities:[],apps=Array.isArray(state.appointments)?state.appointments:[];
-    const candidates=ops.filter(o=>o&&o.source==='sos'&&!['cancelado','cancelada'].includes(String(o.status||'').toLowerCase()));
     const b=box();
-    const ids=[b?.dataset?.sosId,window.__bmCurrentSosId].filter(Boolean);
-    for(const id of ids){const op=candidates.find(o=>o.id===id);if(op){const appointment=ensureAppointment(op,state);if(op.acceptedBy||op.appointmentId)return{state,opportunity:op,appointment};}}
+    const requestedId=b?.dataset?.sosId||window.__bmCurrentSosId||null;
+    if(requestedId){
+      const op=ops.find(o=>o&&o.id===requestedId);
+      if(op){
+        const appointment=ensureAppointment(op,state);
+        if(appointment||op.acceptedBy||op.appointmentId)return{state,opportunity:op,appointment:appointment||apps.find(a=>a&&a.id===op.appointmentId)||null};
+      }
+    }
     const appointmentId=b?.dataset?.appointmentId||window.__bmCurrentAppointmentId;
-    if(appointmentId){const op=candidates.find(o=>o.appointmentId===appointmentId);if(op){const appointment=ensureAppointment(op,state);if(op.acceptedBy||op.appointmentId)return{state,opportunity:op,appointment:appointment||apps.find(a=>a&&a.id===appointmentId)||null};}}
+    if(appointmentId){
+      const op=ops.find(o=>o&&o.source==='sos'&&(o.appointmentId===appointmentId||o.status==='resolved'));
+      const appointment=apps.find(a=>a&&a.id===appointmentId)||null;
+      if(op)return{state,opportunity:op,appointment:appointment||ensureAppointment(op,state)};
+    }
     const text=document.getElementById('detailsContent')?.textContent||'';
-    for(const op of candidates){
+    for(const op of ops){
+      if(!op||op.source!=='sos'||['cancelado','cancelada'].includes(String(op.status||'').toLowerCase()))continue;
       const a=op.appointmentId?apps.find(x=>x&&x.id===op.appointmentId):null;
       const client=String((a?.client||op.client||'')).trim();
       const timeValue=String((a?.time||op.time||'')).trim();
-      if(client&&timeValue&&text.includes(client)&&text.includes(timeValue)){const appointment=ensureAppointment(op,state);if(op.acceptedBy||op.appointmentId)return{state,opportunity:op,appointment:appointment||a||null};}
+      if(client&&timeValue&&text.includes(client)&&text.includes(timeValue))return{state,opportunity:op,appointment:a||ensureAppointment(op,state)};
     }
     return null;
   }
 
   function normalizeButtons(){
     const b=box();if(!b)return;
-    const ctx=resolveContext();if(!ctx)return;
+    const ctx=resolveContext();
+    if(!ctx)return;
     b.dataset.sosId=ctx.opportunity.id;
     if(ctx.appointment)b.dataset.appointmentId=ctx.appointment.id;
-    [...b.querySelectorAll('button')].forEach(btn=>{const t=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();if(t==='cancelar s.o.s.'||t==='cancelar sos')btn.remove();});
-    let schedule=[...b.querySelectorAll('button')].find(btn=>(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase()==='alterar horário');
-    let cancel=[...b.querySelectorAll('button')].find(btn=>(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase()==='cancelar atendimento');
-    if(!schedule){schedule=document.createElement('button');schedule.type='button';schedule.className='action-button';schedule.textContent='Alterar horário';b.appendChild(schedule);}
-    if(!cancel){cancel=document.createElement('button');cancel.type='button';cancel.className='action-button action-cancel';cancel.textContent='Cancelar atendimento';b.appendChild(cancel);}
-    [...b.querySelectorAll('button')].forEach(btn=>{const t=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();if(t!=='alterar horário'&&t!=='cancelar atendimento')btn.remove();});
+    /* Esta janela representa um atendimento S.O.S. já selecionado/reservado.
+       Nunca deixar "Cancelar S.O.S." substituir as ações do atendimento. */
+    const buttons=[...b.querySelectorAll('button')];
+    buttons.forEach(btn=>btn.remove());
+    const schedule=document.createElement('button');
+    schedule.type='button';schedule.className='action-button';schedule.textContent='Alterar horário';
+    const cancel=document.createElement('button');
+    cancel.type='button';cancel.className='action-button action-cancel';cancel.textContent='Cancelar atendimento';
+    b.append(schedule,cancel);
   }
 
   function buildTimeOptions(selected){const out=[];for(let m=0;m<=1439;m+=30){const t=time(m);out.push(`<option value="${t}"${t===selected?' selected':''}>${t}</option>`);}return out.join('');}
@@ -86,7 +100,10 @@
     const ctx=resolveContext();if(!ctx||!ctx.appointment){notice('Não foi possível localizar a reserva S.O.S.');return;}
     let modal=document.getElementById('sosRescheduleModal');
     if(!modal){modal=document.createElement('div');modal.id='sosRescheduleModal';modal.className='modal';modal.setAttribute('aria-hidden','true');modal.innerHTML='<div class="modal-backdrop" data-bm-sos-close></div><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sosRescheduleTitle"><button class="modal-close" type="button" aria-label="Fechar" data-bm-sos-close>×</button><div class="eyebrow">S.O.S. PROFISSIONAIS</div><h2 id="sosRescheduleTitle">Alterar horário</h2><p class="modal-intro" id="sosRescheduleInfo"></p><div class="field"><label for="sosRescheduleTime">Novo horário</label><select id="sosRescheduleTime"></select></div><div class="modal-actions"><button class="secondary" type="button" data-bm-sos-close>Cancelar</button><button class="primary compact" type="button" id="sosRescheduleSave">Salvar horário</button></div></section></div>';document.body.appendChild(modal);}
-    const current=ctx.appointment.time||ctx.opportunity.time||'08:00';document.getElementById('sosRescheduleTime').innerHTML=buildTimeOptions(current);document.getElementById('sosRescheduleInfo').textContent=`${ctx.appointment.client||ctx.opportunity.client||'Cliente'} · ${ctx.appointment.professional||ctx.opportunity.acceptedBy||'Profissional'}`;modal.dataset.sosId=ctx.opportunity.id;modal.dataset.appointmentId=ctx.appointment.id;open('sosRescheduleModal');
+    const current=ctx.appointment.time||ctx.opportunity.time||'08:00';
+    document.getElementById('sosRescheduleTime').innerHTML=buildTimeOptions(current);
+    document.getElementById('sosRescheduleInfo').textContent=`${ctx.appointment.client||ctx.opportunity.client||'Cliente'} · ${ctx.appointment.professional||ctx.opportunity.acceptedBy||'Profissional'}`;
+    modal.dataset.sosId=ctx.opportunity.id;modal.dataset.appointmentId=ctx.appointment.id;open('sosRescheduleModal');
   }
   function saveReschedule(){
     const modal=document.getElementById('sosRescheduleModal'),id=modal?.dataset?.sosId,timeValue=document.getElementById('sosRescheduleTime')?.value;if(!id||!timeValue){notice('Não foi possível identificar o horário.');return;}
@@ -96,18 +113,24 @@
   }
   function cancelAppointment(){
     const ctx=resolveContext();if(!ctx){notice('Não foi possível localizar o atendimento S.O.S.');return;}
-    const {state,opportunity}=ctx;const linked=state.appointments.filter(a=>a&&(a.id===opportunity.appointmentId||a.sosOpportunityId===opportunity.id)&&a.status!=='cancelado');linked.forEach(a=>{a.status='cancelado';a.cancelledAt=new Date().toISOString();a.cancelledReason='Cancelado pelo salão';});opportunity.status='cancelado';opportunity.cancelledAt=new Date().toISOString();opportunity.cancelledReason='Atendimento S.O.S. cancelado pelo salão';write(state);close('detailsModal');location.reload();
+    const {state,opportunity}=ctx;
+    const linked=state.appointments.filter(a=>a&&(a.id===opportunity.appointmentId||a.sosOpportunityId===opportunity.id)&&a.status!=='cancelado');
+    linked.forEach(a=>{a.status='cancelado';a.cancelledAt=new Date().toISOString();a.cancelledReason='Cancelado pelo salão';});
+    opportunity.status='cancelado';opportunity.cancelledAt=new Date().toISOString();opportunity.cancelledReason='Atendimento S.O.S. cancelado pelo salão';
+    write(state);close('detailsModal');location.reload();
   }
   function bind(){
     document.addEventListener('click',e=>{
-      const cell=e.target.closest?.('#agendaGrid [data-sos-id]');if(cell){window.__bmCurrentSosId=cell.dataset.sosId||null;window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;setTimeout(normalizeButtons,0);return;}
+      const cell=e.target.closest?.('#agendaGrid [data-sos-id]');
+      if(cell){window.__bmCurrentSosId=cell.dataset.sosId||null;window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;setTimeout(normalizeButtons,0);return;}
       const save=e.target.closest?.('#sosRescheduleSave');if(save){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();saveReschedule();return;}
       const closeBtn=e.target.closest?.('[data-bm-sos-close]');if(closeBtn){e.preventDefault();e.stopPropagation();close('sosRescheduleModal');return;}
       const btn=e.target.closest?.('#detailsActions button');if(!btn)return;
       const text=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();if(text!=='alterar horário'&&text!=='cancelar atendimento')return;
       e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(text==='alterar horário')openReschedule();else cancelAppointment();
     },true);
-    const observer=new MutationObserver(()=>normalizeButtons());observer.observe(document.getElementById('detailsActions')||document.body,{childList:true,subtree:true});
+    const observer=new MutationObserver(()=>normalizeButtons());
+    observer.observe(document.getElementById('detailsActions')||document.body,{childList:true,subtree:true});
     normalizeButtons();setInterval(normalizeButtons,250);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();

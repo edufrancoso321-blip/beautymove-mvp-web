@@ -1,47 +1,57 @@
+/* BeautyMove — layout oficial da Agenda + controles visuais.
+   Atendimento ocupa visualmente todo o período e exibe cliente/serviço uma única vez.
+*/
 (function(){
-  const STATE_KEY='beautymove.mvp.state';
-  function readState(){try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{"appointments":[]}');}catch{return {appointments:[]};}}
-  function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
-  function durationLabel(minutes){const m=Number(minutes||0),h=Math.floor(m/60),r=m%60;if(!h)return `${r}min`;return r?`${h}h ${r}min`:`${h}h`;}
-  function minutes(time){const[h,m]=String(time||'00:00').split(':').map(Number);return h*60+m;}
-  function time(total){return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;}
-  function serviceSummary(a){if(Array.isArray(a?.services)&&a.services.length)return a.services;if(a?.service)return[{name:a.service,duration:Number(a.duration)||60,value:Number(a.value)||0}];return[];}
-  function decorateLongInterval(){
-    const grid=document.getElementById('agendaGrid'), interval=Number(document.getElementById('agendaInterval')?.value||30);
-    if(!grid||interval<=30)return;
-    const state=readState();
-    grid.querySelectorAll('td[data-appointment-id]').forEach(cell=>{
-      if(!cell.classList.contains('appointment-continuation'))return;
-      const a=state.appointments.find(x=>x.id===cell.dataset.appointmentId);
-      if(!a)return;
-      const services=serviceSummary(a), total=services.reduce((s,x)=>s+Number(x.duration||0),0)||Number(a.duration)||30;
-      const service=services.map(x=>x.name).join(' + ')||a.service||'';
-      const end=time(minutes(a.time)+total);
-      cell.innerHTML=`<strong>${escapeHtml(a.client||'Cliente')}</strong><span>${escapeHtml(service)}</span><small>${escapeHtml(a.time)} – ${escapeHtml(end)} · ${durationLabel(total)}</small>`;
-      cell.classList.remove('appointment-continuation');
-      cell.classList.add('appointment-start');
+  'use strict';
+  function mergeAppointments(){
+    const table=document.querySelector('#agendaGrid .agenda-grid');
+    if(!table)return;
+    const rows=[...table.querySelectorAll('tbody tr')];
+    if(!rows.length)return;
+    const groups=new Map();
+    rows.forEach((row,rowIndex)=>{
+      row.querySelectorAll('td[data-appointment-id]').forEach(cell=>{
+        const id=cell.dataset.appointmentId;
+        if(!id)return;
+        if(!groups.has(id))groups.set(id,[]);
+        groups.get(id).push({cell,row,rowIndex});
+      });
+    });
+    groups.forEach(items=>{
+      items.sort((a,b)=>a.rowIndex-b.rowIndex);
+      if(items.length<2)return;
+      const first=items[0];
+      const contiguous=items.every((item,i)=>i===0||item.rowIndex===items[i-1].rowIndex+1);
+      if(!contiguous)return;
+      if(first.cell.dataset.bmMerged==='1')return;
+      first.cell.rowSpan=items.length;
+      first.cell.dataset.bmMerged='1';
+      items.slice(1).forEach(item=>item.cell.remove());
     });
   }
   function decorateTodayLabel(){
-    const label=document.getElementById('agendaDate'), picker=document.getElementById('agendaDatePicker');
+    const label=document.getElementById('agendaDate'),picker=document.getElementById('agendaDatePicker');
     if(!label||!picker||!label.textContent.trim())return;
-    const now=new Date(), today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const base=label.textContent.replace(/^Hoje\s*·\s*/i,'').trim();
     label.textContent=picker.value===today?`Hoje · ${base}`:base;
   }
-  function escapeHtml(value){return String(value??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
-  document.addEventListener('DOMContentLoaded',function(){
+  function boot(){
     const calendarBtn=document.getElementById('calendarBtn'),picker=document.getElementById('agendaDatePicker');
     calendarBtn?.addEventListener('click',function(){
       if(!picker)return;
       try{if(typeof picker.showPicker==='function')picker.showPicker();else picker.click();}
       catch{picker.click();}
     });
-    const grid=document.getElementById('agendaGrid'),interval=document.getElementById('agendaInterval');
-    const observer=new MutationObserver(()=>{decorateLongInterval();decorateTodayLabel();});
-    if(grid)observer.observe(grid,{childList:true,subtree:true});
-    interval?.addEventListener('change',()=>setTimeout(()=>{decorateLongInterval();decorateTodayLabel();},0));
+    const grid=document.getElementById('agendaGrid');
+    if(grid){
+      const run=()=>requestAnimationFrame(mergeAppointments);
+      new MutationObserver(run).observe(grid,{childList:true,subtree:true});
+      run();
+      setInterval(run,500);
+    }
     picker?.addEventListener('change',()=>setTimeout(decorateTodayLabel,0));
-    setTimeout(()=>{decorateLongInterval();decorateTodayLabel();},0);
-  });
+    setTimeout(decorateTodayLabel,0);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

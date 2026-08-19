@@ -3,7 +3,7 @@
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
   const SPECIALTY={Ana:'Cabelos',Bruna:'Cabelos',Paula:'Mãos e Pés',Carla:'Estética'};
-  const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[],transactions:[]};}catch(_){return {appointments:[],opportunities:[],transactions:[]};}};
+  const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[],transactions:[]};}catch(_){return {appointments:[],opportunities:[],transactions:[]};};};
   const save=s=>localStorage.setItem(STATE_KEY,JSON.stringify(s));
   const closeDetails=()=>{const m=document.getElementById('detailsModal');if(m){m.classList.remove('is-open');m.setAttribute('aria-hidden','true');}};
   const notice=msg=>{const n=document.getElementById('agendaNotice');if(!n)return;n.textContent=msg;n.hidden=false;clearTimeout(window.__bmDetailNotice);window.__bmDetailNotice=setTimeout(()=>n.hidden=true,3500);};
@@ -90,9 +90,32 @@
   function boot(){
     const actions=document.getElementById('detailsActions');
     document.addEventListener('click',e=>{const cell=e.target.closest?.('#agendaGrid [data-appointment-id]');if(cell)window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;},true);
-    refreshSosMetric();refreshSosGrid();setInterval(()=>{refreshSosMetric();refreshSosGrid();},700);
-    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},100));document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},180));document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},180));document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},180));window.addEventListener('beautymove:sos-accepted',()=>setTimeout(()=>{refreshSosMetric();refreshSosGrid();},50));
-    if(!actions)return;actions.addEventListener('click',intercept,true);let normalizing=false;const normalize=()=>{if(normalizing)return;normalizing=true;try{if(actions.dataset.sosId)ensureSosDetailActions();else ensureSosButton();const a=current();if(a&&!actions.dataset.sosId)actions.dataset.appointmentId=a.id;}finally{normalizing=false;}};const modal=document.getElementById('detailsModal')||document.body;const ob=new MutationObserver(()=>normalize());ob.observe(modal,{childList:true,subtree:true});normalize();
+    refreshSosMetric();
+    refreshSosGrid();
+    const refreshAll=()=>{refreshSosMetric();refreshSosGrid();};
+    document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(refreshAll,100));
+    document.getElementById('prevDay')?.addEventListener('click',()=>setTimeout(refreshAll,180));
+    document.getElementById('nextDay')?.addEventListener('click',()=>setTimeout(refreshAll,180));
+    document.getElementById('todayBtn')?.addEventListener('click',()=>setTimeout(refreshAll,180));
+    window.addEventListener('beautymove:sos-accepted',()=>setTimeout(refreshAll,50));
+    window.addEventListener('beautymove:sos-created',()=>setTimeout(refreshAll,50));
+    if(!actions)return;
+    actions.addEventListener('click',intercept,true);
+    let normalizing=false;
+    const normalize=()=>{
+      if(normalizing)return;
+      normalizing=true;
+      try{
+        if(actions.dataset.sosId)ensureSosDetailActions();
+        else ensureSosButton();
+        const a=current();
+        if(a&&!actions.dataset.sosId)actions.dataset.appointmentId=a.id;
+      }finally{normalizing=false;}
+    };
+    const modal=document.getElementById('detailsModal')||document.body;
+    const ob=new MutationObserver(()=>normalize());
+    ob.observe(modal,{childList:true,subtree:true});
+    normalize();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300),{once:true});else setTimeout(boot,300);
 })();

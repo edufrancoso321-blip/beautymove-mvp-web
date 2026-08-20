@@ -11,14 +11,12 @@
     const auth = window.firebase.auth();
     const db = window.firebase.firestore();
 
-    // Avoid indefinite WebChannel buffering in browsers/proxies/antivirus.
+    // Let the Firebase SDK automatically choose the appropriate browser transport.
+    // Forced long-polling was leaving registration writes pending on this browser/network.
     try {
-      db.settings({
-        experimentalForceLongPolling: true,
-        experimentalLongPollingOptions: { timeoutSeconds: 30 }
-      });
+      db.settings({ experimentalAutoDetectLongPolling: true });
     } catch (error) {
-      console.warn('[BeautyMove] Firestore long-polling setup failed:', error);
+      console.warn('[BeautyMove] Firestore transport setup failed:', error);
     }
 
     try {

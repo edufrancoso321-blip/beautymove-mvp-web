@@ -2,6 +2,7 @@
 (function () {
   const SESSION_KEY = 'beautymove.mvp.session';
   const PROFILE_KEY = 'beautymove.mvp.profile';
+  const FIREBASE_TIMEOUT_MS = 12000;
 
   function getSession() {
     try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
@@ -29,6 +30,20 @@
     return data;
   }
 
+  function withTimeout(promise, operation) {
+    let timer = null;
+    const timeout = new Promise((_, reject) => {
+      timer = window.setTimeout(() => {
+        const error = new Error(`O Firebase demorou mais de ${FIREBASE_TIMEOUT_MS / 1000}s para ${operation}.`);
+        error.code = 'beautymove/timeout';
+        reject(error);
+      }, FIREBASE_TIMEOUT_MS);
+    });
+    return Promise.race([Promise.resolve(promise), timeout]).finally(() => {
+      if (timer) window.clearTimeout(timer);
+    });
+  }
+
   async function register(profile, password) {
     const backend = window.BeautyMoveFirebase;
     if (!backend?.enabled) throw new Error('Firebase não está disponível.');
@@ -42,7 +57,19 @@
       normalizedProfile.especialidade = specialties[0];
     }
 
-    const credential = await backend.auth.createUserWithEmailAndPassword(normalizedProfile.email, password);
+    let credential;
+    try {
+      credential = await withTimeout(
+        backend.auth.createUserWithEmailAndPassword(normalizedProfile.email, password),
+        'criar o acesso'
+      );
+    } catch (error) {
+      if (error?.code === 'beautymove/timeout') {
+        throw new Error('O Firebase não respondeu ao criar o acesso. Verifique a conexão e tente novamente.');
+      }
+      throw error;
+    }
+
     const uid = credential.user.uid;
     const session = { uid, role: normalizedRole, name: profileName(normalizedProfile), email: credential.user.email || normalizedProfile.email };
     setSession(session);
@@ -50,22 +77,31 @@
 
     try {
       const baseProfile = { ...normalizedProfile, uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-      await backend.db.collection('users').doc(uid).set(baseProfile, { merge: true });
+      await withTimeout(
+        backend.db.collection('users').doc(uid).set(baseProfile, { merge: true }),
+        'gravar o perfil do usuário'
+      );
 
       const roleCollection = { salao: 'salons', profissional: 'professionals', cliente: 'clients' }[normalizedRole];
       if (roleCollection) {
-        await backend.db.collection(roleCollection).doc(uid).set({
-          ...normalizedProfile,
-          uid,
-          ownerId: uid,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        await withTimeout(
+          backend.db.collection(roleCollection).doc(uid).set({
+            ...normalizedProfile,
+            uid,
+            ownerId: uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }),
+          'gravar o perfil do salão/profissional/cliente'
+        );
       }
     } catch (error) {
       console.error('[BeautyMove] profile persistence failed:', error);
       const permissionError = error?.code === 'permission-denied' || /insufficient permissions/i.test(error?.message || '');
       if (permissionError) {
-        throw new Error('O cadastro de acesso foi criado, mas o Firebase bloqueou a gravação do perfil. Precisamos publicar as regras do Firestore antes de tentar novamente.');
+        throw new Error('O acesso foi criado, mas o Firebase bloqueou a gravação do perfil. Precisamos publicar as regras do Firestore antes de tentar novamente.');
+      }
+      if (error?.code === 'beautymove/timeout') {
+        throw new Error('O acesso foi criado, mas o Firebase não respondeu ao gravar o perfil. Verifique a conexão e tente novamente.');
       }
       throw error;
     }
@@ -77,8 +113,14 @@
     const backend = window.BeautyMoveFirebase;
     if (!backend?.enabled) throw new Error('O backend Firebase não está disponível.');
 
-    const credential = await backend.auth.signInWithEmailAndPassword(email, password);
-    const snapshot = await backend.db.collection('users').doc(credential.user.uid).get();
+    const credential = await withTimeout(
+      backend.auth.signInWithEmailAndPassword(email, password),
+      'entrar'
+    );
+    const snapshot = await withTimeout(
+      backend.db.collection('users').doc(credential.user.uid).get(),
+      'carregar o perfil'
+    );
     if (!snapshot.exists) throw new Error('Seu acesso existe, mas o perfil BeautyMove ainda não foi criado.');
 
     const data = snapshot.data();
@@ -109,7 +151,10 @@
     if (!currentUser) return null;
 
     try {
-      const snapshot = await backend.db.collection('users').doc(currentUser.uid).get();
+      const snapshot = await withTimeout(
+        backend.db.collection('users').doc(currentUser.uid).get(),
+        'restaurar o perfil'
+      );
       if (!snapshot.exists) return null;
       const data = snapshot.data() || {};
       const session = {
@@ -132,7 +177,10 @@
     const backend = window.BeautyMoveFirebase;
     const session = getSession();
     if (!backend?.enabled || !session?.uid) return;
-    await backend.db.collection('users').doc(session.uid).set({ ...profile, uid: session.uid }, { merge: true });
+    await withTimeout(
+      backend.db.collection('users').doc(session.uid).set({ ...profile, uid: session.uid }, { merge: true }),
+      'salvar o perfil'
+    );
   }
 
   function redirectForRole(role) {

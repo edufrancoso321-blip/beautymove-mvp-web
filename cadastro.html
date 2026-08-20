@@ -30,10 +30,10 @@
 </div><p id="registrationError" class="form-error" hidden></p><div class="form-actions"><a class="secondary" href="index.html">Cancelar</a><button class="primary" type="submit">Continuar</button></div></form>
 </div></div></main><footer class="footer">BeautyMove © 2026</footer></div>
 <script src="assets/js/firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"></script>
-<script src="assets/js/firebase-client.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-compat.js"></script>
+<script src="assets/js/firebase-client-v2.js"></script>
 <script src="assets/js/auth-fixed.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/app.js"></script>
@@ -47,39 +47,23 @@ const specialtyLabel = document.querySelector('#specialtyLabel');
 const nomeSalao = document.querySelector('#nomeSalao');
 const especialidade = document.querySelector('#especialidade');
 
-if (registrationRole !== 'salao') {
-  salaoField.hidden = true;
-  nomeSalao.required = false;
-}
-if (registrationRole === 'salao') {
-  singleSpecialty.hidden = true;
-  especialidade.required = false;
-} else if (registrationRole === 'profissional') {
-  salonSpecialties.hidden = true;
-  specialtyLabel.textContent = 'Tipo de profissional';
-  especialidade.required = true;
-} else {
-  specialtyField.hidden = true;
-  especialidade.required = false;
-}
+if (registrationRole !== 'salao') { salaoField.hidden = true; nomeSalao.required = false; }
+if (registrationRole === 'salao') { singleSpecialty.hidden = true; especialidade.required = false; }
+else if (registrationRole === 'profissional') { salonSpecialties.hidden = true; specialtyLabel.textContent = 'Tipo de profissional'; especialidade.required = true; }
+else { specialtyField.hidden = true; especialidade.required = false; }
 
 document.querySelectorAll('[data-password-toggle]').forEach((button) => {
   button.addEventListener('click', () => {
-    const input = document.getElementById(button.dataset.passwordToggle);
-    if (!input) return;
-    const visible = input.type === 'text';
-    input.type = visible ? 'password' : 'text';
-    button.textContent = visible ? '◉' : '●';
-    button.setAttribute('aria-label', visible ? 'Mostrar senha' : 'Ocultar senha');
-    button.title = visible ? 'Mostrar senha' : 'Ocultar senha';
+    const input = document.getElementById(button.dataset.passwordToggle); if (!input) return;
+    const visible = input.type === 'text'; input.type = visible ? 'password' : 'text';
+    button.textContent = visible ? '◉' : '●'; button.setAttribute('aria-label', visible ? 'Mostrar senha' : 'Ocultar senha'); button.title = visible ? 'Mostrar senha' : 'Ocultar senha';
   });
 });
 
 document.querySelectorAll('#salonSpecialties input[type="checkbox"]').forEach((checkbox) => {
   checkbox.addEventListener('change', () => {
     const selected = [...document.querySelectorAll('#salonSpecialties input[type="checkbox"]:checked')].map((item) => item.value);
-    const summary = document.querySelector('#salonSpecialties summary');
-    if (summary) summary.textContent = selected.length ? selected.join(', ') : 'Selecione as especialidades';
+    const summary = document.querySelector('#salonSpecialties summary'); if (summary) summary.textContent = selected.length ? selected.join(', ') : 'Selecione as especialidades';
   });
 });
 </script>

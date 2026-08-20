@@ -2,7 +2,7 @@
 (function () {
   const SESSION_KEY = 'beautymove.mvp.session';
   const PROFILE_KEY = 'beautymove.mvp.profile';
-  const FIREBASE_TIMEOUT_MS = 12000;
+  const FIREBASE_TIMEOUT_MS = 30000;
 
   function getSession() {
     try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
@@ -71,39 +71,57 @@
     }
 
     const uid = credential.user.uid;
-    const session = { uid, role: normalizedRole, name: profileName(normalizedProfile), email: credential.user.email || normalizedProfile.email };
-    setSession(session);
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ ...normalizedProfile, uid })); } catch (storageError) { console.warn('[BeautyMove] local profile cache failed:', storageError); }
+    const roleCollection = { salao: 'salons', profissional: 'professionals', cliente: 'clients' }[normalizedRole];
 
     try {
-      const baseProfile = { ...normalizedProfile, uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-      await withTimeout(
-        backend.db.collection('users').doc(uid).set(baseProfile, { merge: true }),
-        'gravar o perfil do usuário'
-      );
+      // The user profile and the role-specific profile are written atomically.
+      // This prevents the previous state where Auth succeeded but the second
+      // Firestore write stalled and left the registration half-created.
+      const batch = backend.db.batch();
+      const userRef = backend.db.collection('users').doc(uid);
+      batch.set(userRef, {
+        ...normalizedProfile,
+        uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
 
-      const roleCollection = { salao: 'salons', profissional: 'professionals', cliente: 'clients' }[normalizedRole];
       if (roleCollection) {
-        await withTimeout(
-          backend.db.collection(roleCollection).doc(uid).set({
-            ...normalizedProfile,
-            uid,
-            ownerId: uid,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true }),
-          'gravar o perfil do salão/profissional/cliente'
-        );
+        const roleRef = backend.db.collection(roleCollection).doc(uid);
+        batch.set(roleRef, {
+          ...normalizedProfile,
+          uid,
+          ownerId: uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
       }
+
+      await withTimeout(batch.commit(), 'gravar o perfil');
     } catch (error) {
       console.error('[BeautyMove] profile persistence failed:', error);
       const permissionError = error?.code === 'permission-denied' || /insufficient permissions/i.test(error?.message || '');
       if (permissionError) {
-        throw new Error('O acesso foi criado, mas o Firebase bloqueou a gravação do perfil. Precisamos publicar as regras do Firestore antes de tentar novamente.');
+        await backend.auth.signOut().catch(() => {});
+        throw new Error('O acesso foi criado, mas o Firebase bloqueou a gravação do perfil. As regras do Firestore precisam estar publicadas.');
       }
       if (error?.code === 'beautymove/timeout') {
-        throw new Error('O acesso foi criado, mas o Firebase não respondeu ao gravar o perfil. Verifique a conexão e tente novamente.');
+        await backend.auth.signOut().catch(() => {});
+        throw new Error('O acesso foi criado, mas o Firebase demorou para gravar o perfil. Tente novamente em alguns segundos.');
       }
+      await backend.auth.signOut().catch(() => {});
       throw error;
+    }
+
+    const session = {
+      uid,
+      role: normalizedRole,
+      name: profileName(normalizedProfile),
+      email: credential.user.email || normalizedProfile.email
+    };
+    setSession(session);
+    try {
+      localStorage.setItem(PROFILE_KEY, JSON.stringify({ ...normalizedProfile, uid }));
+    } catch (storageError) {
+      console.warn('[BeautyMove] local profile cache failed:', storageError);
     }
 
     return session;

@@ -2,7 +2,10 @@
 (function () {
   const SESSION_KEY = 'beautymove.mvp.session';
   const PROFILE_KEY = 'beautymove.mvp.profile';
-  const FIREBASE_TIMEOUT_MS = 12000;
+  // Firestore client is configured for long-polling with a 30s transport timeout.
+  // Keep the application timeout above that value so slow static-web connections
+  // are not reported as failures before Firestore has a chance to complete.
+  const FIREBASE_TIMEOUT_MS = 45000;
 
   function getSession() {
     try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
@@ -77,7 +80,7 @@
       console.error('[BeautyMove] profile persistence failed:', error);
       const permissionError = error?.code === 'permission-denied' || /insufficient permissions/i.test(error?.message || '');
       if (permissionError) throw new Error('O acesso foi criado, mas o Firebase bloqueou a gravação do perfil. Precisamos publicar as regras do Firestore antes de tentar novamente.');
-      if (error?.code === 'beautymove/timeout') throw new Error('O acesso foi criado, mas o Firebase não respondeu ao gravar o perfil. Verifique a conexão e tente novamente.');
+      if (error?.code === 'beautymove/timeout') throw new Error('O acesso foi criado, mas o Firebase não respondeu ao gravar o perfil dentro do tempo esperado. Tente novamente.');
       throw error;
     }
     return session;

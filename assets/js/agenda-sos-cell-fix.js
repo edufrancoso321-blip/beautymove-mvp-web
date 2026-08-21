@@ -1,4 +1,4 @@
-/* BeautyMove — sincronização segura da célula S.O.S. após seleção de profissional */
+/* BeautyMove — sincronização da célula S.O.S. para solicitações pendentes e atendimentos aceitos */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
@@ -7,37 +7,63 @@
   const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
   const minutes=v=>{const p=String(v||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);};
 
-  function currentAccepted(){
+  function currentItems(){
     const state=readState();
-    const items=(Array.isArray(state.appointments)?state.appointments:[])
-      .filter(a=>a&&a.date===dateKey()&&a.sosAcceptedBy&&a.status!=='cancelado');
-    items.sort((a,b)=>{
-      const ta=Date.parse(a.sosAcceptedAt||'')||0;
-      const tb=Date.parse(b.sosAcceptedAt||'')||0;
-      return tb-ta || minutes(a.time)-minutes(b.time);
-    });
-    return items;
+    const appointments=Array.isArray(state.appointments)?state.appointments:[];
+    const opportunities=Array.isArray(state.opportunities)?state.opportunities:[];
+    const pending=opportunities
+      .filter(o=>o&&o.date===dateKey()&&o.source==='sos'&&o.status!=='cancelado'&&o.status!=='resolved')
+      .map(o=>({
+        id:o.id||'',
+        time:o.time||'08:00',
+        client:o.client||'Cliente',
+        service:o.service||'Atendimento',
+        appointmentId:o.appointmentId||'',
+        state:'pending',
+        acceptedBy:''
+      }));
+    const accepted=opportunities
+      .filter(o=>o&&o.date===dateKey()&&o.source==='sos'&&o.status==='resolved'&&o.acceptedBy&&!o.cancelled)
+      .map(o=>{
+        const a=o.appointmentId?appointments.find(x=>x&&x.id===o.appointmentId):null;
+        return {
+          id:o.id||'',
+          time:o.time||a?.time||'08:00',
+          client:o.client||a?.client||'Cliente',
+          service:o.service||a?.service||'Atendimento',
+          appointmentId:a?.id||o.appointmentId||'',
+          state:'accepted',
+          acceptedBy:o.acceptedBy
+        };
+      });
+    const map=new Map();
+    [...pending,...accepted].forEach(item=>map.set(item.time,item));
+    return [...map.values()].sort((a,b)=>minutes(a.time)-minutes(b.time));
   }
 
   function sync(){
     const grid=document.getElementById('agendaGrid');
     if(!grid)return;
-    const accepted=currentAccepted();
+    const items=currentItems();
     const cells=[...grid.querySelectorAll('[data-sos-cell="true"]')];
     if(!cells.length)return;
 
-    /* Remove somente as células marcadas pela camada anterior. */
     grid.querySelectorAll('.sos-cell-found').forEach(cell=>{
-      const time=cell.dataset.time||'08:00';
-      cell.outerHTML=`<td data-agenda-cell data-time="${esc(time)}" data-sos-cell="true" class="sos-free-cell">Livre</td>`;
+      cell.outerHTML=`<td data-agenda-cell data-time="${esc(cell.dataset.time||'08:00')}" data-sos-cell="true" class="sos-free-cell">Livre</td>`;
     });
 
-    /* A Agenda pode acompanhar mais de um S.O.S.; cada atendimento fica no seu horário. */
-    accepted.forEach(item=>{
+    items.forEach(item=>{
       const cell=[...grid.querySelectorAll('[data-sos-cell="true"]')]
         .find(c=>minutes(c.dataset.time)===minutes(item.time));
       if(!cell)return;
-      cell.outerHTML=`<td data-agenda-cell data-time="${esc(item.time)}" data-appointment-id="${esc(item.id)}" data-sos-cell="true" class="sos-cell sos-cell-found"><strong>${esc(item.client||'Cliente')}</strong><span>${esc(item.service||'Atendimento')}</span><small>${esc(item.time)} · Profissional: ${esc(item.sosAcceptedBy)}</small><div class="sos-found-status">✓ Profissional encontrada · Atendimento em acompanhamento</div></td>`;
+      const accepted=item.state==='accepted';
+      cell.outerHTML=`<td data-agenda-cell data-time="${esc(item.time)}" data-appointment-id="${esc(item.appointmentId)}" data-sos-id="${esc(item.id)}" data-sos-cell="true" class="sos-cell sos-cell-found">
+        <strong>${esc(item.client)}</strong>
+        <span>${esc(item.service)}</span>
+        ${accepted
+          ? `<small>${esc(item.acceptedBy)}</small><div class="sos-found-status">✓ Profissional encontrada · Atendimento em acompanhamento</div>`
+          : `<small>Profissional: aguardando seleção</small><div class="sos-found-status">● Buscando profissionais</div>`}
+      </td>`;
     });
   }
 
@@ -51,6 +77,7 @@
     setInterval(tick,700);
     ['prevDay','nextDay','todayBtn','agendaDatePicker'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>setTimeout(()=>{signature='';tick();},250)));
     document.getElementById('agendaDatePicker')?.addEventListener('change',()=>setTimeout(()=>{signature='';tick();},150));
+    window.addEventListener('beautymove:sos-created',()=>setTimeout(()=>{signature='';tick();},80));
     window.addEventListener('beautymove:sos-accepted',()=>setTimeout(()=>{signature='';tick();},80));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});

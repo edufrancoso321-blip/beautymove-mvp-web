@@ -46,6 +46,7 @@
   }
   const escapeHtml=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
   const durationLabel=m=>{m=Number(m)||0;const h=Math.floor(m/60),r=m%60;return h?(r?`${h}h ${r}min`:`${h}h`):`${r}min`;};
+
   function syncSosCells(){
     const grid=document.getElementById('agendaGrid');if(!grid)return;
     const date=document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10),state=read();
@@ -57,16 +58,92 @@
       cells.forEach(cell=>{
         const minute=mins(cell.dataset.time);if(minute<start||minute>=end)return;
         const isStart=minute===start;cell.className=`sos-cell sos-cell-found bm-sos-reserved ${isStart?'sos-cell-start':'sos-cell-continuation'}`;cell.dataset.sosId=a.sosOpportunityId||'';cell.dataset.appointmentId=a.id;
-        const html=isStart?`<strong>${escapeHtml(a.client||'Cliente')}</strong><span>${escapeHtml(a.service||'Atendimento')}</span><small>${escapeHtml(a.time)} – ${escapeHtml(a.endTime||time(end))} · ${durationLabel(Number(a.duration)||30)}</small><div class="sos-found-status">✓ ${escapeHtml(a.sosAcceptedBy)} · reservado</div>`:`<span>${escapeHtml(a.client||'Cliente')} · até ${escapeHtml(a.endTime||time(end))}</span>`;
+        const html=isStart?`<strong>${escapeHtml(a.client||'Cliente')}</strong><span>${escapeHtml(a.service||'Atendimento')}</span><small>${escapeHtml(a.time)} – ${escapeHtml(a.endTime||time(end))} · ${durationLabel(Number(a.duration)||30)}</small><div class="sos-found-status">✓ ${escapeHtml(a.sosAcceptedBy)} · reservado</div>`:`<span class="sos-cell-continued-time">Até ${escapeHtml(a.endTime||time(end))}</span>`;
         if(cell.innerHTML!==html)cell.innerHTML=html;
       });
     });
   }
+
+  function injectSosDetailEnhancements(){
+    if(document.getElementById('bmSosDetailEnhancements'))return;
+    const style=document.createElement('style');style.id='bmSosDetailEnhancements';style.textContent=`
+      #agendaGrid .sos-found-status{font-size:12px!important;font-weight:900!important;line-height:1.25!important;margin-top:4px!important}
+      #agendaGrid .sos-cell-start strong{font-size:15px!important;font-weight:900!important}
+      #agendaGrid .sos-cell-start span{font-size:11px!important}
+      #agendaGrid .sos-cell-continued-time{font-size:10px!important;color:#6f6879!important}
+      #sosOpportunityPanel .sos-op-selected-candidate .sos-op-candidate-name{font-size:13px!important;font-weight:900!important;line-height:1.25!important}
+      #detailsActions .bm-sos-reschedule{grid-column:1 / -1!important;background:#fff!important;border-color:#7438F5!important;color:#7438F5!important;font-weight:900!important}
+    `;document.head.appendChild(style);
+  }
+
+  function addRescheduleButton(){
+    const modal=document.getElementById('detailsModal');if(!modal||!modal.classList.contains('is-open'))return;
+    const actions=document.getElementById('detailsActions');if(!actions)return;
+    const sosId=actions.dataset.sosId||window.__bmCurrentSosId;if(!sosId)return;
+    if(actions.querySelector('.bm-sos-reschedule'))return;
+    const cancel=actions.querySelector('.action-cancel');
+    if(!cancel)return;
+    const button=document.createElement('button');
+    button.type='button';button.className='action-button bm-sos-reschedule';button.textContent='Alterar horário';
+    button.addEventListener('click',()=>{
+      const state=read();
+      const opportunity=state.opportunities.find(o=>o&&String(o.id)===String(sosId));
+      const appointmentId=opportunity?.appointmentId||actions.dataset.appointmentId;
+      const appointment=state.appointments.find(a=>a&&String(a.id)===String(appointmentId));
+      if(!appointment){
+        const notice=document.getElementById('agendaNotice');if(notice){notice.textContent='Não foi possível localizar o atendimento para alterar o horário.';notice.hidden=false;setTimeout(()=>notice.hidden=true,3500);}
+        return;
+      }
+      const appointmentModal=document.getElementById('appointmentModal');
+      if(!appointmentModal)return;
+      modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');
+      const timeField=document.getElementById('appointmentTime'),professionalField=document.getElementById('appointmentProfessional'),clientField=document.getElementById('appointmentClient'),appointmentIdField=document.getElementById('appointmentId');
+      if(timeField)timeField.value=appointment.time;
+      if(professionalField)professionalField.value=appointment.professional;
+      if(clientField)clientField.value=appointment.client||'';
+      if(appointmentIdField)appointmentIdField.value=appointment.id;
+      appointmentModal.dataset.bmSosRescheduleId=String(sosId);
+      const title=document.getElementById('appointmentTitle'),mode=document.getElementById('appointmentMode');
+      if(title)title.textContent='Alterar horário';
+      if(mode)mode.textContent='ALTERAR HORÁRIO';
+      appointmentModal.classList.add('is-open');appointmentModal.setAttribute('aria-hidden','false');
+    });
+    actions.insertBefore(button,cancel);
+  }
+
+  function syncSosReschedule(){
+    const modal=document.getElementById('appointmentModal');if(!modal)return;
+    const form=document.getElementById('appointmentForm');if(!form)return;
+    if(form.dataset.bmSosRescheduleBound==='1')return;
+    form.dataset.bmSosRescheduleBound='1';
+    form.addEventListener('submit',()=>{
+      const sosId=modal.dataset.bmSosRescheduleId;if(!sosId)return;
+      setTimeout(()=>{
+        const newTime=document.getElementById('appointmentTime')?.value;
+        if(!newTime)return;
+        const state=read();
+        const opportunity=state.opportunities.find(o=>o&&String(o.id)===String(sosId));
+        const appointmentId=document.getElementById('appointmentId')?.value;
+        const appointment=state.appointments.find(a=>a&&String(a.id)===String(appointmentId));
+        if(opportunity&&appointment){
+          opportunity.time=newTime;
+          opportunity.endTime=endOf(opportunity,newTime);
+          opportunity.date=appointment.date;
+          opportunity.durationSnapshot=Number(appointment.duration)||durationOf(opportunity);
+          write(state);
+        }
+        delete modal.dataset.bmSosRescheduleId;
+      },120);
+    },true);
+  }
+
   function boot(){
+    injectSosDetailEnhancements();
     window.addEventListener('beautymove:sos-accepted',event=>{ensureReservation(event.detail||{});setTimeout(()=>{lastSignature='';syncSosCells();},80);});
     let lastSignature='';
-    const tick=()=>{const signature=JSON.stringify([document.getElementById('agendaDatePicker')?.value||'',localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0]);if(signature!==lastSignature){lastSignature=signature;syncSosCells();}};
+    const tick=()=>{const signature=JSON.stringify([document.getElementById('agendaDatePicker')?.value||'',localStorage.getItem(STATE_KEY),document.getElementById('agendaGrid')?.innerHTML.length||0,document.getElementById('detailsModal')?.className||'']);if(signature!==lastSignature){lastSignature=signature;syncSosCells();addRescheduleButton();}};
     setTimeout(tick,900);setInterval(tick,700);
+    syncSosReschedule();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

@@ -17,6 +17,7 @@
   const HYDRATED_KEY = 'beautymove.agenda.firestore.hydrated';
   const COLLECTIONS = ['appointments', 'opportunities', 'transactions'];
   const EMPTY_STATE = { appointments: [], opportunities: [], transactions: [] };
+  const FIREBASE_VERSION = '12.17.0';
 
   const nativeGetItem = Storage.prototype.getItem;
   const nativeSetItem = Storage.prototype.setItem;
@@ -97,6 +98,56 @@
     return value;
   }
 
+  async function loadScript(src) {
+    if ([...document.scripts].some((script) => script.src === src)) return;
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = false;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error(`Não foi possível carregar ${src}.`));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensureFirebase() {
+    if (backend()) return true;
+    try {
+      await loadScript('assets/js/firebase-config.js');
+      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`);
+      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`);
+      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore-compat.js`);
+      await loadScript('assets/js/firebase-client-v2.js');
+      return Boolean(backend());
+    } catch (error) {
+      console.error('[BeautyMove] Firebase Agenda bootstrap failed:', error);
+      return false;
+    }
+  }
+
+  async function waitForFirebaseUser(timeoutMs = 8000) {
+    const service = backend();
+    if (!service?.auth) return currentUid();
+    if (service.auth.currentUser?.uid) return service.auth.currentUser.uid;
+    return new Promise((resolve) => {
+      let finished = false;
+      let unsubscribe = null;
+      const timer = window.setTimeout(() => {
+        if (finished) return;
+        finished = true;
+        if (unsubscribe) unsubscribe();
+        resolve(currentUid());
+      }, timeoutMs);
+      unsubscribe = service.auth.onAuthStateChanged((user) => {
+        if (finished) return;
+        finished = true;
+        window.clearTimeout(timer);
+        if (unsubscribe) unsubscribe();
+        resolve(user?.uid || currentUid());
+      });
+    });
+  }
+
   async function readCollection(db, name, uid) {
     const snapshot = await db.collection(name).where('salonOwnerId', '==', uid).get();
     return snapshot.docs.map((doc) => ({ id: doc.id, ...cacheSafeDoc(doc.data()) }));
@@ -129,7 +180,7 @@
     if (syncing) return;
     const service = backend();
     const uid = currentUid();
-    if (!service || !uid || !ready) return;
+    if (!service || !uid) return;
 
     syncing = true;
     try {
@@ -149,8 +200,9 @@
   }
 
   async function hydrate() {
+    await ensureFirebase();
+    const uid = await waitForFirebaseUser();
     const service = backend();
-    const uid = currentUid();
     const legacyState = normalizeState(readNative(STATE_KEY, EMPTY_STATE));
 
     if (!service || !uid) {
@@ -163,27 +215,26 @@
     try {
       const remote = await loadRemoteState(service.db, uid);
       const merged = { ...remote };
+      let hasLegacyOnly = false;
 
       for (const name of COLLECTIONS) {
         const remoteIds = new Set((remote[name] || []).map((item) => item.id));
         const legacyOnly = (legacyState[name] || [])
           .filter((item) => item?.id && !remoteIds.has(item.id))
           .map((item) => withId(item, name.slice(0, -1)));
+        if (legacyOnly.length) hasLegacyOnly = true;
         merged[name] = [...(remote[name] || []), ...legacyOnly];
       }
 
       cacheState = normalizeState(merged);
       writeNative(STATE_KEY, cacheState);
+      ready = true;
 
-      // One-time migration of browser-only Agenda records into Firestore.
-      if (COLLECTIONS.some((name) => (legacyState[name] || []).length)) {
-        await persistState(cacheState);
-      }
+      if (hasLegacyOnly) await persistState(cacheState);
 
       cacheHours = normalizeHours(readNative(HOURS_KEY, null));
       writeNative(HOURS_KEY, cacheHours);
       nativeSetItem.call(sessionStorage, HYDRATED_KEY, '1');
-      ready = true;
       window.dispatchEvent(new CustomEvent('beautymove:agenda-hydrated'));
     } catch (error) {
       console.error('[BeautyMove] Agenda Firestore hydration failed:', error);

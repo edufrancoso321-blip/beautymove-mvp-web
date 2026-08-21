@@ -1,81 +1,4 @@
-/* BeautyMove — controlador S.O.S. único e definitivo.
-   Regra inviolável: cancelar um S.O.S. altera SOMENTE a opportunity S.O.S.
-   Nenhum appointment é alterado, removido, cancelado ou convertido.
-*/
-(function(){
-  'use strict';
-
-  const STATE_KEY='beautymove.mvp.state';
-  const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{appointments:[],opportunities:[],transactions:[]};}catch(_){return{appointments:[],opportunities:[],transactions:[]};}};
-  const write=s=>localStorage.setItem(STATE_KEY,JSON.stringify(s));
-
-  function closeDetails(){
-    const modal=document.getElementById('detailsModal');
-    if(modal){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');}
-    const actions=document.getElementById('detailsActions');
-    if(actions){actions.dataset.sosId='';actions.dataset.appointmentId='';}
-    window.__bmCurrentSosId=null;
-    window.__bmCurrentAppointmentId=null;
-  }
-
-  function notice(message){
-    const el=document.getElementById('agendaNotice');
-    if(!el)return;
-    el.textContent=message;
-    el.hidden=false;
-    clearTimeout(window.__bmSosFinalNotice);
-    window.__bmSosFinalNotice=setTimeout(()=>el.hidden=true,3500);
-  }
-
-  function getActiveSosId(){
-    const actions=document.getElementById('detailsActions');
-    const direct=actions?.dataset?.sosId||window.__bmCurrentSosId;
-    if(direct)return String(direct);
-    const text=(document.getElementById('detailsContent')?.textContent||'').replace(/\s+/g,' ').trim();
-    if(!text)return null;
-    const state=read();
-    const ops=Array.isArray(state.opportunities)?state.opportunities:[];
-    const apps=Array.isArray(state.appointments)?state.appointments:[];
-    for(const op of ops){
-      if(!op||op.source!=='sos'||['cancelado','cancelada','resolved'].includes(op.status))continue;
-      const appointment=op.appointmentId?apps.find(a=>a&&a.id===op.appointmentId):null;
-      const client=String(appointment?.client||op.client||'');
-      const time=String(appointment?.time||op.time||'');
-      if(client&&time&&text.includes(client)&&text.includes(time))return String(op.id);
-    }
-    return null;
-  }
-
-  function cancelSosOnly(id){
-    if(!id){notice('Não foi possível identificar esta solicitação S.O.S.');return;}
-    const state=read();
-    const opportunities=Array.isArray(state.opportunities)?state.opportunities:[];
-    const index=opportunities.findIndex(o=>o&&String(o.id)===String(id)&&o.source==='sos');
-    if(index<0){notice('Não foi possível localizar esta solicitação S.O.S.');return;}
-    opportunities[index]={...opportunities[index],status:'cancelado',cancelledAt:new Date().toISOString(),cancelledReason:'Cancelado pelo salão'};
-    state.opportunities=opportunities;
-    write(state);
-    closeDetails();
-    notice('S.O.S. cancelado. Nenhum atendimento da Agenda foi alterado.');
-    setTimeout(()=>window.location.reload(),80);
-  }
-
-  function interceptClick(event){
-    const sosCell=event.target.closest?.('#agendaGrid [data-sos-id]');
-    if(sosCell){const id=sosCell.dataset.sosId;if(id){window.__bmCurrentSosId=String(id);window.__bmCurrentAppointmentId=null;}return;}
-    const cancelButton=event.target.closest?.('#detailsActions [data-sos-action="cancel"], #detailsActions .action-cancel');
-    if(!cancelButton)return;
-    const actions=document.getElementById('detailsActions');
-    const id=actions?.dataset?.sosId||window.__bmCurrentSosId;
-    if(!id)return;
-    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();cancelSosOnly(String(id));
-  }
-
-  function boot(){if(document.body?.dataset.role!=='salao')return;document.addEventListener('click',interceptClick,true);}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();
-
-/* BeautyMove — correção complementar do S.O.S.: duração real, atualização imediata e padrão visual. */
+/* BeautyMove — controlador S.O.S. autoritativo da Agenda. */
 (function(){
   'use strict';
   const STATE_KEY='beautymove.mvp.state';
@@ -84,26 +7,23 @@
   const write=s=>localStorage.setItem(STATE_KEY,JSON.stringify(s));
   const mins=t=>{const p=String(t||'00:00').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);};
   const time=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
-  const label=m=>{m=Number(m)||0;const h=Math.floor(m/60),r=m%60;return h?(r?`${h}h ${r}min`:`${h}h`):`${r}min`;};
   const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
-  function services(o){
-    const list=Array.isArray(o?.servicesSnapshot)?o.servicesSnapshot:Array.isArray(o?.services)?o.services:[];
-    if(list.length)return list.map(s=>({id:s.id,name:s.name,duration:Number(s.duration||s.durationMinutes||0)||DURATIONS[String(s.name||'').trim()]||30,clientPrice:Number(s.clientPrice||s.value||0)}));
-    return String(o?.service||'').split('+').map(x=>x.trim()).filter(Boolean).map(name=>({name,duration:DURATIONS[name]||30,clientPrice:0}));
-  }
-  function duration(o){const total=services(o).reduce((n,s)=>n+Number(s.duration||0),0);return total||Number(o?.durationSnapshot||o?.durationMinutes||o?.duration)||30;}
-  function sync(){
-    const grid=document.getElementById('agendaGrid');if(!grid)return;
-    const date=document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10),state=read();
-    const accepted=(state.appointments||[]).filter(a=>a&&a.date===date&&a.source==='sos'&&a.sosAcceptedBy&&a.status!=='cancelado');
-    accepted.forEach(a=>{const d=duration(a);a.duration=d;a.durationMinutes=d;a.endTime=time(mins(a.time)+d);});
-    const cells=[...grid.querySelectorAll('td[data-sos-cell="true"],td.sos-cell[data-sos-id]')];
-    if(!cells.length)return;
-    cells.forEach(c=>{c.className='sos-free-cell';c.removeAttribute('data-sos-id');c.removeAttribute('data-appointment-id');c.innerHTML='Livre';});
-    accepted.forEach(a=>{const start=mins(a.time),end=start+Math.max(30,Number(a.duration)||30);cells.forEach(c=>{const m=mins(c.dataset.time);if(m<start||m>=end)return;const first=m===start;c.className=`sos-cell sos-cell-found bm-sos-reserved ${first?'sos-cell-start':'sos-cell-continuation'}`;c.dataset.sosId=a.sosOpportunityId||'';c.dataset.appointmentId=a.id;c.innerHTML=first?`<strong>${esc(a.client||'Cliente')}</strong><span>${esc(a.service||'Atendimento')}</span><small>${esc(a.time)} – ${esc(a.endTime)} · ${label(a.duration)}</small><div class="sos-found-status">✓ ${esc(a.sosAcceptedBy)} · reservado</div>`:`<span class="sos-cell-continued-time">Até ${esc(a.endTime)}</span>`;});});
-    write(state);
-  }
-  function style(){if(document.getElementById('bmSosStandardStyle'))return;const s=document.createElement('style');s.id='bmSosStandardStyle';s.textContent=`#agendaGrid .sos-cell-start strong{font-size:15px!important;font-weight:900!important}#agendaGrid .sos-found-status{font-size:12px!important;font-weight:900!important;margin-top:4px!important}#sosOpportunityPanel .sos-op-selected-candidate .sos-op-candidate-name{font-size:15px!important;font-weight:900!important;line-height:1.25!important}#sosOpportunityPanel .sos-op-selected-candidate .sos-op-candidate-data{font-size:11px!important}#detailsContent .detail-topline>div:nth-child(2)>strong{font-size:16px!important;font-weight:900!important}`;document.head.appendChild(s);}
-  function boot(){style();window.addEventListener('beautymove:sos-accepted',()=>{setTimeout(sync,60);setTimeout(sync,250);});setInterval(()=>{const modal=document.getElementById('detailsModal');if(modal?.classList.contains('is-open')){const actions=document.getElementById('detailsActions');if(actions?.dataset.sosId&&!actions.querySelector('.bm-sos-reschedule')){const b=document.createElement('button');b.type='button';b.className='action-button bm-sos-reschedule';b.textContent='Alterar horário';b.onclick=()=>{const state=read(),op=state.opportunities.find(o=>String(o.id)===String(actions.dataset.sosId)),a=op?.appointmentId?state.appointments.find(x=>x.id===op.appointmentId):null;if(!a)return;document.getElementById('detailsModal').classList.remove('is-open');const m=document.getElementById('appointmentModal');document.getElementById('appointmentId').value=a.id;document.getElementById('appointmentTime').value=a.time;document.getElementById('appointmentProfessional').value=a.professional;document.getElementById('appointmentClient').value=a.client||'';document.getElementById('appointmentTitle').textContent='Alterar horário';document.getElementById('appointmentMode').textContent='ALTERAR HORÁRIO';m.classList.add('is-open');};actions.insertBefore(b,actions.querySelector('.action-cancel'));}}},700);}
+  const label=m=>{m=Number(m)||0;const h=Math.floor(m/60),r=m%60;return h?(r?`${h}h ${r}min`:`${h}h`):`${r}min`;};
+  const servicesOf=o=>{const list=Array.isArray(o?.servicesSnapshot)?o.servicesSnapshot:Array.isArray(o?.services)?o.services:[];if(list.length)return list.map(s=>({name:s?.name||'',duration:Number(s?.duration||s?.durationMinutes)||DURATIONS[String(s?.name||'').trim()]||30,value:Number(s?.clientPrice||s?.value||0)}));return String(o?.service||'').split('+').map(x=>x.trim()).filter(Boolean).map(name=>({name,duration:DURATIONS[name]||30,value:0}));};
+  const durationOf=o=>servicesOf(o).reduce((n,s)=>n+Number(s.duration||0),0)||Number(o?.durationSnapshot||o?.durationMinutes||o?.duration)||30;
+  const endOf=(o,start=o?.time)=>time(mins(start)+durationOf(o));
+  const currentDate=()=>document.getElementById('agendaDatePicker')?.value||new Date().toISOString().slice(0,10);
+  const getGrid=()=>document.getElementById('agendaGrid');
+  const getCells=()=>[...(getGrid()?.querySelectorAll('td[data-sos-cell="true"],td.sos-cell[data-sos-id],td.bm-sos-final-cell')||[])];
+  function style(){if(document.getElementById('bmSosAuthoritativeCss'))return;const s=document.createElement('style');s.id='bmSosAuthoritativeCss';s.textContent=`#agendaGrid .bm-sos-client{font-size:15px!important;font-weight:900!important;line-height:1.15!important;display:block!important}#agendaGrid .bm-sos-service{font-size:11.5px!important;line-height:1.25!important;display:block!important;margin-top:2px!important}#agendaGrid .bm-sos-meta{font-size:10.5px!important;line-height:1.2!important;display:block!important;margin-top:2px!important}#agendaGrid .bm-sos-professional{font-size:12px!important;font-weight:900!important;line-height:1.2!important;display:block!important;margin-top:4px!important}#agendaGrid .bm-sos-continuation{font-size:10.5px!important;font-weight:700!important;line-height:1.2!important}#sosOpportunityPanel .sos-op-selected-candidate .sos-op-candidate-name{font-size:17px!important;font-weight:900!important;line-height:1.25!important}#sosOpportunityPanel .sos-op-selected-candidate .sos-op-candidate-data{font-size:12px!important;line-height:1.25!important}#detailsContent .detail-topline>div:nth-child(2)>strong{font-size:17px!important;font-weight:900!important}#detailsActions .bm-sos-reschedule{grid-column:1 / -1!important;background:#fff!important;border-color:#7438F5!important;color:#7438F5!important;font-weight:900!important}`;document.head.appendChild(s);}
+  function ensureReservation(detail){if(!detail?.professional||!detail?.opportunity)return;const state=read();state.appointments=Array.isArray(state.appointments)?state.appointments:[];state.opportunities=Array.isArray(state.opportunities)?state.opportunities:[];const opportunity=state.opportunities.find(o=>o&&o.id===detail.opportunity.id)||detail.opportunity;const start=opportunity.time||'08:00',duration=durationOf(opportunity),professional=detail.professional,acceptedAt=opportunity.acceptedAt||new Date().toISOString();opportunity.durationSnapshot=duration;opportunity.endTime=endOf(opportunity,start);opportunity.acceptedBy=professional;opportunity.status='resolved';opportunity.acceptedAt=acceptedAt;if(opportunity.appointmentId){const existing=state.appointments.find(a=>a&&a.id===opportunity.appointmentId);if(existing){existing.source='sos';existing.sosAcceptedBy=professional;existing.sosAcceptedAt=acceptedAt;existing.duration=duration;existing.durationMinutes=duration;existing.endTime=endOf(existing,existing.time||start);existing.services=servicesOf(opportunity);existing.service=opportunity.service||existing.services.map(s=>s.name).join(' + ');write(state);return;}}const id=`apt-sos-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,services=servicesOf(opportunity);state.appointments.push({id,date:opportunity.date,time:start,endTime:endOf(opportunity,start),professional,client:opportunity.client||'Cliente',services,service:opportunity.service||services.map(s=>s.name).join(' + '),duration,durationMinutes:duration,value:Number(opportunity.value||0)||services.reduce((n,s)=>n+Number(s.value||0),0),status:'agendado',source:'sos',sosAcceptedBy:professional,sosAcceptedAt:acceptedAt,sosOpportunityId:opportunity.id});opportunity.appointmentId=id;write(state);}
+  function paint(){const grid=getGrid();if(!grid)return;const cells=getCells();if(!cells.length)return;const state=read(),date=currentDate();const appointments=(Array.isArray(state.appointments)?state.appointments:[]).filter(a=>a&&a.date===date&&a.source==='sos'&&a.status!=='cancelado'&&(a.sosAcceptedBy||a.acceptedBy));const opportunities=(Array.isArray(state.opportunities)?state.opportunities:[]).filter(o=>o&&o.date===date&&o.source==='sos'&&!['resolved','cancelado','cancelada'].includes(o.status));cells.forEach(c=>{c.className='sos-free-cell bm-sos-final-cell';c.removeAttribute('data-sos-id');c.removeAttribute('data-appointment-id');c.dataset.sosCell='true';c.innerHTML='Livre';});const draw=(item,isAppointment)=>{const start=mins(item.time||'08:00'),duration=durationOf(item),end=start+Math.max(30,duration),endTime=item.endTime||time(end),professional=isAppointment?(item.sosAcceptedBy||item.acceptedBy||item.professional||'Profissional confirmada'):(item.acceptedBy||item.professional||'Aguardando profissional');cells.forEach(cell=>{const minute=mins(cell.dataset.time);if(minute<start||minute>=end)return;const first=minute===start;cell.className=`sos-cell sos-cell-found bm-sos-final-cell ${first?'sos-cell-start':'sos-cell-continuation'}`;cell.dataset.sosCell='true';if(isAppointment){cell.dataset.appointmentId=item.id;if(item.sosOpportunityId)cell.dataset.sosId=item.sosOpportunityId;}else cell.dataset.sosId=item.id;cell.innerHTML=first?`<strong class="bm-sos-client">${esc(item.client||'Cliente')}</strong><span class="bm-sos-service">${esc(item.service||'Atendimento')}</span><span class="bm-sos-meta">${esc(item.time||'')} – ${esc(endTime)} · ${label(duration)}</span><span class="bm-sos-professional">Profissional: ${esc(professional)}</span>`:`<span class="bm-sos-continuation">${esc(item.client||'Cliente')} · até ${esc(endTime)}</span>`;});};appointments.forEach(a=>draw(a,true));opportunities.forEach(o=>draw(o,false));}
+  function syncSoon(){clearTimeout(window.__bmSosAuthoritativeTimer);window.__bmSosAuthoritativeTimer=setTimeout(paint,20);}
+  function getSosContext(){const actions=document.getElementById('detailsActions'),direct=actions?.dataset?.sosId||window.__bmCurrentSosId;if(direct)return String(direct);const aId=actions?.dataset?.appointmentId||window.__bmCurrentAppointmentId;if(aId){const state=read(),op=(state.opportunities||[]).find(o=>String(o.appointmentId)===String(aId));if(op)return String(op.id);}return null;}
+  function addRescheduleButton(){const modal=document.getElementById('detailsModal'),actions=document.getElementById('detailsActions');if(!modal||!modal.classList.contains('is-open')||!actions)return;const sosId=getSosContext();if(!sosId||actions.querySelector('.bm-sos-reschedule'))return;const state=read(),op=(state.opportunities||[]).find(o=>String(o.id)===String(sosId)),appointmentId=op?.appointmentId||actions.dataset.appointmentId,appointment=(state.appointments||[]).find(a=>String(a.id)===String(appointmentId));if(!appointment)return;const button=document.createElement('button');button.type='button';button.className='action-button bm-sos-reschedule';button.textContent='Alterar horário';button.addEventListener('click',()=>{const m=document.getElementById('appointmentModal');if(!m)return;document.getElementById('appointmentId').value=appointment.id;document.getElementById('appointmentClient').value=appointment.client||'';document.getElementById('appointmentProfessional').value=appointment.professional||appointment.sosAcceptedBy||'';document.getElementById('appointmentTime').value=appointment.time||'';document.getElementById('appointmentTitle').textContent='Alterar horário';document.getElementById('appointmentMode').textContent='ALTERAR HORÁRIO';m.dataset.bmSosRescheduleId=String(sosId);modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');m.classList.add('is-open');m.setAttribute('aria-hidden','false');});const cancel=actions.querySelector('.action-cancel');actions.insertBefore(button,cancel||null);}
+  function bindReschedule(){const form=document.getElementById('appointmentForm');if(!form||form.dataset.bmSosAuthoritativeBound==='1')return;form.dataset.bmSosAuthoritativeBound='1';form.addEventListener('submit',()=>{const modal=document.getElementById('appointmentModal'),sosId=modal?.dataset.bmSosRescheduleId;if(!sosId)return;setTimeout(()=>{const newTime=document.getElementById('appointmentTime')?.value;if(!newTime)return;const state=read(),op=(state.opportunities||[]).find(o=>String(o.id)===String(sosId)),appointmentId=document.getElementById('appointmentId')?.value,a=(state.appointments||[]).find(x=>String(x.id)===String(appointmentId));if(op&&a){op.time=newTime;op.endTime=endOf(a,newTime);op.durationSnapshot=durationOf(a);op.status='resolved';op.acceptedBy=a.sosAcceptedBy||a.professional;op.appointmentId=a.id;a.time=newTime;a.endTime=endOf(a,newTime);write(state);}delete modal.dataset.bmSosRescheduleId;syncSoon();},180);},true);}
+  function cancelSosOnly(id){if(!id)return;const state=read(),op=(state.opportunities||[]).find(o=>o&&String(o.id)===String(id)&&o.source==='sos');if(!op)return;op.status='cancelado';op.cancelledAt=new Date().toISOString();op.cancelledReason='Cancelado pelo salão';write(state);const modal=document.getElementById('detailsModal');modal?.classList.remove('is-open');modal?.setAttribute('aria-hidden','true');const n=document.getElementById('agendaNotice');if(n){n.textContent='S.O.S. cancelado. Nenhum atendimento da Agenda foi alterado.';n.hidden=false;setTimeout(()=>n.hidden=true,3500);}syncSoon();}
+  function clickCapture(event){const cell=event.target.closest?.('#agendaGrid [data-sos-id]');if(cell){window.__bmCurrentSosId=String(cell.dataset.sosId);window.__bmCurrentAppointmentId=cell.dataset.appointmentId||null;return;}const cancel=event.target.closest?.('#detailsActions [data-detail-action="cancel"],#detailsActions [data-sos-action="cancel"],#detailsActions .action-cancel');if(!cancel)return;const id=getSosContext();if(!id)return;event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();cancelSosOnly(id);}
+  function boot(){if(document.body?.dataset.role!=='salao')return;style();bindReschedule();document.addEventListener('click',clickCapture,true);window.addEventListener('beautymove:sos-accepted',event=>{ensureReservation(event.detail||{});syncSoon();});window.addEventListener('beautymove:agenda-hydrated',syncSoon);window.addEventListener('storage',e=>{if(e.key===STATE_KEY)syncSoon();});setInterval(()=>{paint();addRescheduleButton();},100);setTimeout(()=>{paint();addRescheduleButton();},50);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

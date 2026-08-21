@@ -38,6 +38,19 @@
     document.head.appendChild(s);
   }
 
+  function updateSalonIdentity(){
+    const nameElement=document.querySelector('.top-profile strong');
+    if(!nameElement)return;
+    try{
+      const profile=JSON.parse(localStorage.getItem('beautymove.mvp.profile')||'null');
+      const session=JSON.parse(localStorage.getItem('beautymove.mvp.session')||'null');
+      const name=profile?.nomeSalao||((profile?.role==='salao')?profile?.nome:'')||session?.name||'';
+      if(name)nameElement.textContent=name;
+    }catch(error){
+      console.warn('[BeautyMove] salon identity header update failed:',error);
+    }
+  }
+
   function sosActionLabel(){
     try{
       const raw=localStorage.getItem('beautymove.mvp.state');
@@ -84,6 +97,7 @@
 
   function boot(){
     styles();
+    updateSalonIdentity();
     const grid=document.getElementById('agendaGrid');if(!grid)return;
     const run=()=>requestAnimationFrame(apply);run();
     new MutationObserver(()=>{const table=grid.querySelector('table.agenda-grid');if(table&&table.tHead?.dataset.headerLayout!=='v2')run()}).observe(grid,{childList:true,subtree:true});

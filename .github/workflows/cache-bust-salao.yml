@@ -1,0 +1,29 @@
+name: Cache-bust Agenda S.O.S.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  cache-bust:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Update S.O.S. asset version
+        run: |
+          if grep -q 'agenda-sos-actions-final.js?v=20260821-1' salao.html; then
+            sed -i 's/agenda-sos-actions-final.js?v=20260821-1/agenda-sos-actions-final.js?v=20260821-2/g' salao.html
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add salao.html
+            git commit -m 'chore: cache-bust authoritative S.O.S. controller'
+            git push
+          else
+            echo 'No cache-bust change needed.'
+          fi

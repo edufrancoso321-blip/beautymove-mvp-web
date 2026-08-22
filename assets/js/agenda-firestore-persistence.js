@@ -10,7 +10,7 @@
   const FIREBASE_VERSION='12.17.0';
   const nativeGetItem=Storage.prototype.getItem;
   const nativeSetItem=Storage.prototype.setItem;
-  let cacheState=null, cacheHours=null, syncing=false, ready=false;
+  let cacheState=null, cacheHours=null, syncing=false, ready=false, pendingState=null;
 
   function readNative(key,fallback){try{const raw=nativeGetItem.call(localStorage,key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
   function writeNative(key,value){nativeSetItem.call(localStorage,key,JSON.stringify(value));}
@@ -28,10 +28,42 @@
   async function readCollection(db,name,uid){try{const snap=await db.collection(name).where('salonOwnerId','==',uid).get();return {items:snap.docs.map(d=>({id:d.id,...cacheSafeDoc(d.data())})),error:null};}catch(error){console.error(`[BeautyMove] Firestore read failed for ${name}:`,error);return {items:[],error};}}
   async function loadRemoteState(db,uid){const results=await Promise.all(COLLECTIONS.map(async name=>[name,await readCollection(db,name,uid)]));const state={};const errors=[];for(const [name,result] of results){state[name]=result.items;if(result.error)errors.push({name,error:result.error});}return {state,errors};}
   async function saveCollection(db,name,items,uid){const normalized=items.map(i=>withId(i,name.slice(0,-1)));const remote=await db.collection(name).where('salonOwnerId','==',uid).get();const ids=new Set(normalized.map(i=>i.id));const batch=db.batch();remote.docs.forEach(d=>{if(!ids.has(d.id))batch.delete(d.ref);});normalized.forEach(item=>batch.set(db.collection(name).doc(item.id),firestoreData(item,uid),{merge:true}));await batch.commit();return normalized;}
-  async function persistState(state){if(syncing)return;const service=backend(),uid=currentUid();if(!service||!uid)return;syncing=true;try{const n=normalizeState(state),saved={...n};for(const name of COLLECTIONS){try{saved[name]=await saveCollection(service.db,name,n[name],uid);}catch(error){console.error(`[BeautyMove] Agenda Firestore persistence failed for ${name}:`,error);}}cacheState=normalizeState(saved);writeNative(STATE_KEY,cacheState);}catch(e){console.error('[BeautyMove] Agenda Firestore persistence failed:',e);window.dispatchEvent(new CustomEvent('beautymove:agenda-persistence-error',{detail:e}));}finally{syncing=false;}}
+  async function persistState(state){
+    pendingState=normalizeState(state);
+    if(syncing)return;
+    const service=backend(),uid=currentUid();
+    if(!service||!uid)return;
+    syncing=true;
+    try{
+      while(pendingState){
+        const snapshot=normalizeState(pendingState);
+        pendingState=null;
+        const saved={...snapshot};
+        for(const name of COLLECTIONS){
+          try{saved[name]=await saveCollection(service.db,name,snapshot[name],uid);}catch(error){console.error(`[BeautyMove] Agenda Firestore persistence failed for ${name}:`,error);}
+        }
+        if(!pendingState){
+          cacheState=normalizeState(saved);
+          writeNative(STATE_KEY,cacheState);
+        }
+      }
+    }catch(e){console.error('[BeautyMove] Agenda Firestore persistence failed:',e);window.dispatchEvent(new CustomEvent('beautymove:agenda-persistence-error',{detail:e}));}
+    finally{syncing=false;}
+  }
   function mergeById(remote,local){const map=new Map((remote||[]).map(i=>[i.id,i]));for(const item of (local||[])){const v=withId(item,'item');map.set(v.id,v);}return [...map.values()];}
   async function hydrate(){await ensureFirebase();const uid=await waitForFirebaseUser();const service=backend();const initialLocal=normalizeState(readNative(STATE_KEY,EMPTY_STATE));cacheHours=normalizeHours(readNative(HOURS_KEY,null));if(!service||!uid){cacheState=initialLocal;ready=true;return;}try{const remoteResult=await loadRemoteState(service.db,uid);const remote=remoteResult.state;if(remoteResult.errors.length)console.warn('[BeautyMove] Some Firestore collections could not be hydrated:',remoteResult.errors.map(x=>x.name));const latestLocal=normalizeState(readNative(STATE_KEY,EMPTY_STATE));const merged={};for(const name of COLLECTIONS)merged[name]=mergeById(remote[name],latestLocal[name]);cacheState=normalizeState(merged);writeNative(STATE_KEY,cacheState);ready=true;const localHasData=COLLECTIONS.some(name=>(latestLocal[name]||[]).length>0);if(localHasData)await persistState(cacheState);writeNative(HOURS_KEY,cacheHours);nativeSetItem.call(sessionStorage,HYDRATED_KEY,'1');if(nativeGetItem.call(sessionStorage,RELOAD_KEY)!=='1'){nativeSetItem.call(sessionStorage,RELOAD_KEY,'1');window.location.reload();return;}window.dispatchEvent(new CustomEvent('beautymove:agenda-hydrated'));}catch(e){console.error('[BeautyMove] Agenda Firestore hydration failed:',e);cacheState=normalizeState(readNative(STATE_KEY,initialLocal));ready=true;window.dispatchEvent(new CustomEvent('beautymove:agenda-persistence-error',{detail:e}));}}
-  function patchStorage(){Storage.prototype.getItem=function(key){if(this===localStorage&&key===STATE_KEY&&cacheState)return JSON.stringify(cacheState);if(this===localStorage&&key===HOURS_KEY&&cacheHours)return JSON.stringify(cacheHours);return nativeGetItem.call(this,key);};Storage.prototype.setItem=function(key,value){if(this===localStorage&&key===STATE_KEY&&!syncing){try{cacheState=normalizeState(JSON.parse(value));nativeSetItem.call(this,key,JSON.stringify(cacheState));void persistState(cacheState);return;}catch{}}if(this===localStorage&&key===HOURS_KEY&&!syncing){try{cacheHours=normalizeHours(JSON.parse(value));nativeSetItem.call(this,key,JSON.stringify(cacheHours));return;}catch{}}return nativeSetItem.call(this,key,value);};}
+  function patchStorage(){
+    Storage.prototype.getItem=function(key){if(this===localStorage&&key===STATE_KEY&&cacheState)return JSON.stringify(cacheState);if(this===localStorage&&key===HOURS_KEY&&cacheHours)return JSON.stringify(cacheHours);return nativeGetItem.call(this,key);};
+    Storage.prototype.setItem=function(key,value){
+      if(this===localStorage&&key===STATE_KEY){
+        try{const next=normalizeState(JSON.parse(value));cacheState=next;nativeSetItem.call(this,key,JSON.stringify(next));void persistState(next);return;}catch{}
+      }
+      if(this===localStorage&&key===HOURS_KEY){
+        try{cacheHours=normalizeHours(JSON.parse(value));nativeSetItem.call(this,key,JSON.stringify(cacheHours));return;}catch{}
+      }
+      return nativeSetItem.call(this,key,value);
+    };
+  }
   window.BeautyMoveAgendaPersistence={hydrate,isReady:()=>ready,getState:()=>clone(cacheState||normalizeState(readNative(STATE_KEY,EMPTY_STATE))),getHours:()=>clone(cacheHours||normalizeHours(readNative(HOURS_KEY,null))),syncNow:()=>persistState(cacheState||normalizeState(readNative(STATE_KEY,EMPTY_STATE)))};
   patchStorage();void hydrate();
 })();

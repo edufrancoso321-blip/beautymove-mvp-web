@@ -1,103 +1,37 @@
-/* BeautyMove Agenda persistence bridge — Firestore first, local cache second. */
-(function () {
-  'use strict';
-  const STATE_KEY='beautymove.mvp.state';
-  const HOURS_KEY='beautymove.mvp.agenda.hours';
-  const HYDRATED_KEY='beautymove.agenda.firestore.hydrated';
-  const RELOAD_GUARD_KEY='beautymove.agenda.firestore.reload-done';
-  const COLLECTIONS=['appointments','opportunities','transactions'];
-  const EMPTY_STATE={appointments:[],opportunities:[],transactions:[]};
-  const FIREBASE_VERSION='12.17.0';
-  const nativeGetItem=Storage.prototype.getItem;
-  const nativeSetItem=Storage.prototype.setItem;
-  let cacheState=null, cacheHours=null, syncing=false, ready=false, pendingState=null;
-  function readNative(key,fallback){try{const raw=nativeGetItem.call(localStorage,key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}}
-  function writeNative(key,value){nativeSetItem.call(localStorage,key,JSON.stringify(value));}
-  function clone(value){return JSON.parse(JSON.stringify(value));}
-  function normalizeState(value){const s=value&&typeof value==='object'?value:{};return {appointments:Array.isArray(s.appointments)?s.appointments:[],opportunities:Array.isArray(s.opportunities)?s.opportunities:[],transactions:Array.isArray(s.transactions)?s.transactions:[]};}
-  function normalizeHours(value){const f={open:'08:00',close:'18:00'};return Array.isArray(value)&&value.length===7?value.map(x=>({open:x?.open||f.open,close:x?.close||f.close})):Array.from({length:7},()=>({...f}));}
-  function withId(item,prefix){const v={...(item||{})};if(!v.id)v.id=`${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;return v;}
-  function stateFingerprint(value){try{return JSON.stringify(normalizeState(value));}catch{return '';}}
-  function firestoreData(item,uid){const v={...item,salonOwnerId:uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};if(!v.createdAt)v.createdAt= firebase.firestore.FieldValue.serverTimestamp();return v;}
-  function cacheSafeDoc(data){const v={...(data||{})};delete v.createdAt;delete v.updatedAt;return v;}
-  async function loadScript(src){if([...document.scripts].some(s=>s.src===src))return;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=false;s.onload=resolve;s.onerror=()=>reject(new Error(`Não foi possível carregar ${src}.`));document.head.appendChild(s);});}
-  async function ensureFirebase(){if(backend())return true;try{await loadScript('assets/js/firebase-config.js');await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`);await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`);await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore-compat.js`);await loadScript('assets/js/firebase-client-v2.js');await loadScript('assets/js/auth.js');return Boolean(backend());}catch(e){console.error('[BeautyMove] Firebase Agenda bootstrap failed:',e);return false;}}
-  async function waitForFirebaseUser(timeoutMs=15000){const s=backend();if(!s?.auth)return null;if(s.auth.currentUser?.uid)return s.auth.currentUser.uid;return new Promise(resolve=>{let done=false,unsub=null;const finish=(uid)=>{if(done)return;done=true;clearTimeout(timer);unsub?.();resolve(uid||null);};const timer=setTimeout(()=>finish(null),timeoutMs);unsub=s.auth.onAuthStateChanged(user=>finish(user?.uid||null));});}
-  async function readCollection(db,name,uid){try{const snap=await db.collection(name).where('salonOwnerId','==',uid).get();return {items:snap.docs.map(d=>({id:d.id,...cacheSafeDoc(d.data())})),error:null};}catch(error){console.error(`[BeautyMove] Firestore read failed for ${name}:`,error);return {items:[],error};}}
-  async function loadRemoteState(db,uid){const results=await Promise.all(COLLECTIONS.map(async name=>[name,await readCollection(db,name,uid)]));const state={};const errors=[];for(const [name,result] of results){state[name]=result.items;if(result.error)errors.push({name,error:result.error});}return {state,errors};}
-  async function saveCollection(db,name,items,uid){const normalized=items.map(i=>withId(i,name.slice(0,-1)));const remote=await db.collection(name).where('salonOwnerId','==',uid).get();const ids=new Set(normalized.map(i=>i.id));const batch=db.batch();remote.docs.forEach(d=>{if(!ids.has(d.id))batch.delete(d.ref);});normalized.forEach(item=>batch.set(db.collection(name).doc(item.id),firestoreData(item,uid),{merge:true}));await batch.commit();return normalized;}
-  async function persistState(state){
-    pendingState=normalizeState(state);
-    if(syncing)return;
-    const service=backend(),uid=currentUid();
-    if(!service||!uid)return;
-    syncing=true;
-    try{
-      while(pendingState){
-        const snapshot=normalizeState(pendingState);pendingState=null;const saved={...snapshot};
-        for(const name of COLLECTIONS){try{saved[name]=await saveCollection(service.db,name,snapshot[name],uid);}catch(error){console.error(`[BeautyMove] Agenda Firestore persistence failed for ${name}:`,error);}}
-        if(!pendingState){cacheState=normalizeState(saved);writeNative(STATE_KEY,cacheState);}
-      }
-    }catch(e){console.error('[BeautyMove] Agenda Firestore persistence failed:',e);window.dispatchEvent(new CustomEvent('beautymove:agenda-persistence-error',{detail:e}));}
-    finally{syncing=false;}
-  }
-  function localStateIsStronger(local,remote){
-    if(!local||!remote)return false;
-    if(local.sosAcceptedBy&&local.status!=='cancelado')return true;
-    if(local.acceptedBy&&local.status==='resolved')return true;
-    if(local.sosOpportunityId&&local.sosAcceptedBy&&local.status!=='cancelado')return true;
-    return false;
-  }
-  function mergeStates(remote,local,preferLocal=false){
-    const map=new Map((remote||[]).map(i=>[i.id,i]));
-    for(const item of (local||[])){
-      const v=withId(item,'item');
-      if(!map.has(v.id)||preferLocal||localStateIsStronger(v,map.get(v.id)))map.set(v.id,v);
-    }
-    return [...map.values()];
-  }
-  async function hydrate(){
-    await ensureFirebase();
-    const uid=await waitForFirebaseUser();
-    const service=backend();
-    const initialLocal=normalizeState(readNative(STATE_KEY,EMPTY_STATE));
-    const initialFingerprint=stateFingerprint(initialLocal);
-    cacheHours=normalizeHours(readNative(HOURS_KEY,null));
-    if(!service||!uid){cacheState=initialLocal;ready=true;nativeSetItem.call(sessionStorage,RELOAD_GUARD_KEY,'1');window.dispatchEvent(new CustomEvent('beautymove:agenda-hydrated'));return;}
-    try{
-      const remoteResult=await loadRemoteState(service.db,uid);const remote=remoteResult.state;
-      if(remoteResult.errors.length)console.warn('[BeautyMove] Some Firestore collections could not be hydrated:',remoteResult.errors.map(x=>x.name));
-      let latestLocal=normalizeState(readNative(STATE_KEY,EMPTY_STATE));
-      let localChangedDuringHydration=stateFingerprint(latestLocal)!==initialFingerprint;
-      const merged={};
-      for(const name of COLLECTIONS)merged[name]=mergeStates(remote[name],latestLocal[name],localChangedDuringHydration);
-      const finalLocal=normalizeState(readNative(STATE_KEY,EMPTY_STATE));
-      if(stateFingerprint(finalLocal)!==stateFingerprint(latestLocal)){
-        latestLocal=finalLocal;
-        localChangedDuringHydration=true;
-        for(const name of COLLECTIONS)merged[name]=mergeStates(merged[name],latestLocal[name],true);
-      }
-      cacheState=normalizeState(merged);writeNative(STATE_KEY,cacheState);ready=true;
-      const localHasData=COLLECTIONS.some(name=>(latestLocal[name]||[]).length>0);
-      if(localHasData)await persistState(cacheState);
-      writeNative(HOURS_KEY,cacheHours);
-      nativeSetItem.call(sessionStorage,HYDRATED_KEY,'1');
-      nativeSetItem.call(sessionStorage,RELOAD_GUARD_KEY,'1');
-      window.dispatchEvent(new CustomEvent('beautymove:agenda-hydrated'));
-    }catch(e){console.error('[BeautyMove] Agenda Firestore hydration failed:',e);cacheState=normalizeState(readNative(STATE_KEY,initialLocal));ready=true;nativeSetItem.call(sessionStorage,RELOAD_GUARD_KEY,'1');window.dispatchEvent(new CustomEvent('beautymove:agenda-persistence-error',{detail:e}));}
-  }
-  function patchStorage(){
-    Storage.prototype.getItem=function(key){return nativeGetItem.call(this,key);};
-    Storage.prototype.setItem=function(key,value){
-      if(this===localStorage&&key===STATE_KEY){try{const next=normalizeState(JSON.parse(value));cacheState=next;nativeSetItem.call(this,key,JSON.stringify(next));void persistState(next);return;}catch{}}
-      if(this===localStorage&&key===HOURS_KEY){try{cacheHours=normalizeHours(JSON.parse(value));nativeSetItem.call(this,key,JSON.stringify(cacheHours));return;}catch{}}
-      return nativeSetItem.call(this,key,value);
-    };
-    window.addEventListener('storage',event=>{
-      if(event.storageArea!==localStorage||event.key!==STATE_KEY||event.newValue==null)return;
-      try{const next=normalizeState(JSON.parse(event.newValue));cacheState=next;window.dispatchEvent(new CustomEvent('beautymove:agenda-external-state',{detail:clone(next)}));}catch{}
-    });
-  }
-  window.BeautyMoveAgendaPersistence={hydrate,isReady:()=>ready,getState:()=>clone(cacheState||normalizeState(readNative(STATE_KEY,EMPTY_STATE))),getHours:()=>clone(cacheHours||normalizeHours(readNative(HOURS_KEY,null))),syncNow:()=>persistState(cacheState||normalizeState(readNative(STATE_KEY,EMPTY_STATE)))};
-  patchStorage();void hydrate();
+/* BeautyMove Agenda persistence bridge — local session authority, Firestore durable backup. */
+(function(){
+'use strict';
+const STATE_KEY='beautymove.mvp.state',HOURS_KEY='beautymove.mvp.agenda.hours',HYDRATED_KEY='beautymove.agenda.firestore.hydrated',RELOAD_GUARD_KEY='beautymove.agenda.firestore.reload-done';
+const COLLECTIONS=['appointments','opportunities','transactions'],EMPTY_STATE={appointments:[],opportunities:[],transactions:[]},FIREBASE_VERSION='12.17.0';
+const nativeGetItem=Storage.prototype.getItem,nativeSetItem=Storage.prototype.setItem;
+let cacheState=null,cacheHours=null,syncing=false,ready=false,pendingState=null,hydrating=true;
+const readNative=(key,fallback)=>{try{const raw=nativeGetItem.call(localStorage,key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}};
+const writeNative=(key,value)=>nativeSetItem.call(localStorage,key,JSON.stringify(value));
+const normalizeState=v=>{const s=v&&typeof v==='object'?v:{};return{appointments:Array.isArray(s.appointments)?s.appointments:[],opportunities:Array.isArray(s.opportunities)?s.opportunities:[],transactions:Array.isArray(s.transactions)?s.transactions:[]};};
+const normalizeHours=v=>{const f={open:'08:00',close:'18:00'};return Array.isArray(v)&&v.length===7?v.map(x=>({open:x?.open||f.open,close:x?.close||f.close})):Array.from({length:7},()=>({...f}));};
+const withId=(item,prefix)=>{const v={...(item||{})};if(!v.id)v.id=`${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;return v;};
+const clone=v=>JSON.parse(JSON.stringify(v));
+const firestoreData=(item,uid)=>({...item,salonOwnerId:uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),createdAt:item.createdAt||firebase.firestore.FieldValue.serverTimestamp()});
+const cacheSafeDoc=data=>{const v={...(data||{})};delete v.createdAt;delete v.updatedAt;return v;};
+async function loadScript(src){if([...document.scripts].some(s=>s.src===src))return;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=false;s.onload=resolve;s.onerror=()=>reject(new Error(`Não foi possível carregar ${src}.`));document.head.appendChild(s);});}
+async function ensureFirebase(){if(backend())return true;try{await loadScript('assets/js/firebase-config.js');await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`);await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`);await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore-compat.js`);await loadScript('assets/js/firebase-client-v2.js');await loadScript('assets/js/auth.js');return Boolean(backend());}catch(e){console.error('[BeautyMove] Firebase bootstrap failed:',e);return false;}}
+async function waitForFirebaseUser(timeoutMs=15000){const s=backend();if(!s?.auth)return null;if(s.auth.currentUser?.uid)return s.auth.currentUser.uid;return new Promise(resolve=>{let done=false,unsub=null;const finish=uid=>{if(done)return;done=true;clearTimeout(timer);unsub?.();resolve(uid||null);};const timer=setTimeout(()=>finish(null),timeoutMs);unsub=s.auth.onAuthStateChanged(user=>finish(user?.uid||null));});}
+async function readCollection(db,name,uid){try{const snap=await db.collection(name).where('salonOwnerId','==',uid).get();return snap.docs.map(d=>({id:d.id,...cacheSafeDoc(d.data())}));}catch(error){console.error(`[BeautyMove] Firestore read failed for ${name}:`,error);return null;}}
+async function loadRemoteState(db,uid){const values=await Promise.all(COLLECTIONS.map(name=>readCollection(db,name,uid)));const state={};COLLECTIONS.forEach((name,i)=>state[name]=values[i]||[]);return{state,complete:values.every(v=>Array.isArray(v))};}
+async function saveCollection(db,name,items,uid){const normalized=items.map(i=>withId(i,name.slice(0,-1)));const remote=await db.collection(name).where('salonOwnerId','==',uid).get();const ids=new Set(normalized.map(i=>i.id));const batch=db.batch();remote.docs.forEach(d=>{if(!ids.has(d.id))batch.delete(d.ref);});normalized.forEach(item=>batch.set(db.collection(name).doc(item.id),firestoreData(item,uid),{merge:true}));await batch.commit();return normalized;}
+async function persistState(state){pendingState=normalizeState(state);if(syncing||hydrating)return;const service=backend(),uid=currentUid();if(!service||!uid)return;syncing=true;try{while(pendingState){const snapshot=normalizeState(pendingState);pendingState=null;const saved={...snapshot};for(const name of COLLECTIONS){try{saved[name]=await saveCollection(service.db,name,snapshot[name],uid);}catch(error){console.error(`[BeautyMove] Firestore persistence failed for ${name}:`,error);}}cacheState=normalizeState(saved);writeNative(STATE_KEY,cacheState);}}finally{syncing=false;}}
+async function hydrate(){const initialLocal=normalizeState(readNative(STATE_KEY,EMPTY_STATE));cacheHours=normalizeHours(readNative(HOURS_KEY,null));await ensureFirebase();const uid=await waitForFirebaseUser();const service=backend();
+if(!service||!uid){cacheState=initialLocal;ready=true;hydrating=false;nativeSetItem.call(sessionStorage,RELOAD_GUARD_KEY,'1');window.dispatchEvent(new CustomEvent('beautymove:agenda-hydrated'));return;}
+try{const remoteResult=await loadRemoteState(service.db,uid);let finalState=initialLocal;
+/* Regra estrutural: se o navegador já possui estado, ele é a autoridade da sessão.
+   Isso evita que uma aba recém-carregada substitua uma confirmação recente por um snapshot remoto antigo. */
+const localHasData=COLLECTIONS.some(name=>(initialLocal[name]||[]).length>0);
+if(!localHasData&&remoteResult.complete)finalState=normalizeState(remoteResult.state);
+cacheState=finalState;writeNative(STATE_KEY,cacheState);ready=true;hydrating=false;nativeSetItem.call(sessionStorage,HYDRATED_KEY,'1');nativeSetItem.call(sessionStorage,RELOAD_GUARD_KEY,'1');
+if(localHasData||!remoteResult.complete)await persistState(cacheState);
+writeNative(HOURS_KEY,cacheHours);window.dispatchEvent(new CustomEvent('beautymove:agenda-hydrated'));
+}catch(e){console.error('[BeautyMove] Agenda hydration failed:',e);cacheState=initialLocal;ready=true;hydrating=false;nativeSetItem.call(sessionStorage,RELOAD_GUARD_KEY,'1');window.dispatchEvent(new CustomEvent('beautymove:agenda-persistence-error',{detail:e}));}}
+function patchStorage(){Storage.prototype.getItem=function(key){return nativeGetItem.call(this,key);};Storage.prototype.setItem=function(key,value){if(this===localStorage&&key===STATE_KEY){try{const next=normalizeState(JSON.parse(value));cacheState=next;nativeSetItem.call(this,key,JSON.stringify(next));if(!hydrating)void persistState(next);return;}catch{}}if(this===localStorage&&key===HOURS_KEY){try{cacheHours=normalizeHours(JSON.parse(value));nativeSetItem.call(this,key,JSON.stringify(cacheHours));return;}catch{}}return nativeSetItem.call(this,key,value);};window.addEventListener('storage',event=>{if(event.storageArea!==localStorage||event.key!==STATE_KEY||event.newValue==null)return;try{const next=normalizeState(JSON.parse(event.newValue));cacheState=next;window.dispatchEvent(new CustomEvent('beautymove:agenda-external-state',{detail:clone(next)}));}catch{}});}
+window.BeautyMoveAgendaPersistence={hydrate,isReady:()=>ready,getState:()=>clone(cacheState||normalizeState(readNative(STATE_KEY,EMPTY_STATE))),getHours:()=>clone(cacheHours||normalizeHours(readNative(HOURS_KEY,null))),syncNow:()=>persistState(cacheState||normalizeState(readNative(STATE_KEY,EMPTY_STATE)))};
+patchStorage();void hydrate();
 })();

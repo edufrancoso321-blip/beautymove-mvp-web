@@ -1,17 +1,22 @@
-/* BeautyMove — ponte estável entre dados persistidos e a Agenda.
- * A Agenda possui seu próprio bridge Firestore em agenda-firestore-persistence.js.
- * Não carregamos mais o legado mvp-data-sync.js nesta página, porque ele mantém
- * listeners Firestore concorrentes e pode reintroduzir snapshots antigos no
- * localStorage depois de uma ação S.O.S. confirmada.
+/* BeautyMove — ponte de compatibilidade da Agenda.
+ *
+ * REGRA ESTRUTURAL:
+ * Este módulo NÃO altera appointments, opportunities ou transactions.
+ * A persistência da Agenda pertence exclusivamente ao
+ * agenda-firestore-persistence.js e a renderização pertence ao agenda.js.
+ *
+ * O código anterior tentava "normalizar" atendimentos sobrepostos e, ao
+ * encontrar registros que pareciam duplicados, alterava a duração do primeiro
+ * atendimento e removia o segundo. Isso é destrutivo: uma confirmação S.O.S.
+ * ou outro snapshot legítimo podia reaparecer com outra duração depois de F5,
+ * troca de aba ou hidratação do Firestore. Este módulo não pode ser autoridade
+ * de dados.
  */
 (function(){
   'use strict';
-  const STATE_KEY='beautymove.mvp.state';
-  let lastSignature='';
-  let refreshTimer=null;
+  const METRIC_IDS=['metricAppointments','metricProgress','metricSos','metricCanceled'];
 
   function ensureMetricTargets(){
-    const ids=['metricAppointments','metricProgress','metricSos','metricCanceled'];
     let host=document.getElementById('agendaMetricCompat');
     if(!host){
       host=document.createElement('div');
@@ -20,7 +25,7 @@
       host.setAttribute('aria-hidden','true');
       document.body.appendChild(host);
     }
-    ids.forEach(id=>{
+    METRIC_IDS.forEach(id=>{
       if(!document.getElementById(id)){
         const node=document.createElement('span');
         node.id=id;
@@ -29,88 +34,12 @@
     });
   }
 
-  function readState(){
-    try{return JSON.parse(localStorage.getItem(STATE_KEY)||'null')||{};}
-    catch(_){return {};}
-  }
-
-  function writeState(state){
-    try{localStorage.setItem(STATE_KEY,JSON.stringify(state));return true;}
-    catch(_){return false;}
-  }
-
-  /* Remove apenas registros impossíveis: mesmo salão/data/profissional/cliente/serviço
-     com horários sobrepostos. O atendimento mais antigo é preservado e sua duração
-     cobre o maior término encontrado. Agendamentos distintos e não sobrepostos ficam intactos. */
-  function normalizeOverlappingAppointments(state){
-    if(!Array.isArray(state.appointments)||state.appointments.length<2)return false;
-    const appointments=state.appointments.filter(a=>a&&a.status!=='cancelado');
-    const groups=new Map();
-    const minutes=t=>{const [h,m]=String(t||'00:00').split(':').map(Number);return (h||0)*60+(m||0);};
-    const duration=a=>Number(a?.duration)||((Array.isArray(a?.services)?a.services:[]).reduce((s,x)=>s+Number(x?.duration||0),0)||30);
-    const key=a=>[a.date,a.professional,a.client,(a.service||'').trim()].join('|');
-    appointments.forEach(a=>{const k=key(a);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(a);});
-    let changed=false;
-    groups.forEach(list=>{
-      list.sort((a,b)=>minutes(a.time)-minutes(b.time));
-      for(let i=0;i<list.length-1;i++){
-        const keep=list[i];
-        let keepEnd=minutes(keep.time)+duration(keep);
-        let j=i+1;
-        while(j<list.length){
-          const duplicate=list[j];
-          const start=minutes(duplicate.time);
-          if(start>=keepEnd)break;
-          const duplicateEnd=start+duration(duplicate);
-          if(duplicateEnd>keepEnd){
-            keep.duration=duplicateEnd-minutes(keep.time);
-            if(Array.isArray(keep.services)&&keep.services.length===1)keep.services[0].duration=keep.duration;
-            keepEnd=duplicateEnd;
-          }
-          const index=state.appointments.indexOf(duplicate);
-          if(index>=0){state.appointments.splice(index,1);changed=true;}
-          list.splice(j,1);
-        }
-      }
-    });
-    if(changed)writeState(state);
-    return changed;
-  }
-
-  function signature(state){
-    return JSON.stringify({
-      appointments:Array.isArray(state.appointments)?state.appointments:[],
-      opportunities:Array.isArray(state.opportunities)?state.opportunities:[],
-      transactions:Array.isArray(state.transactions)?state.transactions:[]
-    });
-  }
-
-  function refreshAgenda(){
-    clearTimeout(refreshTimer);
-    refreshTimer=setTimeout(()=>{
-      const state=readState();
-      normalizeOverlappingAppointments(state);
-      const next=signature(readState());
-      if(next===lastSignature)return;
-      lastSignature=next;
-      document.getElementById('todayBtn')?.click();
-    },80);
-  }
-
-  function boot(){
-    ensureMetricTargets();
-    const state=readState();
-    const normalized=normalizeOverlappingAppointments(state);
-    lastSignature=signature(readState());
-    window.addEventListener('beautymove:data-ready',refreshAgenda);
-    window.addEventListener('storage',event=>{
-      if(event.key===STATE_KEY)refreshAgenda();
-    });
-    if(normalized)document.getElementById('todayBtn')?.click();
-  }
-
+  /* Compatibilidade somente: nenhum listener de storage, nenhum reload,
+     nenhum click sintético e nenhuma escrita em localStorage. */
+  if(document.body)ensureMetricTargets();
   if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',ensureMetricTargets,{once:true});
+  }else{
     ensureMetricTargets();
-    document.addEventListener('DOMContentLoaded',boot,{once:true});
-  }else boot();
+  }
 })();

@@ -1,7 +1,8 @@
 /* BeautyMove — ponte estável entre dados persistidos e a Agenda.
- * As métricas inferiores foram removidas da interface, mas agenda.js ainda
- * usa seus alvos internamente. Mantemos apenas os alvos invisíveis e uma
- * atualização determinística da grade quando a fonte de dados muda.
+ * A Agenda possui seu próprio bridge Firestore em agenda-firestore-persistence.js.
+ * Não carregamos mais o legado mvp-data-sync.js nesta página, porque ele mantém
+ * listeners Firestore concorrentes e pode reintroduzir snapshots antigos no
+ * localStorage depois de uma ação S.O.S. confirmada.
  */
 (function(){
   'use strict';
@@ -96,24 +97,6 @@
     },80);
   }
 
-  function loadBridge(){
-    if(window.BeautyMoveFirebaseBootstrap){
-      return window.BeautyMoveFirebaseBootstrap().catch(()=>{});
-    }
-    return new Promise(resolve=>{
-      const existing=document.querySelector('script[src="assets/js/mvp-firebase-bootstrap.js"]');
-      if(existing){
-        existing.addEventListener('load',()=>window.BeautyMoveFirebaseBootstrap?.().catch(()=>{}),{once:true});
-        return resolve();
-      }
-      const script=document.createElement('script');
-      script.src='assets/js/mvp-firebase-bootstrap.js?v=20260818-stable1';
-      script.onload=()=>{window.BeautyMoveFirebaseBootstrap?.().catch(()=>{});resolve();};
-      script.onerror=()=>resolve();
-      document.head.appendChild(script);
-    });
-  }
-
   function boot(){
     ensureMetricTargets();
     const state=readState();
@@ -124,7 +107,6 @@
       if(event.key===STATE_KEY)refreshAgenda();
     });
     if(normalized)document.getElementById('todayBtn')?.click();
-    loadBridge();
   }
 
   if(document.readyState==='loading'){

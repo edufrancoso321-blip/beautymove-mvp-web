@@ -17,6 +17,8 @@
   const getCells=()=>[...(getGrid()?.querySelectorAll('td[data-sos-cell="true"],td.sos-cell[data-sos-id],td.bm-sos-final-cell')||[])];
   let painting=false;
   let paintTimer=null;
+  let gridObserver=null;
+  const observeGrid=()=>{const grid=getGrid();if(!grid||!gridObserver)return;gridObserver.observe(grid,{childList:true,subtree:true});};
 
   function style(){
     if(document.getElementById('bmSosAuthoritativeCss'))return;
@@ -78,6 +80,7 @@
     const appointments=(Array.isArray(state.appointments)?state.appointments:[]).filter(a=>a&&a.date===date&&a.status!=='cancelado'&&a.source==='sos'&&(a.sosAcceptedBy||a.acceptedBy||a.sosOpportunityId));
     const opportunities=(Array.isArray(state.opportunities)?state.opportunities:[]).filter(o=>o&&o.date===date&&o.source==='sos'&&!['resolved','cancelado','cancelada'].includes(o.status));
     painting=true;
+    gridObserver?.disconnect();
     try{
       cells.forEach(c=>{c.className='sos-free-cell bm-sos-final-cell';c.removeAttribute('data-sos-id');c.removeAttribute('data-appointment-id');c.dataset.sosCell='true';c.innerHTML='Livre';});
       const draw=(item,isAppointment)=>{
@@ -95,7 +98,10 @@
       };
       appointments.forEach(a=>draw(a,true));
       opportunities.forEach(o=>draw(o,false));
-    }finally{painting=false;}
+    }finally{
+      painting=false;
+      observeGrid();
+    }
   }
 
   function schedulePaint(){
@@ -171,7 +177,7 @@
     window.addEventListener('beautymove:agenda-hydrated',schedulePaint);
     window.addEventListener('storage',e=>{if(e.key===STATE_KEY)schedulePaint();});
     const grid=getGrid();
-    if(grid){const observer=new MutationObserver(()=>{if(!painting)schedulePaint();});observer.observe(grid,{childList:true,subtree:true});}
+    if(grid){gridObserver=new MutationObserver(()=>{if(!painting)schedulePaint();});observeGrid();}
     setInterval(addRescheduleButton,250);
     setTimeout(()=>{paint();addRescheduleButton();},80);
   }

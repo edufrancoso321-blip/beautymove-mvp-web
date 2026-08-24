@@ -36,3 +36,10 @@
 @media(max-width:1180px){.agenda-workspace{--bm-workspace-gap:12px}.agenda-scroll-region{grid-template-columns:minmax(0,1.8fr) minmax(210px,.8fr)!important}:root{--bm-agenda-min-prof:102px}}
 @media(max-width:900px){.agenda-workspace{grid-template-columns:1fr!important;gap:12px!important;overflow:visible!important}.agenda-scroll-region{grid-template-columns:1fr!important;gap:12px!important;height:520px!important;min-height:420px!important;overflow-y:auto!important}.agenda-workspace-resize-handle{display:none!important}.agenda-sos-agenda-card{min-height:380px!important}.agenda-workspace>.agenda-sos-panel{height:460px!important;min-height:340px!important}}
 @media(max-width:640px){.agenda-scroll-region{height:460px!important;min-height:380px!important}.agenda-sos-agenda-card{min-height:340px!important}.agenda-workspace>.agenda-sos-panel{height:420px!important}}
+
+/* 2026-08-24 — sincronização vertical: a Agenda principal e a Agenda S.O.S.
+   usam exclusivamente o scroll vertical do workspace. A rolagem interna da
+   grade principal fica transparente para que ambas avancem exatamente juntas. */
+.agenda-primary .agenda-shell-v2{overflow:visible!important}
+.agenda-primary .bm-ap-scroll{height:auto!important;max-height:none!important;overflow-y:visible!important;overflow-x:hidden!important}
+.agenda-primary .bm-ap{height:auto!important}

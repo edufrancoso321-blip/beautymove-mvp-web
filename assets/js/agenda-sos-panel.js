@@ -12,8 +12,11 @@
   function focusOpportunity(id){
     const inline=document.querySelector('.agenda-sos-workspace');
     if(!inline){window.location.href=`sos.html?opportunity=${encodeURIComponent(id||'')}`;return;}
+    const op=active().find(o=>String(o.id)===String(id));
+    const date=document.getElementById('sosAgendaDate');
+    if(op?.date&&date&&date.value!==op.date){date.value=op.date;date.dispatchEvent(new Event('change',{bubbles:true}))}
     inline.scrollIntoView({behavior:'smooth',block:'start'});
-    setTimeout(()=>window.dispatchEvent(new CustomEvent('beautymove:sos-selected',{detail:{id:id||null}})),160);
+    setTimeout(()=>window.dispatchEvent(new CustomEvent('beautymove:sos-selected',{detail:{id:id||null}})),180);
   }
   function render(){
     const body=document.getElementById('agendaSosPanelBody'),count=document.getElementById('agendaSosCount');if(!body)return;

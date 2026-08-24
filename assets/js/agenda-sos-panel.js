@@ -6,9 +6,9 @@
   'use strict';
   const base='assets/';
   function ensureAssets(){
-    if(!document.querySelector('link[data-sos-workspace-css]')){const l=document.createElement('link');l.rel='stylesheet';l.href=`${base}css/agenda-sos-workspace.css?v=20260824-1`;l.dataset.sosWorkspaceCss='1';document.head.appendChild(l)}
+    if(!document.querySelector('link[data-sos-workspace-css]')){const l=document.createElement('link');l.rel='stylesheet';l.href=`${base}css/agenda-sos-workspace.css?v=20260824-2`;l.dataset.sosWorkspaceCss='1';document.head.appendChild(l)}
     if(document.querySelector('script[data-sos-workspace-js]'))return;
-    const a=document.createElement('script');a.src=`${base}js/agenda-sos-workspace.js?v=20260824-1`;a.dataset.sosWorkspaceJs='1';a.onload=()=>{if(document.querySelector('script[data-sos-agenda-js]'))return;const b=document.createElement('script');b.src=`${base}js/agenda-sos.js?v=20260824-2`;b.dataset.sosAgendaJs='1';document.body.appendChild(b)};document.body.appendChild(a);
+    const a=document.createElement('script');a.src=`${base}js/agenda-sos-workspace.js?v=20260824-2`;a.dataset.sosWorkspaceJs='1';a.onload=()=>{if(document.querySelector('script[data-sos-agenda-js]'))return;const b=document.createElement('script');b.src=`${base}js/agenda-sos.js?v=20260824-2`;b.dataset.sosAgendaJs='1';document.body.appendChild(b)};document.body.appendChild(a);
   }
   ensureAssets();
   const STATE='beautymove.mvp.state';
@@ -17,12 +17,12 @@
   const duration=v=>{const n=Number(v)||0,h=Math.floor(n/60),m=n%60;return h?`${h}h${m?` ${m}min`:''}`:`${m}min`};
   function active(){const st=read(STATE,{opportunities:[]});return Array.isArray(st?.opportunities)?st.opportunities.filter(o=>!['finalizada','cancelada','concluida'].includes(String(o.status||'').toLowerCase())):[]}
   function focusOpportunity(id){
-    const inline=document.querySelector('.agenda-sos-workspace');
-    if(!inline){window.location.href=`sos.html?opportunity=${encodeURIComponent(id||'')}`;return;}
+    const agenda=document.querySelector('.agenda-sos-agenda-card');
+    if(!agenda){window.location.href=`sos.html?opportunity=${encodeURIComponent(id||'')}`;return}
     const op=active().find(o=>String(o.id)===String(id));
     const date=document.getElementById('sosAgendaDate');
     if(op?.date&&date&&date.value!==op.date){date.value=op.date;date.dispatchEvent(new Event('change',{bubbles:true}))}
-    inline.scrollIntoView({behavior:'smooth',block:'start'});
+    agenda.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
     setTimeout(()=>window.dispatchEvent(new CustomEvent('beautymove:sos-selected',{detail:{id:id||null}})),180);
   }
   function render(){

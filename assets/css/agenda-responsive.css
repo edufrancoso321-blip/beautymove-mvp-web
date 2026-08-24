@@ -1,0 +1,197 @@
+/* BeautyMove Agenda — responsive refactor 2026-08-24 */
+
+/* Structural guardrails: the grid itself owns the horizontal scroll. */
+html, body { max-width: 100%; overflow-x: hidden; }
+.salon-main { min-width: 0; }
+.agenda-shell-v2 { width: 100%; min-width: 0; overflow: hidden; }
+.agenda-scroll-v2 { width: 100%; min-width: 0; overflow: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-gutter: stable both-edges; }
+
+/* Keep the table/header/cells on one deterministic column system. */
+.agenda-grid {
+  width: max-content !important;
+  min-width: max-content !important;
+  table-layout: fixed !important;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.agenda-grid th,
+.agenda-grid td {
+  box-sizing: border-box;
+  min-width: 190px;
+  width: 190px;
+  overflow: hidden;
+}
+.agenda-grid .time-col {
+  width: 82px !important;
+  min-width: 82px !important;
+  max-width: 82px !important;
+  text-align: center;
+  white-space: nowrap;
+}
+.agenda-grid .sos-col {
+  width: 220px !important;
+  min-width: 220px !important;
+}
+
+/* Professional header: specialty and professional name are separate rows in normal flow. */
+.agenda-grid thead th:not(.time-col) {
+  height: 92px !important;
+  padding: 10px 12px !important;
+  vertical-align: middle;
+  white-space: normal !important;
+}
+.agenda-grid .specialty-label {
+  display: block !important;
+  min-height: 18px;
+  margin: 0 0 7px !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 700;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+.agenda-grid .professional-name {
+  display: block !important;
+  min-height: 22px;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 800;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+.agenda-grid thead .sos-title,
+.agenda-grid thead .sos-header-button { white-space: normal; }
+
+/* Cells never allow long content to paint over another cell. */
+.agenda-grid tbody td > * { max-width: 100%; overflow-wrap: anywhere; }
+.agenda-grid tbody td { height: 64px; line-height: 1.25; }
+.agenda-grid .appointment-cell strong,
+.agenda-grid .appointment-cell span,
+.agenda-grid .appointment-cell small,
+.agenda-grid .sos-cell strong,
+.agenda-grid .sos-cell span,
+.agenda-grid .sos-cell small { white-space: normal; overflow-wrap: anywhere; }
+
+/* Desktop: retain the multi-professional daily grid. */
+@media (min-width: 781px) {
+  .agenda-toolbar-v2 { min-width: 0; }
+  .agenda-date-controls { flex: 0 1 auto; min-width: 0; }
+  .agenda-date-controls strong { white-space: nowrap; }
+  .agenda-scroll-v2 { height: calc(100vh - 235px); min-height: 420px; }
+}
+
+/* Mobile: daily agenda only, with independent vertical + horizontal scrolling. */
+@media (max-width: 780px) {
+  .salon-main { padding: 16px 12px 28px !important; }
+
+  .salon-topbar {
+    width: 100%;
+    margin-bottom: 16px !important;
+    gap: 8px !important;
+  }
+  .salon-topbar h1 { font-size: 26px !important; }
+  .salon-top-actions { display: none; }
+
+  /* Date navigation becomes a stable three-part header: previous / date / next. */
+  .agenda-toolbar-v2 {
+    width: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+  }
+  .agenda-date-controls {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 8px;
+  }
+  .agenda-date-controls .icon-button {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+  }
+  .agenda-date-controls strong {
+    min-width: 0 !important;
+    width: 100%;
+    text-align: center;
+    font-size: 15px !important;
+    line-height: 1.25;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .agenda-toolbar-right {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+  }
+  .agenda-toolbar-right > * { width: 100% !important; min-width: 0 !important; flex: none !important; }
+  .agenda-toolbar-right #todayBtn { grid-column: 1 / -1; }
+  .agenda-toolbar-right input,
+  .agenda-toolbar-right select,
+  .agenda-toolbar-right button { height: 44px !important; }
+
+  .agenda-shell-v2 {
+    border-radius: 12px;
+  }
+  .agenda-scroll-v2 {
+    height: min(62vh, 620px) !important;
+    min-height: 360px !important;
+    max-height: 620px !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    scrollbar-width: auto;
+  }
+  .agenda-scroll-v2::-webkit-scrollbar { width: 12px; height: 12px; }
+  .agenda-scroll-v2::-webkit-scrollbar-thumb { background: #b8b3c1; border-radius: 999px; border: 3px solid #f5f3f7; }
+  .agenda-scroll-v2::-webkit-scrollbar-track { background: #f5f3f7; }
+
+  .agenda-grid thead th {
+    position: sticky !important;
+    top: 0;
+    z-index: 6 !important;
+    background: #fcfbfd !important;
+  }
+  .agenda-grid .time-col {
+    position: sticky !important;
+    left: 0;
+    z-index: 8 !important;
+    background: #fcfbfd !important;
+  }
+  .agenda-grid thead .time-col { z-index: 10 !important; }
+
+  .agenda-grid th,
+  .agenda-grid td { width: 190px; min-width: 190px; }
+  .agenda-grid .time-col { width: 82px !important; min-width: 82px !important; }
+  .agenda-grid .sos-col { width: 210px !important; min-width: 210px !important; }
+
+  .agenda-grid thead th:not(.time-col) {
+    height: 96px !important;
+    padding: 10px !important;
+  }
+  .agenda-grid .specialty-label { font-size: 11px !important; }
+  .agenda-grid .professional-name { font-size: 15px !important; }
+  .agenda-grid tbody td { height: 64px; padding: 9px 10px; }
+
+  .agenda-legend {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    gap: 16px;
+    padding-bottom: 4px;
+    white-space: nowrap;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 380px) {
+  .salon-main { padding-left: 8px !important; padding-right: 8px !important; }
+  .agenda-date-controls { grid-template-columns: 42px minmax(0, 1fr) 42px; }
+  .agenda-date-controls .icon-button { width: 42px !important; min-width: 42px !important; }
+  .agenda-grid th, .agenda-grid td { width: 180px; min-width: 180px; }
+  .agenda-grid .time-col { width: 76px !important; min-width: 76px !important; }
+}

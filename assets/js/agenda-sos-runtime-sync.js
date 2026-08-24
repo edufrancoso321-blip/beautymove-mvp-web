@@ -16,6 +16,7 @@
       loadScript('bmAgendaSosSelectionAuthority','assets/js/agenda-sos-selection-authority.js?v=20260824-1');
       loadScript('bmAgendaConflictAuthority','assets/js/agenda-conflict-authority.js?v=20260824-1');
       loadScript('bmAgendaSosDetailAuthority','assets/js/agenda-sos-detail-authority.js?v=20260824-1');
+      loadScript('bmAgendaWebIntegrityFinal','assets/js/agenda-web-integrity-final.js?v=20260824-1');
     },700);
     window.addEventListener('beautymove:sos-created',()=>setTimeout(refresh,50));
   }

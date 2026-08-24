@@ -3,9 +3,9 @@
   'use strict';
   const base='assets/';
   function ensureAssets(){
-    if(!document.querySelector('link[data-sos-workspace-css]')){const l=document.createElement('link');l.rel='stylesheet';l.href=`${base}css/agenda-sos-workspace.css?v=20260824-7`;l.dataset.sosWorkspaceCss='1';document.head.appendChild(l)}
+    if(!document.querySelector('link[data-sos-workspace-css]')){const l=document.createElement('link');l.rel='stylesheet';l.href=`${base}css/agenda-sos-workspace.css?v=20260824-8`;l.dataset.sosWorkspaceCss='1';document.head.appendChild(l)}
     if(document.querySelector('script[data-sos-workspace-js]'))return;
-    const a=document.createElement('script');a.src=`${base}js/agenda-sos-workspace.js?v=20260824-6`;a.dataset.sosWorkspaceJs='1';a.onload=()=>{if(document.querySelector('script[data-sos-agenda-js]'))return;const b=document.createElement('script');b.src=`${base}js/agenda-sos.js?v=20260824-9`;b.dataset.sosAgendaJs='1';document.body.appendChild(b)};document.body.appendChild(a);
+    const a=document.createElement('script');a.src=`${base}js/agenda-sos-workspace.js?v=20260824-7`;a.dataset.sosWorkspaceJs='1';a.onload=()=>{if(document.querySelector('script[data-sos-agenda-js]'))return;const b=document.createElement('script');b.src=`${base}js/agenda-sos.js?v=20260824-9`;b.dataset.sosAgendaJs='1';document.body.appendChild(b)};document.body.appendChild(a);
   }
   ensureAssets();
   const STATE='beautymove.mvp.state';

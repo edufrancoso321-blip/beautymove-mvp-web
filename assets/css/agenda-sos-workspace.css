@@ -1,5 +1,5 @@
 /* BeautyMove — Workspace definitivo da Agenda + Agenda S.O.S. + Painel S.O.S. */
-.agenda-workspace{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(270px,.55fr) minmax(330px,.70fr)!important;gap:14px!important;align-items:stretch!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;height:auto!important;}
+.agenda-workspace{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(270px,.55fr) minmax(330px,.70fr)!important;gap:14px!important;align-items:stretch!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;height:auto!important;position:relative!important;}
 .agenda-workspace>.agenda-primary{min-width:0!important;min-height:0!important;width:auto!important;display:flex!important;flex-direction:column!important;}
 .agenda-workspace>.agenda-primary .agenda-shell-v2{min-width:0!important;min-height:0!important;flex:1 1 auto!important;}
 .agenda-workspace>.agenda-primary .agenda-scroll-v2{min-width:0!important;width:100%!important;max-width:100%!important;}
@@ -19,7 +19,7 @@
 .agenda-workspace>.agenda-sos-panel .agenda-sos-panel-title{font-size:20px!important;}
 .agenda-workspace>.agenda-sos-panel .agenda-sos-count{margin-top:12px!important;padding:10px 11px!important;font-size:11px!important;}
 .agenda-workspace>.agenda-sos-panel .agenda-sos-panel-body{padding:12px 14px!important;}
-.agenda-workspace-divider{width:10px!important;min-width:10px!important;margin:0 -5px!important;padding:0!important;border:0!important;background:transparent!important;cursor:col-resize!important;position:relative!important;z-index:30!important;display:flex!important;align-items:center!important;justify-content:center!important;touch-action:none!important;}
+.agenda-workspace-divider{position:absolute!important;top:0!important;bottom:0!important;width:10px!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;cursor:col-resize!important;z-index:100!important;display:flex!important;align-items:center!important;justify-content:center!important;touch-action:none!important;}
 .agenda-workspace-divider::before{content:'';width:2px;height:72px;border-radius:3px;background:#d8c8ef;transition:.15s ease;}
 .agenda-workspace-divider::after{content:'⋮';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:34px;border:1px solid #d8c8ef;border-radius:8px;background:#fff;color:var(--purple);font-size:13px;line-height:30px;font-weight:900;}
 .agenda-workspace-divider:hover::before,.agenda-workspace-divider.is-dragging::before{background:var(--purple);width:3px;}

@@ -14,6 +14,7 @@
     setTimeout(()=>{
       loadScript('bmAgendaAuthoritativeGrid','assets/js/agenda-authoritative-grid-fix.js?v=20260824-2');
       loadScript('bmAgendaSosSelectionAuthority','assets/js/agenda-sos-selection-authority.js?v=20260824-1');
+      loadScript('bmAgendaConflictAuthority','assets/js/agenda-conflict-authority.js?v=20260824-1');
     },700);
     window.addEventListener('beautymove:sos-created',()=>setTimeout(refresh,50));
   }

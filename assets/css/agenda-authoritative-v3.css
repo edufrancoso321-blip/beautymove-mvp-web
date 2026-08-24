@@ -1,0 +1,36 @@
+/* BeautyMove — Agenda Web v3: grade autoritativa
+   Regra: cabeçalho, colunas, horários e ocupação usam a mesma geometria.
+*/
+.bm-agenda-v3-shell{height:100%;min-height:0;overflow:hidden;border:0;background:#fff}
+.bm-agenda-v3-scroll{height:100%;min-height:0;overflow:auto;overflow-y:scroll;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable both-edges}
+.bm-agenda-v3{--time-col:76px;--professional-col:185px;--sos-col:220px;--row-height:68px;min-width:calc(var(--time-col) + (4 * var(--professional-col)) + var(--sos-col));background:#fff;color:#17131f}
+.bm-agenda-v3-header{position:sticky;top:0;z-index:80;display:grid;grid-template-columns:var(--time-col) calc(2 * var(--professional-col)) var(--professional-col var(--professional-col)) var(--sos-col);grid-template-columns:var(--time-col) calc(2 * var(--professional-col)) var(--professional-col) var(--professional-col) var(--sos-col);grid-template-rows:36px 46px;background:#fff;border-bottom:1px solid #ece9f0}
+.bm-agenda-v3-header>*{box-sizing:border-box;border-right:1px solid #ece9f0}
+.bm-agenda-v3-time-head{grid-row:1 / span 2;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:850;position:sticky;left:0;z-index:90;background:#fff}
+.bm-agenda-v3-specialty{display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:850;color:#625b6c;border-bottom:0}
+.bm-agenda-v3-specialty.cabelos{grid-column:2}
+.bm-agenda-v3-specialty.maos{grid-column:3}
+.bm-agenda-v3-specialty.estetica{grid-column:4}
+.bm-agenda-v3-specialty.sos{grid-column:5;grid-row:1 / span 2;color:#7438ff;flex-direction:column;border-right:0}
+.bm-agenda-v3-sos-action{font-size:11px;font-weight:850;margin-top:3px}
+.bm-agenda-v3-prof{display:flex;align-items:flex-start;justify-content:center;padding:5px 8px 8px;position:relative;font-size:16px;font-weight:900;border-top:0}
+.bm-agenda-v3-prof::after{content:'';position:absolute;left:10px;right:10px;bottom:0;height:6px;border-radius:6px 6px 0 0}
+.bm-agenda-v3-prof.cabelos::after{background:#e7f1ff}.bm-agenda-v3-prof.maos::after{background:#fce8e8}.bm-agenda-v3-prof.estetica::after{background:#e7f6ec}
+.bm-agenda-v3-body{position:relative;display:grid;grid-template-columns:var(--time-col) repeat(4,var(--professional-col)) var(--sos-col);min-height:0}
+.bm-agenda-v3-time-col,.bm-agenda-v3-prof-col,.bm-agenda-v3-sos-col{position:relative;min-height:100%;border-right:1px solid #ece9f0;box-sizing:border-box}
+.bm-agenda-v3-time-col{position:sticky;left:0;z-index:30;background:#fff}
+.bm-agenda-v3-prof-col{background:#fff}
+.bm-agenda-v3-sos-col{background:#fff;border-right:0}
+.bm-agenda-v3-slot{height:var(--row-height);box-sizing:border-box;border-bottom:1px solid #ece9f0;padding:8px 10px;font-size:12px;color:#716c78;pointer-events:auto}
+.bm-agenda-v3-time-col .bm-agenda-v3-slot{display:flex;align-items:flex-start;justify-content:center;padding:8px 3px;font-size:13px;font-weight:800;color:#17131f}
+.bm-agenda-v3-prof-col .bm-agenda-v3-slot,.bm-agenda-v3-sos-col .bm-agenda-v3-slot{border-bottom:1px solid #ece9f0}
+.bm-agenda-v3-appointment,.bm-agenda-v3-sos-item{position:absolute;left:3px;right:3px;box-sizing:border-box;border-radius:0 7px 7px 0;padding:9px 9px;overflow:hidden;cursor:pointer;z-index:20;box-shadow:0 1px 0 rgba(40,20,60,.05)}
+.bm-agenda-v3-appointment{background:#fff;border-left:3px solid #68666f}
+.bm-agenda-v3-appointment.status-progress{background:#f3fbf6;border-left-color:#178a5b}.bm-agenda-v3-appointment.status-finished{background:#fff5f5;border-left-color:#c62828}.bm-agenda-v3-appointment.status-canceled{background:#faf7f8;border-left-color:#9a909e;opacity:.65}
+.bm-agenda-v3-appointment.conflict{box-shadow:inset 0 0 0 2px #c62828}
+.bm-agenda-v3-appointment strong,.bm-agenda-v3-sos-item strong{display:block;font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bm-agenda-v3-appointment span,.bm-agenda-v3-sos-item span{display:block;font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bm-agenda-v3-appointment small,.bm-agenda-v3-sos-item small{display:block;font-size:10px;margin-top:4px;color:#625b6c;font-weight:700}
+.bm-agenda-v3-sos-item{background:#f2eaff;border-left:3px solid #7438ff}.bm-agenda-v3-sos-item.searching{background:#f2eaff;border-left-color:#7438ff}.bm-agenda-v3-sos-item strong{color:#573487}
+.bm-agenda-v3-now-line{position:absolute;left:0;right:0;height:2px;background:#7438ff;z-index:45;pointer-events:none}.bm-agenda-v3-now-line::before{content:'';position:absolute;left:-1px;top:-4px;width:10px;height:10px;border-radius:50%;background:#7438ff}.bm-agenda-v3-now-label{position:absolute;left:6px;top:-18px;padding:2px 6px;border-radius:5px;background:#7438ff;color:#fff;font-size:10px;font-weight:850}
+.bm-agenda-v3-empty{height:68px;display:flex;align-items:center;justify-content:center;color:#aaa5ae;font-size:12px}
+.bm-agenda-v3-scroll::-webkit-scrollbar{width:12px;height:12px}.bm-agenda-v3-scroll::-webkit-scrollbar-track{background:#f4f2f6;border-radius:8px}.bm-agenda-v3-scroll::-webkit-scrollbar-thumb{background:#b9b4c1;border-radius:8px;border:2px solid #f4f2f6}
+@media(max-width:780px){.bm-agenda-v3{min-width:calc(var(--time-col) + var(--professional-col) + var(--sos-col))}.bm-agenda-v3-header{position:sticky;top:0}.bm-agenda-v3-body{grid-template-columns:var(--time-col) repeat(4,var(--professional-col)) var(--sos-col)}.bm-agenda-v3-time-col{position:sticky;left:0;z-index:60}}

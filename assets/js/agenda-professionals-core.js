@@ -38,8 +38,8 @@
 
   function styles(){if(document.getElementById('bmAgendaProfessionalsCoreStyles'))return;const s=document.createElement('style');s.id='bmAgendaProfessionalsCoreStyles';s.textContent=`
     #agendaGrid .bm-ap-scroll{width:100%;height:100%;overflow:auto;overflow-y:scroll;overflow-x:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#fff}
-    #agendaGrid .bm-ap{min-width:816px;width:max-content;background:#fff}
-    #agendaGrid .bm-ap-head,#agendaGrid .bm-ap-body{display:grid;grid-template-columns:76px repeat(4,185px);position:relative}
+    #agendaGrid .bm-ap{min-width:816px;width:100%;background:#fff}
+    #agendaGrid .bm-ap-head,#agendaGrid .bm-ap-body{display:grid;grid-template-columns:76px repeat(4,minmax(0,1fr));width:100%;position:relative}
     #agendaGrid .bm-ap-head{position:sticky;top:0;z-index:80;background:#fff}
     #agendaGrid .bm-ap-specialty{height:36px;display:flex;align-items:center;justify-content:center;border-right:1px solid #ece9f0;border-bottom:1px solid #ece9f0;font-size:15px;font-weight:850;color:#625b6c;position:relative}
     #agendaGrid .bm-ap-specialty:after{content:'';position:absolute;left:12px;right:12px;bottom:0;height:6px;border-radius:6px 6px 0 0}.bm-ap-specialty.blue:after{background:#e7f1ff}.bm-ap-specialty.rose:after{background:#fce8e8}.bm-ap-specialty.green:after{background:#e7f6ec}
@@ -50,7 +50,7 @@
     #agendaGrid .bm-ap-free{position:absolute;left:0;right:0;height:${ROW_HEIGHT}px;display:flex;align-items:center;padding-left:13px;box-sizing:border-box;color:#7a7380;font-size:12px;pointer-events:none}
     #agendaGrid .bm-ap-event{position:absolute;left:0;right:0;box-sizing:border-box;overflow:hidden;padding:8px 10px 7px;border-left:3px solid #68666f;background:#f5f4f6;z-index:5;cursor:pointer}.bm-ap-event.progress{background:#eaf8f0;border-left-color:#178a5b}.bm-ap-event.finished{background:#fdeaea;border-left-color:#c62828}.bm-ap-event strong,.bm-ap-event span,.bm-ap-event small{display:block}.bm-ap-event strong{font-size:13px;line-height:1.15;font-weight:900;color:#17131f}.bm-ap-event span{font-size:10.5px;line-height:1.25;margin-top:3px;color:#3f3945}.bm-ap-event small{font-size:9.5px;line-height:1.2;margin-top:3px;font-weight:700;color:#625c67}
     #agendaGrid .bm-ap-now{position:absolute;left:0;right:0;height:2px;background:var(--purple);z-index:30;pointer-events:none;display:none}
-    @media(max-width:780px){#agendaGrid .bm-ap{min-width:662px}#agendaGrid .bm-ap-head,#agendaGrid .bm-ap-body{grid-template-columns:62px repeat(4,150px)}}
+    @media(max-width:780px){#agendaGrid .bm-ap{min-width:662px}#agendaGrid .bm-ap-head,#agendaGrid .bm-ap-body{grid-template-columns:62px repeat(4,150px);width:max-content}}
   `;document.head.appendChild(s)}
 
   function render(){

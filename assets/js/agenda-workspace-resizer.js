@@ -79,6 +79,11 @@
       });
     }
 
+    /*
+      Painel S.O.S.: a alça é posicionada pela borda real do painel.
+      Ela permanece visualmente acoplada ao painel enquanto a largura muda.
+      O painel fica ancorado à direita e a Agenda acompanha organicamente.
+    */
     if(!ws.querySelector('.agenda-sos-panel-resizer')){
       const panelResizer=document.createElement('button');
       panelResizer.type='button';
@@ -92,11 +97,21 @@
         const maxByWorkspace=Math.max(PANEL_MIN,ws.clientWidth-MAIN_MIN-GAP);
         return {min:PANEL_MIN,max:Math.min(PANEL_MAX,maxByWorkspace)};
       }
+
+      function positionPanelResizer(){
+        const wsRect=ws.getBoundingClientRect();
+        const panelRect=panel.getBoundingClientRect();
+        const x=panelRect.left-wsRect.left;
+        panelResizer.style.left=`${x-12}px`;
+        panelResizer.style.right='auto';
+        panelResizer.style.transform='none';
+      }
+
       function applyPanel(panelWidth,save){
         const {min,max}=panelLimits();
         const value=clamp(Number(panelWidth)||270,min,max);
         ws.style.gridTemplateColumns=`minmax(0,1fr) ${value}px`;
-        panelResizer.style.left=`calc(100% - ${value + GAP/2 + 5}px)`;
+        positionPanelResizer();
         if(save)localStorage.setItem(PANEL_KEY,String(Math.round(value)));
       }
 
@@ -113,7 +128,8 @@
         rafPanel=requestAnimationFrame(()=>{
           rafPanel=0;
           const rect=ws.getBoundingClientRect();
-          const value=rect.right-pendingPanelX-(GAP/2);
+          /* O cursor controla diretamente a borda esquerda do painel. */
+          const value=rect.right-pendingPanelX;
           applyPanel(value,false);
         });
       };
@@ -122,6 +138,7 @@
         draggingPanel=false;
         panelResizer.classList.remove('is-dragging');
         localStorage.setItem(PANEL_KEY,String(Math.round(panel.getBoundingClientRect().width)));
+        positionPanelResizer();
         document.body.style.cursor='';
         document.body.style.userSelect='';
       };

@@ -10,7 +10,7 @@
  */
 .agenda-workspace{
   display:grid!important;
-  grid-template-columns:minmax(0,1.65fr) minmax(360px,.95fr) minmax(270px,.68fr)!important;
+  grid-template-columns:minmax(0,1.85fr) minmax(360px,1fr) minmax(250px,.65fr)!important;
   gap:14px!important;
   align-items:stretch!important;
   flex:1 1 auto!important;
@@ -121,14 +121,14 @@
 /* ── Responsividade ────────────────────────────────────────────────────── */
 @media(max-width:1320px){
   .agenda-workspace{
-    grid-template-columns:minmax(0,1.55fr) minmax(340px,.95fr) minmax(260px,.68fr)!important;
+    grid-template-columns:minmax(0,1.75fr) minmax(340px,.95fr) minmax(250px,.65fr)!important;
     gap:12px!important;
   }
 }
 
 @media(max-width:1120px){
   .agenda-workspace{
-    grid-template-columns:minmax(0,1.4fr) minmax(320px,.9fr) minmax(250px,.65fr)!important;
+    grid-template-columns:minmax(0,1.55fr) minmax(320px,.9fr) minmax(250px,.65fr)!important;
     gap:10px!important;
   }
   .agenda-sos-agenda-head{align-items:flex-start!important;flex-direction:column!important}

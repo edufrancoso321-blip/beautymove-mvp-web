@@ -1,7 +1,7 @@
 /* BeautyMove — divisor do Painel S.O.S. acoplado ao painel
    Regra: Agenda principal + Agenda S.O.S. são uma única área flexível.
-   O divisor pertence à borda esquerda do Painel S.O.S.; o painel permanece
-   ancorado à direita e todo o conteúdo da Agenda acompanha organicamente. */
+   O divisor pertence fisicamente ao Painel S.O.S.; o painel permanece
+   ancorado à direita e a área da Agenda ocupa automaticamente o restante. */
 (function(){
   'use strict';
 
@@ -19,8 +19,11 @@
     style.id = 'beautymove-sos-resizer-style';
     style.textContent = `
       .agenda-workspace{position:relative!important;}
+      .agenda-workspace > .agenda-primary{min-width:0!important;width:auto!important;}
+      .agenda-workspace > .agenda-sos-panel{position:relative!important;min-width:0!important;width:auto!important;max-width:none!important;}
       .agenda-workspace-divider{
         position:absolute!important;
+        left:0!important;
         top:50%!important;
         width:24px!important;
         height:52px!important;
@@ -68,7 +71,7 @@
 
     injectStyles();
 
-    let divider = workspace.querySelector('.agenda-workspace-divider');
+    let divider = panel.querySelector('.agenda-workspace-divider');
     if(!divider){
       divider = document.createElement('button');
       divider.type = 'button';
@@ -76,67 +79,74 @@
       divider.setAttribute('aria-label','Ajustar largura do Painel S.O.S.');
       divider.title = 'Arraste para ajustar a largura do Painel S.O.S.';
       divider.innerHTML = '<span aria-hidden="true"></span>';
-      workspace.appendChild(divider);
+      panel.appendChild(divider);
     }
 
     function metrics(){
       const width = workspace.clientWidth;
-      const panelMin = Math.min(PANEL_MIN, Math.max(220, width - MAIN_MIN - GAP));
-      const panelMaxByMain = width - MAIN_MIN - GAP;
-      const panelMax = Math.max(panelMin, Math.min(PANEL_MAX, panelMaxByMain));
-      return { width, panelMin, panelMax };
+      const panelMaxByMain = Math.max(PANEL_MIN, width - MAIN_MIN - GAP);
+      const panelMax = Math.max(PANEL_MIN, Math.min(PANEL_MAX, panelMaxByMain));
+      return { width, panelMin:PANEL_MIN, panelMax };
     }
 
     function applyPanelWidth(rawWidth, save){
-      const {width, panelMin, panelMax} = metrics();
-      const currentMain = width - GAP - (Number(rawWidth) || panelMin);
-      const value = clamp(Number(rawWidth) || currentMain, panelMin, panelMax);
-      workspace.style.gridTemplateColumns = `minmax(0, 1fr) ${Math.round(value)}px`;
-      divider.style.left = `calc(100% - ${Math.round(value + GAP)}px)`;
+      const {panelMin, panelMax} = metrics();
+      const value = clamp(Number(rawWidth) || PANEL_MIN, panelMin, panelMax);
+      workspace.style.setProperty('--beautymove-sos-panel-width', `${Math.round(value)}px`);
+      workspace.style.gridTemplateColumns = `minmax(${MAIN_MIN}px, 1fr) minmax(${panelMin}px, var(--beautymove-sos-panel-width))`;
       if(save) localStorage.setItem(KEY, String(Math.round(value)));
     }
 
     const saved = Number(localStorage.getItem(KEY));
-    const initialPanelWidth = saved || Math.min(PANEL_MAX, Math.max(PANEL_MIN, panel.getBoundingClientRect().width || 314));
+    const current = panel.getBoundingClientRect().width;
+    const initialPanelWidth = saved || (current >= PANEL_MIN && current <= PANEL_MAX ? current : 314);
     applyPanelWidth(initialPanelWidth, false);
 
     let dragging = false;
+    let pointerId = null;
 
     const move = event => {
-      if(!dragging) return;
+      if(!dragging || (pointerId !== null && event.pointerId !== pointerId)) return;
       const rect = workspace.getBoundingClientRect();
       const proposedPanelWidth = rect.right - event.clientX;
       applyPanelWidth(proposedPanelWidth, false);
     };
 
-    const stop = () => {
-      if(!dragging) return;
+    const stop = event => {
+      if(!dragging || (pointerId !== null && event?.pointerId !== pointerId)) return;
       dragging = false;
+      pointerId = null;
       divider.classList.remove('is-dragging');
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       const panelWidth = panel.getBoundingClientRect().width;
       applyPanelWidth(panelWidth, true);
+      try{ divider.releasePointerCapture?.(event?.pointerId); }catch(_e){}
     };
 
     divider.addEventListener('pointerdown', event => {
       if(window.matchMedia('(max-width:900px)').matches) return;
       dragging = true;
+      pointerId = event.pointerId;
       divider.classList.add('is-dragging');
-      divider.setPointerCapture?.(event.pointerId);
+      try{ divider.setPointerCapture?.(event.pointerId); }catch(_e){}
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
       event.preventDefault();
+      event.stopPropagation();
     });
 
     divider.addEventListener('pointermove', move);
     divider.addEventListener('pointerup', stop);
     divider.addEventListener('pointercancel', stop);
-    divider.addEventListener('lostpointercapture', stop);
+    divider.addEventListener('lostpointercapture', event => {
+      if(dragging) stop(event);
+    });
 
     window.addEventListener('resize', () => {
       if(window.matchMedia('(max-width:900px)').matches) return;
-      applyPanelWidth(panel.getBoundingClientRect().width, false);
+      const width = panel.getBoundingClientRect().width;
+      applyPanelWidth(width, false);
     });
   }
 

@@ -1,0 +1,35 @@
+/* BeautyMove — Agenda S.O.S. V1
+ * Módulo independente: oportunidades S.O.S.
+ * Não altera a grade da Agenda Profissionais.
+ */
+.sos-page{background:#fff;min-height:100vh;color:#17132a}
+.sos-page .sos-main{max-width:1480px;margin:0 auto;padding:24px 32px 40px}
+.sos-page .sos-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:18px}
+.sos-page .sos-head h1{margin:3px 0 4px;font-size:30px}.sos-page .sos-head p{margin:0;color:#6f687c}
+.sos-page .sos-actions{display:flex;gap:10px;align-items:center}
+.sos-page .sos-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:stretch}
+.sos-agenda-card,.sos-side-card{border:1px solid #e5deef;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(54,28,94,.05);overflow:hidden}
+.sos-agenda-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #eee8f4}
+.sos-date-controls{display:flex;align-items:center;gap:8px}.sos-date-controls strong{min-width:190px;text-align:center}
+.sos-icon-btn{width:36px;height:36px;border:1px solid #ddd5e9;background:#fff;border-radius:9px;font-size:20px;cursor:pointer}
+.sos-agenda-scroll{height:620px;overflow:auto}.sos-grid{display:grid;grid-template-columns:82px minmax(520px,1fr);min-width:620px;position:relative}
+.sos-time-col,.sos-op-col{position:relative}.sos-time-col{background:#fbfaff;border-right:1px solid #e8e1ef}
+.sos-time-cell{height:68px;box-sizing:border-box;border-bottom:1px solid #eee9f3;padding:14px 10px;text-align:center;font-weight:700;font-size:12px}
+.sos-op-area{position:relative;background:#fff}.sos-op-row{height:68px;box-sizing:border-box;border-bottom:1px solid #eee9f3;padding:0 12px;position:relative}.sos-op-row:nth-child(even){background:#fefeff}
+.sos-opportunity{position:absolute;left:10px;right:10px;top:5px;min-height:58px;border:1px solid #d8c8ff;border-left:4px solid #7438ff;border-radius:9px;background:#f5efff;padding:7px 10px;box-sizing:border-box;cursor:pointer;transition:.15s ease;z-index:2}
+.sos-opportunity:hover,.sos-opportunity.is-focused{box-shadow:0 0 0 2px rgba(116,56,255,.15);background:#efe6ff}.sos-opportunity h3{margin:0 0 2px;font-size:13px}
+.sos-opportunity p{margin:1px 0;font-size:11px;color:#5f566d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sos-op-status{display:inline-block;margin-top:2px;padding:2px 7px;border-radius:99px;background:#e8dcff;color:#6530d5;font-size:10px;font-weight:700}
+.sos-side-card{display:flex;flex-direction:column;min-height:100%}.sos-side-head{padding:18px;border-bottom:1px solid #eee8f4}
+.sos-side-title{display:flex;align-items:center;gap:8px;color:#7438ff;font-size:22px;font-weight:800}.sos-side-sub{margin:3px 0 12px;color:#6d6479;font-size:12px}
+.sos-side-count{padding:9px 11px;border-radius:9px;background:#f0e8ff;color:#6730d9;font-size:12px;font-weight:800}.sos-side-list{padding:10px;overflow:auto;max-height:620px}
+.sos-side-item{border:1px solid #e3d8ef;border-left:3px solid #7438ff;border-radius:9px;padding:11px;margin-bottom:9px;cursor:pointer;background:#fff}.sos-side-item:hover,.sos-side-item.is-focused{background:#f7f2ff}
+.sos-side-item strong{display:block;font-size:13px}.sos-side-item span{display:block;color:#6f667b;font-size:11px;margin-top:3px}.sos-side-item button{margin-top:8px}
+.sos-empty{padding:32px 18px;text-align:center;color:#7a7185;font-size:13px}
+.sos-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1001;padding:20px;background:rgba(28,18,42,.35)}.sos-modal.is-open{display:flex}
+.sos-modal-card{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:14px;padding:24px;box-shadow:0 20px 60px rgba(28,18,42,.2)}.sos-modal-card h2{margin:0 0 6px}
+.sos-modal-card .sos-form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.sos-modal-card .sos-field{display:flex;flex-direction:column;gap:6px}.sos-modal-card .sos-field.full{grid-column:1/-1}.sos-modal-card label{font-size:12px;font-weight:700}
+.sos-modal-card input,.sos-modal-card select{height:40px;border:1px solid #ddd5e8;border-radius:8px;padding:0 10px;background:#fff}.sos-modal-card .sos-modal-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;margin-top:4px}
+.sos-service-picker{border:1px solid #ddd5e8;border-radius:9px;max-height:180px;overflow:auto}.sos-service-picker label{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:9px;border-bottom:1px solid #eee;cursor:pointer}.sos-service-picker label:last-child{border-bottom:0}.sos-service-picker strong{font-size:11px;color:#6f35e8}
+.sos-detail{border-top:1px solid #eee8f4;margin-top:16px;padding-top:14px}.sos-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sos-detail-grid div{padding:9px;background:#faf8fc;border-radius:8px}.sos-detail-grid small{display:block;color:#7a7185;font-size:10px}.sos-detail-grid strong{font-size:12px}
+@media(max-width:1000px){.sos-page .sos-layout{grid-template-columns:1fr}.sos-side-list{max-height:320px}.sos-agenda-scroll{height:520px}}
+@media(max-width:700px){.sos-page .sos-main{padding:18px 12px 30px}.sos-page .sos-head{align-items:flex-start;flex-direction:column}.sos-grid{grid-template-columns:68px minmax(500px,1fr)}.sos-modal-card .sos-form{grid-template-columns:1fr}.sos-modal-card .sos-field.full{grid-column:auto}.sos-modal-card .sos-modal-actions{grid-column:auto}}

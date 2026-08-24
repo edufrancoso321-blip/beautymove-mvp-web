@@ -1,10 +1,10 @@
 /* BeautyMove — Workspace definitivo da Agenda + Agenda S.O.S. + Painel S.O.S. */
-.agenda-workspace{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(270px,.55fr) minmax(330px,.70fr)!important;gap:14px!important;align-items:stretch!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;height:auto!important;position:relative!important;}
+.agenda-workspace{display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(200px,.40fr) minmax(330px,.70fr)!important;gap:14px!important;align-items:stretch!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;height:auto!important;position:relative!important;}
 .agenda-workspace>.agenda-primary{min-width:0!important;min-height:0!important;width:auto!important;display:flex!important;flex-direction:column!important;}
 .agenda-workspace>.agenda-primary .agenda-shell-v2{min-width:0!important;min-height:0!important;flex:1 1 auto!important;}
 .agenda-workspace>.agenda-primary .agenda-scroll-v2{min-width:0!important;width:100%!important;max-width:100%!important;}
 .agenda-workspace>.agenda-primary .agenda-grid{min-width:0!important;width:100%!important;}
-.agenda-sos-agenda-card{min-width:270px!important;min-height:0!important;height:100%!important;border:1px solid #e3d7f3!important;border-radius:14px!important;background:#fff!important;box-shadow:0 4px 18px rgba(73,38,112,.06)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;}
+.agenda-sos-agenda-card{min-width:200px!important;min-height:0!important;height:100%!important;border:1px solid #e3d7f3!important;border-radius:14px!important;background:#fff!important;box-shadow:0 4px 18px rgba(73,38,112,.06)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;}
 .agenda-sos-agenda-head{flex:0 0 auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;padding:14px 10px!important;border-bottom:1px solid #eee8f4!important;background:linear-gradient(180deg,#fff,#fcf9ff)!important;}
 .agenda-sos-agenda-title{display:flex!important;align-items:center!important;gap:7px!important;min-width:0!important;}
 .agenda-sos-agenda-title strong{color:var(--purple)!important;font-size:16px!important;white-space:nowrap!important;}

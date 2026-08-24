@@ -1,0 +1,142 @@
+/* BeautyMove — RESTAURAÇÃO FINAL DA AGENDA
+ * Fluxo congelado: 1 Geometria → 2 Rolagem → 3 Cabeçalho fixo
+ * → 4 Sincronização → 5 Divisor → 6 Teste final.
+ * Esta camada é deliberadamente a última folha de estilo da sala.html.
+ */
+:root{
+  --bm-sos-panel-width:440px;
+  --bm-sos-panel-min:320px;
+  --bm-sos-panel-max:500px;
+  --bm-workspace-gap:14px;
+  --bm-agenda-time-col:76px;
+  --bm-agenda-min-prof:120px;
+  --bm-sos-agenda-min:300px;
+}
+
+/* 1. GEOMETRIA — três blocos estáveis, sem sobreposição. */
+.agenda-workspace{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) var(--bm-sos-panel-width)!important;
+  gap:var(--bm-workspace-gap)!important;
+  align-items:stretch!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+.agenda-scroll-region{
+  display:grid!important;
+  grid-template-columns:minmax(0,2.05fr) minmax(var(--bm-sos-agenda-min),.95fr)!important;
+  gap:var(--bm-workspace-gap)!important;
+  align-items:stretch!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+  overflow-y:scroll!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scrollbar-gutter:stable!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.agenda-primary{min-width:0!important;min-height:100%!important;width:auto!important;display:flex!important;flex-direction:column!important}
+.agenda-primary .agenda-shell-v2{
+  min-width:0!important;
+  min-height:0!important;
+  width:100%!important;
+  height:auto!important;
+  flex:0 0 auto!important;
+  overflow:visible!important;
+}
+.agenda-primary .bm-ap-scroll{
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overscroll-behavior:auto!important;
+}
+.agenda-primary .bm-ap{min-width:0!important;width:100%!important;max-width:none!important;height:auto!important}
+#agendaGrid .bm-ap-head,#agendaGrid .bm-ap-body{
+  min-width:0!important;
+  width:100%!important;
+  max-width:none!important;
+  grid-template-columns:var(--bm-agenda-time-col) repeat(4,minmax(var(--bm-agenda-min-prof),1fr))!important;
+}
+#agendaGrid .bm-ap-head{overflow:visible!important}
+#agendaGrid .bm-ap-body{overflow:visible!important}
+#agendaGrid .bm-ap-specialty,#agendaGrid .bm-ap-prof-head,#agendaGrid .bm-ap-lane{min-width:0!important}
+#agendaGrid .bm-ap-prof-head{overflow:hidden!important}
+#agendaGrid .bm-ap-prof-head .professional-name,#agendaGrid .bm-ap-prof-head .professional-day-status{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#agendaGrid .bm-ap-event{min-width:0!important}
+#agendaGrid .bm-ap-free{min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+
+/* Agenda S.O.S. permanece visível ao lado da agenda e não vira uma segunda agenda. */
+.agenda-sos-agenda-card{
+  position:relative!important;
+  min-width:var(--bm-sos-agenda-min)!important;
+  min-height:100%!important;
+  width:auto!important;
+  height:auto!important;
+  align-self:stretch!important;
+  overflow:visible!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+#sosAgendaGrid{overflow:visible!important;height:auto!important;flex:0 0 auto!important;min-height:0!important}
+#sosAgendaGrid .sos-grid{min-width:0!important;width:100%!important;max-width:none!important}
+#sosAgendaGrid .sos-event{left:8px!important;right:8px!important;min-width:0!important;overflow:hidden!important}
+
+/* 2. ROLAGEM — somente o workspace rola verticalmente; 18:00 é alcançável. */
+.agenda-workspace>.agenda-sos-panel{min-width:var(--bm-sos-panel-min)!important;min-height:0!important;width:auto!important;height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+.agenda-workspace>.agenda-sos-panel .agenda-sos-panel-body{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important}
+
+/* 3. CABEÇALHO FIXO — especialidade + profissional + status. */
+#agendaGrid .bm-ap-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:90!important;
+  background:#fff!important;
+  isolation:isolate!important;
+}
+#agendaGrid .bm-ap-specialty{position:relative!important;z-index:91!important;background:#fff!important}
+#agendaGrid .bm-ap-prof-head{position:relative!important;z-index:91!important;background:#fff!important}
+#agendaGrid .bm-ap-time-head{position:sticky!important;left:0!important;z-index:110!important;background:#fff!important}
+#agendaGrid .bm-ap-time{position:sticky!important;left:0!important;z-index:20!important;background:#fff!important}
+.agenda-sos-agenda-head{position:sticky!important;top:0!important;z-index:85!important}
+
+/* 4. SINCRONIZAÇÃO — a Agenda principal e a Agenda S.O.S. compartilham
+   o mesmo scroll vertical do workspace. Nenhuma rolagem vertical interna. */
+.agenda-scroll-region .agenda-primary,
+.agenda-scroll-region .agenda-sos-agenda-card{overflow:visible!important}
+
+/* 5. DIVISOR — fica preso à borda esquerda do Painel S.O.S. e redimensiona
+   somente o painel; o espaço restante é redistribuído pelos dois blocos. */
+.agenda-workspace-resize-handle{
+  position:absolute!important;
+  top:50%!important;
+  right:calc(var(--bm-sos-panel-width) - 11px)!important;
+  transform:translate(50%,-50%)!important;
+  z-index:200!important;
+}
+
+/* Rodapé/legenda não pode empurrar a área útil da agenda. */
+.agenda-primary .agenda-legend{flex:0 0 auto!important;padding-bottom:4px!important}
+
+/* 6. TESTE FINAL — desktop é o layout oficial. */
+@media(max-width:1180px){
+  :root{--bm-sos-panel-width:400px;--bm-agenda-min-prof:108px;--bm-sos-agenda-min:270px}
+  .agenda-scroll-region{grid-template-columns:minmax(0,2fr) minmax(270px,1fr)!important}
+}
+@media(max-width:900px){
+  .agenda-workspace{grid-template-columns:1fr!important;gap:12px!important;overflow:visible!important}
+  .agenda-scroll-region{grid-template-columns:1fr!important;height:560px!important;min-height:460px!important;max-height:560px!important;overflow-y:scroll!important}
+  .agenda-sos-agenda-card{min-height:420px!important}
+  .agenda-workspace>.agenda-sos-panel{height:460px!important;min-height:340px!important}
+  .agenda-workspace-resize-handle{display:none!important}
+}
+@media(max-width:640px){
+  .agenda-scroll-region{height:500px!important;min-height:420px!important;max-height:500px!important}
+  .agenda-sos-agenda-card{min-height:360px!important}
+  .agenda-workspace>.agenda-sos-panel{height:420px!important}
+}

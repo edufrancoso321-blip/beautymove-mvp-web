@@ -1,58 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BeautyMove — S.O.S. Profissional</title>
-  <link rel="stylesheet" href="assets/css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeautyMove — Agenda S.O.S.</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="stylesheet" href="assets/css/agenda-sos.css?v=20260824-1">
 </head>
-<body data-role="salao">
-  <div class="page">
-    <header class="header">
-      <a href="salao.html" aria-label="Voltar para a agenda"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
-      <a class="header-link" href="salao.html">Voltar à agenda</a>
-    </header>
-    <main>
-      <div class="container form-wrap">
-        <div class="form-head">
-          <div class="eyebrow">S.O.S. PROFISSIONAL</div>
-          <h1>Central S.O.S.</h1>
-          <p>Cadastre uma solicitação e visualize profissionais compatíveis para decisão do salão.</p>
-        </div>
-        <section class="card form-card">
-          <form id="sosForm" class="form-grid" action="javascript:void(0)">
-            <div class="field"><label for="specialty">Especialidade</label><select id="specialty" name="specialty" required><option value="">Selecione</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div>
-            <div class="field"><label for="service">Serviço</label><select id="service" name="service" required><option value="">Selecione o serviço</option></select></div>
-            <div class="field"><label for="date">Data</label><input id="date" name="date" type="date" required></div>
-            <div class="field"><label for="time">Horário</label><input id="time" name="time" type="time" required></div>
-            <div class="field"><label for="duration">Duração estimada</label><select id="duration" name="duration"><option>30 minutos</option><option>45 minutos</option><option selected>60 minutos</option><option>90 minutos</option><option>120 minutos</option></select></div>
-            <div class="field"><label for="radius">Raio de busca</label><select id="radius" name="radius"><option>5 km</option><option selected>10 km</option><option>20 km</option><option>30 km</option></select></div>
-            <div class="field"><label for="value">Valor fixo do serviço (R$)</label><input id="value" name="value" inputmode="decimal" placeholder="80,00" required readonly></div>
-            <div class="field"><label for="materials">Equipamento/material</label><select id="materials" name="materials"><option>Profissional leva o necessário</option><option>Salão fornece</option><option>A combinar</option></select></div>
-            <div class="field full"><label for="notes">Observações</label><input id="notes" name="notes" placeholder="Informações importantes para o atendimento"></div>
-            <div class="form-actions full"><a class="secondary" href="salao.html">Cancelar</a><button class="primary" type="submit">Buscar profissionais</button></div>
-          </form>
-        </section>
-        <section class="section" id="results" hidden>
-          <div class="section-head"><div><div class="eyebrow">RESULTADOS</div><h2>Profissionais disponíveis</h2></div><button class="secondary compact" type="button" id="mapButton">Ver no mapa</button></div>
-          <div class="dashboard-grid">
-            <article class="card"><h2>Mariana</h2><p>Cabelos · Disponível · 3,2 km</p><p><strong>4,89</strong> ★★★★★</p><button class="primary compact select-professional" type="button">Enviar oportunidade</button></article>
-            <article class="card"><h2>Fernanda</h2><p>Cabelos · Disponível · 5,7 km</p><p><strong>4,78</strong> ★★★★★</p><button class="primary compact select-professional" type="button">Enviar oportunidade</button></article>
-            <article class="card"><h2>Juliana</h2><p>Cabelos · Disponível · 8,1 km</p><p><strong>4,72</strong> ★★★★★</p><button class="primary compact select-professional" type="button">Enviar oportunidade</button></article>
-          </div>
-          <div class="notice" id="sosNotice" hidden></div>
-        </section>
-      </div>
-    </main>
-    <footer class="footer">BeautyMove © 2026</footer>
-  </div>
-  <script src="assets/js/plan-access.js?v=20260817-1"></script>
-  <script>
-    if(!window.BeautyMovePlan?.has('sos_opportunities')){
-      window.location.replace('salao.html?feature=sos-locked');
-    }
-  </script>
-  <script src="assets/js/app.js"></script>
-  <script src="assets/js/sos-operations.js"></script>
+<body data-role="salao" class="sos-page">
+<header class="header">
+  <a href="salao.html" aria-label="Voltar para a agenda"><img src="LOGO BM FUNDO BRANCO.png" alt="BeautyMove" class="logo"></a>
+  <a class="header-link" href="salao.html">Voltar à agenda</a>
+</header>
+<main class="sos-main">
+  <section class="sos-head">
+    <div><div class="eyebrow">OPERAÇÃO S.O.S.</div><h1>Agenda S.O.S.</h1><p>Central operacional das oportunidades. A recepcionista define quando uma oportunidade é criada, atribuída ou encerrada.</p></div>
+    <div class="sos-actions"><button class="secondary compact" type="button" id="sosTodayBtn">Hoje</button><button class="primary compact" type="button" id="sosNewBtn">Nova oportunidade</button></div>
+  </section>
+  <section class="sos-layout">
+    <article class="sos-agenda-card">
+      <div class="sos-agenda-toolbar"><div class="sos-date-controls"><button class="sos-icon-btn" type="button" id="sosPrevDay" aria-label="Dia anterior">‹</button><strong id="sosDateLabel">Hoje</strong><button class="sos-icon-btn" type="button" id="sosNextDay" aria-label="Próximo dia">›</button></div><input id="sosDatePicker" type="date" aria-label="Escolher data"></div>
+      <div class="sos-agenda-scroll" id="sosAgendaScroll"><div class="sos-grid" id="sosGrid"></div></div>
+    </article>
+    <aside class="sos-side-card" aria-label="Painel S.O.S."><div class="sos-side-head"><div class="sos-side-title"><span>⚡</span><span>S.O.S.</span></div><p class="sos-side-sub">Painel de oportunidades</p><div class="sos-side-count" id="sosSideCount">0 oportunidades ativas</div></div><div class="sos-side-list" id="sosSideList"></div></aside>
+  </section>
+</main>
+<div class="sos-modal" id="sosModal" aria-hidden="true"><section class="sos-modal-card" role="dialog" aria-modal="true" aria-labelledby="sosModalTitle"><div class="eyebrow">NOVA OPORTUNIDADE S.O.S.</div><h2 id="sosModalTitle">Solicitar profissional</h2><p class="modal-intro">A oportunidade ficará somente na Agenda S.O.S. até uma decisão da recepcionista.</p><form id="sosForm" class="sos-form">
+<div class="sos-field"><label for="specialty">Especialidade</label><select id="specialty" required><option value="">Selecione</option><option>Cabelos</option><option>Mãos e Pés</option><option>Estética</option><option>Depilação</option><option>Sobrancelhas</option></select></div>
+<div class="sos-field"><label for="sosDate">Data</label><input id="sosDate" type="date" required></div><div class="sos-field"><label for="sosTime">Horário</label><input id="sosTime" type="time" required></div><div class="sos-field"><label for="sosClient">Cliente</label><input id="sosClient" placeholder="Nome da cliente"></div>
+<div class="sos-field full"><label>Serviços</label><div id="sosServicePicker" class="sos-service-picker"></div></div><div class="sos-field"><label for="sosRadius">Raio de busca</label><select id="sosRadius"><option>5 km</option><option selected>10 km</option><option>20 km</option><option>30 km</option></select></div><div class="sos-field"><label for="sosMaterials">Equipamento/material</label><select id="sosMaterials"><option>Profissional leva o necessário</option><option>Salão fornece</option><option>A combinar</option></select></div><div class="sos-field full"><label for="sosNotes">Observações</label><input id="sosNotes" placeholder="Informações importantes"></div>
+<div class="sos-modal-actions"><button class="secondary compact" type="button" id="sosCancelBtn">Cancelar</button><button class="primary compact" type="submit">Criar oportunidade</button></div></form></section></div>
+<script src="assets/js/plan-access.js?v=20260817-1"></script><script>if(!window.BeautyMovePlan?.has('sos_opportunities')) window.location.replace('salao.html?feature=sos-locked');</script><script src="assets/js/sos-operations.js?v=20260824-2"></script>
 </body>
 </html>

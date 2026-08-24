@@ -1,5 +1,5 @@
 /* BeautyMove — Workspace definitivo da Agenda + Agenda S.O.S. + Painel S.O.S. */
-.agenda-workspace{display:grid!important;grid-template-columns:minmax(0,1fr) 270px!important;gap:14px!important;align-items:stretch!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;height:auto!important;position:relative!important;}
+.agenda-workspace{display:grid!important;grid-template-columns:minmax(0,1fr) 270px!important;gap:14px!important;align-items:stretch!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;height:auto!important;position:relative!important;will-change:grid-template-columns!important;}
 .agenda-scroll-region{display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(200px,.40fr)!important;gap:14px!important;align-items:start!important;align-content:start!important;min-width:0!important;min-height:0!important;height:100%!important;overflow-y:scroll!important;overflow-x:hidden!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;position:relative!important;scrollbar-gutter:stable!important;}
 .agenda-workspace>.agenda-scroll-region>.agenda-primary{min-width:0!important;min-height:0!important;width:auto!important;height:auto!important;display:flex!important;flex-direction:column!important;}
 .agenda-workspace>.agenda-scroll-region>.agenda-primary .agenda-shell-v2{min-width:0!important;min-height:0!important;width:100%!important;height:auto!important;flex:none!important;overflow:visible!important;}
@@ -15,7 +15,7 @@
 #sosAgendaGrid .sos-grid{min-width:0!important;width:100%!important;max-width:100%!important;}
 #sosAgendaGrid .sos-event{left:7px!important;right:7px!important;}
 #sosAgendaGrid .sos-event.is-selected{outline:3px solid rgba(116,56,255,.22)!important;box-shadow:0 0 0 1px var(--purple)!important;}
-.agenda-workspace>.agenda-sos-panel{min-width:270px!important;min-height:0!important;height:100%!important;display:flex!important;}
+.agenda-workspace>.agenda-sos-panel{min-width:230px!important;min-height:0!important;height:100%!important;display:flex!important;}
 .agenda-workspace>.agenda-sos-panel .agenda-sos-panel-body{flex:1 1 auto!important;min-height:0!important;max-height:none!important;}
 .agenda-workspace>.agenda-sos-panel .agenda-sos-panel-head{padding:18px 12px 14px!important;}
 .agenda-workspace>.agenda-sos-panel .agenda-sos-panel-title{font-size:20px!important;}
@@ -26,5 +26,11 @@
 .agenda-workspace-divider::after{content:'⋮';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:34px;border:1px solid #d8c8ef;border-radius:8px;background:#fff;color:var(--purple);font-size:13px;line-height:30px;font-weight:900;}
 .agenda-workspace-divider:hover::before,.agenda-workspace-divider.is-dragging::before{background:var(--purple);width:3px;}
 .agenda-workspace-divider.is-dragging::after{border-color:var(--purple);box-shadow:0 3px 10px rgba(116,56,255,.16);}
-@media(max-width:900px){.agenda-workspace{grid-template-columns:1fr!important;gap:12px!important;overflow:visible!important}.agenda-scroll-region{grid-template-columns:1fr!important;gap:12px!important;height:520px!important;min-height:420px!important;overflow-y:auto!important}.agenda-workspace-divider{display:none!important}.agenda-sos-agenda-card{min-height:380px!important}.agenda-workspace>.agenda-sos-panel{height:460px!important;min-height:340px!important}}
+/* Nova alça: controla somente a largura do Painel S.O.S.; a Agenda + Agenda S.O.S. acompanham organicamente. */
+.agenda-sos-panel-resizer{position:absolute!important;top:50%!important;width:22px!important;height:42px!important;margin:-21px 0 0!important;padding:0!important;border:1px solid #d8c8ef!important;border-radius:10px!important;background:#fff!important;color:var(--purple)!important;cursor:col-resize!important;z-index:120!important;display:flex!important;align-items:center!important;justify-content:center!important;touch-action:none!important;box-shadow:0 2px 8px rgba(73,38,112,.08)!important;}
+.agenda-sos-panel-resizer span{font-size:15px!important;line-height:1!important;font-weight:900!important;pointer-events:none!important;}
+.agenda-sos-panel-resizer::before{content:''!important;position:absolute!important;left:50%!important;top:50%!important;width:2px!important;height:70px!important;transform:translate(-50%,-50%)!important;border-radius:3px!important;background:#d8c8ef!important;z-index:-1!important;}
+.agenda-sos-panel-resizer:hover,.agenda-sos-panel-resizer.is-dragging{border-color:var(--purple)!important;box-shadow:0 4px 12px rgba(116,56,255,.16)!important;}
+.agenda-sos-panel-resizer:hover::before,.agenda-sos-panel-resizer.is-dragging::before{background:var(--purple)!important;width:3px!important;}
+@media(max-width:900px){.agenda-workspace{grid-template-columns:1fr!important;gap:12px!important;overflow:visible!important;will-change:auto!important}.agenda-scroll-region{grid-template-columns:1fr!important;gap:12px!important;height:520px!important;min-height:420px!important;overflow-y:auto!important}.agenda-workspace-divider,.agenda-sos-panel-resizer{display:none!important}.agenda-sos-agenda-card{min-height:380px!important}.agenda-workspace>.agenda-sos-panel{height:460px!important;min-height:340px!important}}
 @media(max-width:640px){.agenda-scroll-region{height:460px!important;min-height:380px!important}.agenda-sos-agenda-card{min-height:340px!important}.agenda-workspace>.agenda-sos-panel{height:420px!important}}

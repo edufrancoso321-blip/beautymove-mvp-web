@@ -1,4 +1,26 @@
-/* BeautyMove — Painel S.O.S. independente da Agenda Profissionais */
-.agenda-workspace{display:grid;grid-template-columns:minmax(0,1fr) 314px;gap:14px;align-items:stretch}.agenda-primary{min-width:0}.agenda-sos-panel{border:1px solid #e3d7f3;border-radius:14px;background:#fff;box-shadow:0 4px 18px rgba(73,38,112,.07);min-height:0;display:flex;flex-direction:column;overflow:hidden}.agenda-sos-panel-head{padding:16px 14px 12px;border-left:4px solid var(--purple);background:linear-gradient(180deg,#fff,#fcf9ff)}.agenda-sos-panel-title{display:flex;align-items:center;gap:8px;color:var(--purple);font-size:18px;font-weight:900}.agenda-sos-panel-title .sos-badge{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--purple-soft);font-size:14px}.agenda-sos-panel-subtitle{margin:4px 0 0;color:#60477b;font-size:11px}.agenda-sos-count{margin-top:11px;padding:9px 10px;border-radius:8px;background:#f0e8ff;color:#6333d7;font-size:11px;font-weight:800}.agenda-sos-panel-body{padding:10px 12px;overflow:auto;min-height:0;max-height:calc(100vh - 310px)}.agenda-sos-opportunity{border:1px solid #e0d5ef;border-left:4px solid var(--purple);border-radius:10px;padding:11px;margin-bottom:10px;background:#fff;cursor:pointer}.agenda-sos-opportunity:hover{background:#faf7ff}.agenda-sos-opportunity:focus{outline:2px solid var(--purple);outline-offset:1px}.agenda-sos-opportunity h3{margin:0 0 5px;font-size:13px;color:#21192b}.agenda-sos-opportunity p{margin:3px 0;color:#6d6475;font-size:10px;line-height:1.35}.agenda-sos-status{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:6px;background:#f0e8ff;color:#6333d7;font-size:9px;font-weight:800}.agenda-sos-open-item{display:block;width:100%;margin-top:8px;padding:7px 8px;border:1px solid var(--purple);border-radius:7px;background:#fff;color:var(--purple);font-size:10px;font-weight:800;cursor:pointer}.agenda-sos-open-item:hover{background:var(--purple-soft)}.agenda-sos-empty{padding:22px 8px;text-align:center;color:#81788a;font-size:11px}.agenda-sos-panel-footer{padding:10px 12px;border-top:1px solid #eee8f4;background:#fff}.agenda-sos-open{width:100%;min-height:40px;border:1px solid var(--purple);border-radius:8px;background:#fff;color:var(--purple);font-size:11px;font-weight:850;cursor:pointer}.agenda-sos-open:hover{background:var(--purple-soft)}
-@media(max-width:1180px){.agenda-workspace{grid-template-columns:minmax(0,1fr) 286px}.agenda-sos-panel-body{max-height:calc(100vh - 300px)}}
-@media(max-width:900px){.agenda-workspace{grid-template-columns:1fr}.agenda-sos-panel{min-height:280px}.agenda-sos-panel-body{max-height:360px}}
+/* BeautyMove — Painel S.O.S. | componente independente
+ * Responsabilidade única: Central de Oportunidades.
+ * O painel NÃO define a geometria do workspace. A geometria pertence ao
+ * workspace para evitar conflitos entre módulos.
+ */
+.agenda-sos-panel{position:relative;min-width:0;min-height:0;height:100%;border:1px solid #e3d7f3;border-radius:14px;background:#fff;box-shadow:0 4px 18px rgba(73,38,112,.07);display:flex;flex-direction:column;overflow:hidden}
+.agenda-sos-panel-head{flex:0 0 auto;padding:18px 16px 14px;border-left:4px solid var(--purple);background:linear-gradient(180deg,#fff,#fcf9ff)}
+.agenda-sos-panel-title{display:flex;align-items:center;gap:8px;color:var(--purple);font-size:20px;font-weight:900}
+.agenda-sos-panel-title .sos-badge{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--purple-soft);font-size:14px}
+.agenda-sos-panel-subtitle{margin:4px 0 0;color:#60477b;font-size:11px}
+.agenda-sos-count{margin-top:12px;padding:10px 11px;border-radius:8px;background:#f0e8ff;color:#6333d7;font-size:11px;font-weight:800}
+.agenda-sos-panel-body{flex:1 1 auto;min-height:0;padding:12px 14px;overflow:auto;overscroll-behavior:contain}
+.agenda-sos-opportunity{border:1px solid #e0d5ef;border-left:4px solid var(--purple);border-radius:10px;padding:11px;margin-bottom:10px;background:#fff;cursor:pointer}
+.agenda-sos-opportunity:hover{background:#faf7ff}
+.agenda-sos-opportunity:focus{outline:2px solid var(--purple);outline-offset:1px}
+.agenda-sos-opportunity h3{margin:0 0 5px;font-size:13px;color:#21192b}
+.agenda-sos-opportunity p{margin:3px 0;color:#6d6475;font-size:10px;line-height:1.35}
+.agenda-sos-status{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:6px;background:#f0e8ff;color:#6333d7;font-size:9px;font-weight:800}
+.agenda-sos-open-item{display:block;width:100%;margin-top:8px;padding:7px 8px;border:1px solid var(--purple);border-radius:7px;background:#fff;color:var(--purple);font-size:10px;font-weight:800;cursor:pointer}
+.agenda-sos-open-item:hover{background:var(--purple-soft)}
+.agenda-sos-empty{padding:22px 8px;text-align:center;color:#81788a;font-size:11px}
+.agenda-sos-panel-footer{flex:0 0 auto;padding:10px 12px;border-top:1px solid #eee8f4;background:#fff}
+.agenda-sos-open{width:100%;min-height:40px;border:1px solid var(--purple);border-radius:8px;background:#fff;color:var(--purple);font-size:11px;font-weight:850;cursor:pointer}
+.agenda-sos-open:hover{background:var(--purple-soft)}
+@media(max-width:900px){.agenda-sos-panel{height:460px;min-height:340px}}
+@media(max-width:640px){.agenda-sos-panel{height:420px}}

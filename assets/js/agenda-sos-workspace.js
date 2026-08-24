@@ -13,6 +13,25 @@
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const readStored=()=>{try{const v=Number(localStorage.getItem(STORAGE_KEY));return Number.isFinite(v)?v:DEFAULT}catch{return DEFAULT}};
   const saveWidth=v=>{try{localStorage.setItem(STORAGE_KEY,String(Math.round(v)))}catch{}};
+  function addCloseMarker(){
+    const grid=document.getElementById('agendaGrid');
+    if(!grid)return;
+    if(!document.getElementById('bmAgendaCloseMarkerStyles')){
+      const s=document.createElement('style');
+      s.id='bmAgendaCloseMarkerStyles';
+      s.textContent='#agendaGrid .bm-ap-time{overflow:visible!important}#agendaGrid .bm-ap-time::after{content:attr(data-close-label);position:absolute;left:0;right:0;bottom:0;transform:translateY(50%);height:24px;display:flex;align-items:center;justify-content:center;background:#fff;color:#17131f;font-size:13px;font-weight:800;z-index:25}';
+      document.head.appendChild(s);
+    }
+    const timeCol=grid.querySelector('.bm-ap-time');
+    const labels=[...grid.querySelectorAll('.bm-ap-time-label')];
+    if(!timeCol||!labels.length)return;
+    const parts=labels[labels.length-1].textContent.trim().split(':').map(Number);
+    if(parts.length<2)return;
+    const step=Number(document.getElementById('agendaInterval')?.value||60);
+    let minutes=(parts[0]||0)*60+(parts[1]||0)+step;
+    minutes=((minutes%1440)+1440)%1440;
+    timeCol.setAttribute('data-close-label',`${String(Math.floor(minutes/60)).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`);
+  }
   function build(){
     const workspace=document.querySelector('.agenda-workspace');
     const panel=document.querySelector('.agenda-workspace>.agenda-sos-panel');
@@ -61,6 +80,12 @@
       saveWidth(width);
     });
     window.addEventListener('resize',()=>apply(width));
+    const grid=document.getElementById('agendaGrid');
+    if(grid){
+      const observer=new MutationObserver(()=>requestAnimationFrame(addCloseMarker));
+      observer.observe(grid,{childList:true,subtree:true});
+      requestAnimationFrame(addCloseMarker);
+    }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build,{once:true});else build();
 })();

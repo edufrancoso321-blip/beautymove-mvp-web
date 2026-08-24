@@ -12,7 +12,7 @@
   function boot(){
     if(document.body?.dataset?.role!=='salao')return;
     setTimeout(()=>{
-      loadScript('bmAgendaAuthoritativeGrid','assets/js/agenda-authoritative-grid-fix.js?v=20260824-4');
+      loadScript('bmAgendaAuthoritativeGrid','assets/js/agenda-authoritative-grid-fix.js?v=20260824-5');
       loadScript('bmAgendaFinalVisualFix','assets/js/agenda-grid-final-visual-fix.js?v=20260824-1');
       loadScript('bmAgendaSosSelectionAuthority','assets/js/agenda-sos-selection-authority.js?v=20260824-1');
       loadScript('bmAgendaConflictAuthority','assets/js/agenda-conflict-authority.js?v=20260824-1');

@@ -6,10 +6,10 @@
  */
 (function(){
   'use strict';
-  const STORAGE_KEY='beautymove.mvp.agenda.sos.panelWidth';
-  const MIN=280;
+  const STORAGE_KEY='beautymove.mvp.agenda.sos.panelWidth.v2';
+  const MIN=320;
   const MAX=500;
-  const DEFAULT=320;
+  const DEFAULT=440;
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const readStored=()=>{try{const v=Number(localStorage.getItem(STORAGE_KEY));return Number.isFinite(v)?v:DEFAULT}catch{return DEFAULT}};
   const saveWidth=v=>{try{localStorage.setItem(STORAGE_KEY,String(Math.round(v)))}catch{}};

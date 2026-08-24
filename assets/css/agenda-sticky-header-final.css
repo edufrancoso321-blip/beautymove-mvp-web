@@ -11,3 +11,29 @@
 /* S.O.S. permanece fixo sem interferir na linha de especialidades. */
 .agenda-grid>thead>tr.agenda-specialty-row>th.sos-col>.sos-title{position:absolute!important;top:10px!important;left:0!important;right:0!important;z-index:4!important}
 .agenda-grid>thead>tr.agenda-professional-row>th.sos-col>.sos-header-button{position:absolute!important;top:36px!important;left:0!important;right:0!important;margin:0 auto!important;z-index:4!important}
+
+/* 2026-08-24 — autoridade final da geometria WEB. Mobile permanece fora desta alteração. */
+@media (min-width:781px){
+  .salon-main{min-height:0!important;height:100vh!important;overflow:hidden!important}
+  .agenda-shell-v2{flex:1 1 auto!important;min-height:0!important;height:auto!important;overflow:hidden!important}
+  .agenda-shell-v2>.agenda-scroll-v2{display:block!important;box-sizing:border-box!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;overflow-x:auto!important;overflow-y:scroll!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;scrollbar-gutter:stable!important}
+  .agenda-grid{width:1120px!important;min-width:1120px!important;max-width:none!important;table-layout:fixed!important;border-collapse:separate!important;border-spacing:0!important}
+  .agenda-grid tbody>tr{height:68px!important}
+  .agenda-grid tbody>tr>th,.agenda-grid tbody>tr>td{height:68px!important;min-height:68px!important;box-sizing:border-box!important}
+  /* 76px horário + 4x206px profissionais + 220px S.O.S. */
+  .agenda-grid tbody>tr>th.time-col,.agenda-grid tbody>tr>td:nth-child(1){width:76px!important;min-width:76px!important}
+  .agenda-grid tbody>tr>td:nth-child(2),.agenda-grid tbody>tr>td:nth-child(3),.agenda-grid tbody>tr>td:nth-child(4),.agenda-grid tbody>tr>td:nth-child(5){width:206px!important;min-width:206px!important}
+  .agenda-grid tbody>tr>td:nth-child(6){width:220px!important;min-width:220px!important}
+  /* Header created by agenda-header-layout.js uses the same geometry. */
+  .agenda-grid>thead>tr.agenda-specialty-row>th.time-col{width:76px!important;min-width:76px!important}
+  .agenda-grid>thead>tr.agenda-specialty-row>th.agenda-specialty-group:nth-child(2){width:412px!important;min-width:412px!important;box-sizing:border-box!important}
+  .agenda-grid>thead>tr.agenda-specialty-row>th.agenda-specialty-group:nth-child(3){width:206px!important;min-width:206px!important;box-sizing:border-box!important}
+  .agenda-grid>thead>tr.agenda-specialty-row>th.agenda-specialty-group:nth-child(4){width:206px!important;min-width:206px!important;box-sizing:border-box!important}
+  .agenda-grid>thead>tr.agenda-specialty-row>th.sos-col{width:220px!important;min-width:220px!important;box-sizing:border-box!important}
+  .agenda-grid>thead>tr.agenda-professional-row>th.professional-header-control{width:206px!important;min-width:206px!important;max-width:206px!important;box-sizing:border-box!important}
+  .agenda-grid>thead>tr.agenda-professional-row>th.sos-col{width:220px!important;min-width:220px!important;max-width:220px!important;box-sizing:border-box!important}
+  .agenda-grid>thead>tr.agenda-specialty-row>th,.agenda-grid>thead>tr.agenda-professional-row>th{background:#fff!important}
+  .agenda-grid>thead .professional-name,.agenda-grid>thead .professional-day-status,.agenda-grid>thead .specialty-label,.agenda-grid>thead .sos-title,.agenda-grid>thead .sos-action-label{max-width:100%!important;overflow:hidden!important}
+  .agenda-grid>thead>tr.agenda-specialty-row>th.time-col,.agenda-grid>thead>tr.agenda-professional-row>th.time-col{left:0!important;z-index:50!important}
+  .agenda-grid>tbody>tr>th.time-col{position:sticky!important;left:0!important;z-index:20!important;background:#fff!important}
+}

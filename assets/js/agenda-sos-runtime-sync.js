@@ -1,13 +1,9 @@
 /* BeautyMove — sincronização imediata do S.O.S. com a Agenda e Central de Oportunidades. */
 (function(){
   'use strict';
-  function loadAuthoritativeGrid(){
-    if(document.getElementById('bmAgendaAuthoritativeGrid'))return;
-    const s=document.createElement('script');
-    s.id='bmAgendaAuthoritativeGrid';
-    s.src='assets/js/agenda-authoritative-grid-fix.js?v=20260824-1';
-    s.async=false;
-    document.head.appendChild(s);
+  function loadScript(id,src){
+    if(document.getElementById(id))return;
+    const s=document.createElement('script');s.id=id;s.src=src;s.async=false;document.head.appendChild(s);
   }
   function refresh(){
     document.getElementById('todayBtn')?.click();
@@ -15,7 +11,10 @@
   }
   function boot(){
     if(document.body?.dataset?.role!=='salao')return;
-    setTimeout(loadAuthoritativeGrid,700);
+    setTimeout(()=>{
+      loadScript('bmAgendaAuthoritativeGrid','assets/js/agenda-authoritative-grid-fix.js?v=20260824-2');
+      loadScript('bmAgendaSosSelectionAuthority','assets/js/agenda-sos-selection-authority.js?v=20260824-1');
+    },700);
     window.addEventListener('beautymove:sos-created',()=>setTimeout(refresh,50));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});

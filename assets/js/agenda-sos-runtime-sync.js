@@ -13,11 +13,12 @@
     if(document.body?.dataset?.role!=='salao')return;
     setTimeout(()=>{
       loadScript('bmAgendaAuthoritativeGrid','assets/js/agenda-authoritative-grid-fix.js?v=20260824-3');
+      loadScript('bmAgendaFinalVisualFix','assets/js/agenda-grid-final-visual-fix.js?v=20260824-1');
       loadScript('bmAgendaSosSelectionAuthority','assets/js/agenda-sos-selection-authority.js?v=20260824-1');
       loadScript('bmAgendaConflictAuthority','assets/js/agenda-conflict-authority.js?v=20260824-1');
       loadScript('bmAgendaSosDetailAuthority','assets/js/agenda-sos-detail-authority.js?v=20260824-1');
-      /* agenda-web-integrity-final.js foi retirado: havia um segundo motor de rowspan
-         que competia com a grade autoritativa e podia deslocar colunas. */
+      /* O antigo agenda-web-integrity-final.js não é mais carregado: havia dois motores
+         de rowspan competindo entre si e isso era a origem do deslocamento de colunas. */
     },700);
     window.addEventListener('beautymove:sos-created',()=>setTimeout(refresh,50));
   }
